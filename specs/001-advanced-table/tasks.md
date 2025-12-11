@@ -95,19 +95,19 @@
 
 ### Implementation for User Story 1
 
-- [ ] T031 [P] [US1] Create table renderer in src/table-renderer.ts (initialize Tabulator with config)
-- [ ] T032 [P] [US1] Configure virtual scrolling in src/features/virtual-scroll.ts (renderVertical: 'virtual', virtualDomBuffer: 300)
-- [ ] T033 [US1] Implement canHandleResults() in src/plugin.ts (check for SELECT results with head.vars)
-- [ ] T034 [US1] Implement draw() method in src/plugin.ts (parse results, generate columns, initialize table)
-- [ ] T035 [US1] Generate table columns from SPARQL variables in src/table-renderer.ts (column definitions with row number column)
-- [ ] T036 [P] [US1] Create URI formatter in src/formatters/uri-formatter.ts (display full or abbreviated URIs)
-- [ ] T037 [P] [US1] Create literal formatter in src/formatters/literal-formatter.ts (display value with optional datatype)
-- [ ] T038 [P] [US1] Create blank node formatter in src/formatters/bnode-formatter.ts (format _:b0 style)
-- [ ] T039 [US1] Apply cell formatters to table columns in src/table-renderer.ts (based on binding type)
-- [ ] T040 [US1] Configure row number column as frozen/sticky in src/table-renderer.ts
-- [ ] T041 [US1] Implement horizontal scroll with proper layout in src/table-renderer.ts (width: 100%)
-- [ ] T042 [US1] Add empty result state handling in src/plugin.ts (display "No results" message)
-- [ ] T043 [US1] Add error handling for invalid SPARQL results in src/parsers/bindings-parser.ts
+- [X] T031 [P] [US1] Create table renderer in src/table-renderer.ts (initialize Tabulator with config)
+- [X] T032 [P] [US1] Configure virtual scrolling in src/features/virtual-scroll.ts (renderVertical: 'virtual', virtualDomBuffer: 300)
+- [X] T033 [US1] Implement canHandleResults() in src/plugin.ts (check for SELECT results with head.vars)
+- [X] T034 [US1] Implement draw() method in src/plugin.ts (parse results, generate columns, initialize table)
+- [X] T035 [US1] Generate table columns from SPARQL variables in src/table-renderer.ts (column definitions with row number column)
+- [X] T036 [P] [US1] Create URI formatter in src/formatters/uri-formatter.ts (display full or abbreviated URIs)
+- [X] T037 [P] [US1] Create literal formatter in src/formatters/literal-formatter.ts (display value with optional datatype)
+- [X] T038 [P] [US1] Create blank node formatter in src/formatters/bnode-formatter.ts (format _:b0 style)
+- [X] T039 [US1] Apply cell formatters to table columns in src/table-renderer.ts (based on binding type)
+- [X] T040 [US1] Configure row number column as frozen/sticky in src/table-renderer.ts
+- [X] T041 [US1] Implement horizontal scroll with proper layout in src/table-renderer.ts (width: 100%)
+- [X] T042 [US1] Add empty result state handling in src/plugin.ts (display "No results" message)
+- [X] T043 [US1] Add error handling for invalid SPARQL results in src/parsers/bindings-parser.ts
 
 **Checkpoint**: User Story 1 complete - basic table display fully functional and testable
 
@@ -121,14 +121,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T044 [P] [US2] Implement column resize handlers in src/features/column-resize.ts (persist widths to config)
-- [ ] T045 [P] [US2] Implement column sort configuration in src/table-renderer.ts (headerSort: true, sorters for different types)
-- [ ] T046 [US2] Add sort state persistence to display config in src/plugin.ts (save sortState to localStorage)
-- [ ] T047 [US2] Load and restore column widths from localStorage in src/plugin.ts (apply to Tabulator columns)
-- [ ] T048 [US2] Load and restore sort state from localStorage in src/plugin.ts (apply initialSort to Tabulator)
-- [ ] T049 [US2] Emit columnResize event in src/features/column-resize.ts (for external integrations)
-- [ ] T050 [US2] Emit columnSort event in src/features/column-resize.ts (for external integrations)
-- [ ] T051 [US2] Add validation for column width bounds (50-1000px) in src/utils/validators.ts
+- [X] T044 [P] [US2] Implement column resize handlers in src/features/column-resize.ts (persist widths to config)
+- [X] T045 [P] [US2] Implement column sort configuration in src/table-renderer.ts (headerSort: true, sorters for different types)
+- [X] T046 [US2] Add sort state persistence to display config in src/plugin.ts (save sortState to localStorage)
+- [X] T047 [US2] Load and restore column widths from localStorage in src/plugin.ts (apply to Tabulator columns)
+- [X] T048 [US2] Load and restore sort state from localStorage in src/plugin.ts (apply initialSort to Tabulator)
+- [X] T049 [US2] Emit columnResize event in src/features/column-resize.ts (for external integrations)
+- [X] T050 [US2] Emit columnSort event in src/features/column-resize.ts (for external integrations)
+- [X] T051 [US2] Add validation for column width bounds (50-1000px) in src/utils/validators.ts
 
 **Checkpoint**: User Story 2 complete - sorting and resizing fully functional, MVP ready for validation
 
@@ -142,15 +142,15 @@
 
 ### Implementation for User Story 3
 
-- [ ] T052 [P] [US3] Create search control component in src/controls/search-control.ts (input field with debounce)
-- [ ] T053 [P] [US3] Implement search filter logic in src/table-renderer.ts (case-insensitive multi-column search)
-- [ ] T054 [P] [US3] Implement search highlighting in src/features/search-highlight.ts (wrap matches in <mark> tags)
-- [ ] T055 [US3] Apply theme-responsive highlight color via CSS variables in styles/plugin.css (--search-highlight-color)
-- [ ] T056 [US3] Add row count indicator to search control in src/controls/search-control.ts (show "X of Y rows")
-- [ ] T057 [US3] Integrate search control into plugin toolbar in src/plugin.ts
-- [ ] T058 [US3] Emit search event with match count in src/controls/search-control.ts
-- [ ] T059 [US3] Emit searchHighlight event after highlighting in src/features/search-highlight.ts
-- [ ] T060 [US3] Add search clear functionality (clear button or escape key) in src/controls/search-control.ts
+- [X] T052 [P] [US3] Create search control component in src/controls/search-control.ts (input field with debounce)
+- [X] T053 [P] [US3] Implement search filter logic in src/table-renderer.ts (case-insensitive multi-column search)
+- [X] T054 [P] [US3] Implement search highlighting in src/features/search-highlight.ts (wrap matches in <mark> tags)
+- [X] T055 [US3] Apply theme-responsive highlight color via CSS variables in styles/plugin.css (--search-highlight-color)
+- [X] T056 [US3] Add row count indicator to search control in src/controls/search-control.ts (show "X of Y rows")
+- [X] T057 [US3] Integrate search control into plugin toolbar in src/plugin.ts
+- [X] T058 [US3] Emit search event with match count in src/controls/search-control.ts
+- [X] T059 [US3] Emit searchHighlight event after highlighting in src/features/search-highlight.ts
+- [X] T060 [US3] Add search clear functionality (clear button or escape key) in src/controls/search-control.ts
 
 **Checkpoint**: User Story 3 complete - search and filter fully functional
 

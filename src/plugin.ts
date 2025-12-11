@@ -4,10 +4,14 @@
  */
 
 import '../styles/index.css';
-import { TabulatorPluginConfig, DEFAULT_CONFIG } from './types/config';
-import { SparqlResults } from './types/sparql';
-import { SelectionRange } from './types/table';
-import { Tabulator } from './types/tabulator';
+import { TabulatorPluginConfig, DEFAULT_CONFIG } from './types/config.js';
+import { SparqlResults } from './types/sparql.js';
+import { SelectionRange } from './types/table.js';
+import { Tabulator } from './types/tabulator.js';
+import { TableRenderer } from './table-renderer.js';
+import { SearchControl } from './controls/search-control.js';
+import { loadDisplayConfig, saveDisplayConfig } from './utils/storage.js';
+import { validateConfig } from './utils/validators.js';
 
 type EventHandler = (...args: unknown[]) => void;
 
@@ -38,11 +42,32 @@ export class TablePlugin {
   private config: TabulatorPluginConfig;
   private table: Tabulator | null = null;
   private container: HTMLElement | null = null;
+  private renderer: TableRenderer | null = null;
+  private searchControl: SearchControl | null = null;
   private eventHandlers: Map<string, EventHandler[]> = new Map();
 
   constructor(yasr: Yasr, pluginConfig?: TabulatorPluginConfig) {
     this.yasr = yasr;
     this.config = { ...DEFAULT_CONFIG, ...pluginConfig };
+
+    // Validate and merge config
+    const validated = validateConfig(pluginConfig || {});
+    this.config = { ...DEFAULT_CONFIG, ...validated };
+
+    // Load persisted display config
+    if (this.config.persistenceEnabled) {
+      const stored = loadDisplayConfig(this.config.persistenceKey || 'yasgui-table-default');
+      if (stored) {
+        this.config.displayConfig = { ...this.config.displayConfig, ...stored };
+      }
+    }
+
+    // Initialize renderer with callbacks
+    this.renderer = new TableRenderer(
+      this.config,
+      (widths) => this.handleColumnWidthChange(widths),
+      (column, dir) => this.handleSortChange(column, dir)
+    );
   }
 
   /**
@@ -70,19 +95,87 @@ export class TablePlugin {
     container.className = 'yasgui-table-plugin';
     this.container = container;
 
-    // TODO: Implement table rendering
-    // 1. Parse SPARQL results
-    // 2. Generate columns
-    // 3. Initialize Tabulator
-    // 4. Attach event handlers
-    // 5. Render controls
+    try {
+      // Check if we have results
+      if (!this.yasr.results) {
+        container.appendChild(this.createEmptyState('No query results available'));
+        return container;
+      }
 
-    // Placeholder content
-    const placeholder = document.createElement('div');
-    placeholder.textContent = 'Table plugin initialized';
-    container.appendChild(placeholder);
+      // Check if results are empty
+      if (
+        !this.yasr.results.results ||
+        !this.yasr.results.results.bindings ||
+        this.yasr.results.results.bindings.length === 0
+      ) {
+        container.appendChild(this.createEmptyState('No results returned by the query'));
+        return container;
+      }
+
+      // Create search control
+      this.searchControl = new SearchControl({
+        placeholder: 'Search in table...',
+        debounceMs: 300,
+        onSearch: (searchTerm: string) => this.handleSearch(searchTerm),
+      });
+
+      // Add search control to container
+      container.appendChild(this.searchControl.getElement());
+
+      // Create table container (separate from search control)
+      const tableContainer = document.createElement('div');
+      tableContainer.className = 'yasgui-table-container';
+      container.appendChild(tableContainer);
+
+      // Render table
+      if (this.renderer) {
+        this.table = this.renderer.render(tableContainer, this.yasr.results);
+
+        // Restore last search term if available
+        const lastSearch = this.config.displayConfig?.lastSearch;
+        if (lastSearch) {
+          this.searchControl.setSearchTerm(lastSearch, true);
+        } else {
+          // Update initial row count
+          const totalRows = this.renderer.getTotalRowCount();
+          this.searchControl.updateRowCount(totalRows, totalRows);
+        }
+
+        // Save config on changes
+        if (
+          this.config.persistenceEnabled &&
+          this.config.displayConfig &&
+          this.config.displayConfig.uriDisplayMode
+        ) {
+          saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
+            uriDisplayMode: this.config.displayConfig.uriDisplayMode,
+            showDatatypes: this.config.displayConfig.showDatatypes || false,
+            ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+            lastSearch: this.config.displayConfig.lastSearch,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to render table:', error);
+      container.appendChild(
+        this.createEmptyState('Error rendering table. Please check the console for details.')
+      );
+    }
 
     return container;
+  }
+
+  /**
+   * Create empty state message
+   */
+  private createEmptyState(message: string): HTMLElement {
+    const emptyState = document.createElement('div');
+    emptyState.className = 'yasgui-table-empty';
+    emptyState.style.padding = '40px';
+    emptyState.style.textAlign = 'center';
+    emptyState.style.color = 'var(--table-text-muted, #999)';
+    emptyState.textContent = message;
+    return emptyState;
   }
 
   /**
@@ -107,6 +200,10 @@ export class TablePlugin {
     if (this.table) {
       this.table.destroy();
       this.table = null;
+    }
+    if (this.searchControl) {
+      this.searchControl.destroy();
+      this.searchControl = null;
     }
     this.eventHandlers.clear();
     this.container = null;
@@ -173,5 +270,90 @@ export class TablePlugin {
     if (handlers) {
       handlers.forEach((handler) => handler(data));
     }
+  }
+
+  /**
+   * Handle column width changes
+   */
+  private handleColumnWidthChange(widths: Record<string, number>): void {
+    // Update config
+    if (!this.config.displayConfig) {
+      this.config.displayConfig = {};
+    }
+    this.config.displayConfig.columnWidths = widths;
+
+    // Persist if enabled
+    if (this.config.persistenceEnabled && this.config.displayConfig.uriDisplayMode) {
+      saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
+        uriDisplayMode: this.config.displayConfig.uriDisplayMode,
+        showDatatypes: this.config.displayConfig.showDatatypes || false,
+        ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+        columnWidths: widths,
+      });
+    }
+
+    // Emit event
+    this.emit('columnResize', { widths });
+  }
+
+  /**
+   * Handle sort changes
+   */
+  private handleSortChange(column: string, dir: 'asc' | 'desc'): void {
+    // Update config
+    if (!this.config.displayConfig) {
+      this.config.displayConfig = {};
+    }
+    this.config.displayConfig.sortState = { column, dir };
+
+    // Persist if enabled
+    if (this.config.persistenceEnabled && this.config.displayConfig.uriDisplayMode) {
+      saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
+        uriDisplayMode: this.config.displayConfig.uriDisplayMode,
+        showDatatypes: this.config.displayConfig.showDatatypes || false,
+        ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+        sortState: { column, dir },
+      });
+    }
+
+    // Emit event
+    this.emit('columnSort', { column, dir });
+  }
+
+  /**
+   * Handle search filter
+   */
+  private handleSearch(searchTerm: string): void {
+    if (!this.renderer) {
+      return;
+    }
+
+    // Apply filter
+    const filteredCount = this.renderer.applySearchFilter(searchTerm);
+    const totalCount = this.renderer.getTotalRowCount();
+
+    // Update search control display
+    if (this.searchControl) {
+      this.searchControl.updateRowCount(filteredCount, totalCount);
+    }
+
+    // Update config
+    if (!this.config.displayConfig) {
+      this.config.displayConfig = {};
+    }
+    this.config.displayConfig.lastSearch = searchTerm;
+
+    // Persist if enabled
+    if (this.config.persistenceEnabled && this.config.displayConfig.uriDisplayMode) {
+      saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
+        uriDisplayMode: this.config.displayConfig.uriDisplayMode,
+        showDatatypes: this.config.displayConfig.showDatatypes || false,
+        ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+        lastSearch: searchTerm,
+      });
+    }
+
+    // Emit event
+    this.emit('search', { searchTerm, filteredCount, totalCount });
   }
 }

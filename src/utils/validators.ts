@@ -4,8 +4,8 @@
 
 import { TabulatorPluginConfig, DisplayConfiguration, ColumnWidthMap } from '../types/config';
 
-const MIN_COLUMN_WIDTH = 50;
-const MAX_COLUMN_WIDTH = 1000;
+export const MIN_COLUMN_WIDTH = 50;
+export const MAX_COLUMN_WIDTH = 1000;
 
 /**
  * Validates plugin configuration and returns sanitized config

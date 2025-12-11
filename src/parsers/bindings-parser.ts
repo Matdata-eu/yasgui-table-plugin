@@ -10,13 +10,27 @@ import { TableRow } from '../types/table';
  * Parse SPARQL results into table rows
  */
 export function parseResults(results: SparqlResults): TableRow[] {
-  if (!results || !results.results || !results.results.bindings) {
-    return [];
+  // Validate input
+  if (!results) {
+    throw new Error('Invalid SPARQL results: results object is null or undefined');
   }
 
-  return results.results.bindings.map((binding, index) =>
-    parseResultRow(binding, index + 1, results.head.vars)
-  );
+  if (!results.head || !Array.isArray(results.head.vars)) {
+    throw new Error('Invalid SPARQL results: missing or invalid head.vars');
+  }
+
+  if (!results.results || !Array.isArray(results.results.bindings)) {
+    throw new Error('Invalid SPARQL results: missing or invalid results.bindings');
+  }
+
+  try {
+    return results.results.bindings.map((binding, index) =>
+      parseResultRow(binding, index + 1, results.head.vars)
+    );
+  } catch (error) {
+    console.error('Error parsing SPARQL results:', error);
+    throw new Error(`Failed to parse SPARQL results: ${error}`);
+  }
 }
 
 /**
