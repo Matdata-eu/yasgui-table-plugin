@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<!--
+  YASGUI Table Plugin - Demo Page
+  
+  Demonstrates the advanced table plugin for YASGUI with virtual scrolling,
+  search, filtering, column management, cell selection, and export features.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YASGUI Table Plugin Demo</title>
+  
+  <!-- YASGUI CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@matdata/yasgui@5.5.0/build/yasgui.min.css">
+  
+  <!-- Table Plugin CSS -->
+  <link rel="stylesheet" href="../dist/table-plugin.css">
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      padding-top: 0px;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 5px;
+    }
+    
+    .instructions {
+      background: white;
+      padding: 5px;
+      border-radius: 4px;
+      margin-bottom: 5px;      
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .instructions h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #2196F3;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .instructions h2:hover {
+      color: #0b7dda;
+    }
+    
+    .toggle-icon {
+      transition: transform 0.3s ease;
+      font-size: 14px;
+    }
+    
+    .toggle-icon.collapsed {
+      transform: rotate(-90deg);
+    }
+    
+    .instructions-content {
+      max-height: 500px;
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      opacity: 1;
+    }
+    
+    .instructions-content.collapsed {
+      max-height: 0;
+      opacity: 0;
+    }
+    
+    .instructions ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    
+    .instructions li {
+      margin: 5px 0;
+    }
+    
+    .instructions code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    
+    #yasgui {
+      height: 800px;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>🔷 YASGUI TABLE Plugin Demo</h1>
+  
+  <div class="instructions">
+    <h2 onclick="toggleInstructions()">
+      <span class="toggle-icon collapsed">▼</span>
+      <span>📖 Features & Instructions</span>
+    </h2>
+    <div class="instructions-content collapsed">
+      <ul>
+        <li><strong>🚀 Virtual Scrolling</strong>: Efficiently handles 10,000+ rows with smooth performance</li>
+        <li><strong>🔍 Search & Filter</strong>: Type in the search box to filter rows in real-time</li>
+        <li><strong>📊 Column Management</strong>: Click headers to sort, drag edges to resize columns</li>
+        <li><strong>🎨 Display Controls</strong>: Toggle between full/abbreviated URIs, show/hide datatypes, enable ellipsis mode</li>
+        <li><strong>📋 Selection & Copy</strong>: Click cells to select, <code>Ctrl+C</code> to copy as TSV, <code>Esc</code> to clear</li>
+        <li><strong>💾 Export</strong>: Export table as Markdown, CSV to clipboard, or download CSV file</li>
+        <li><strong>🎯 SPARQL-Aware</strong>: Proper rendering of URIs, literals with datatypes, and blank nodes</li>
+        <li><strong>Sample Queries</strong>: Try DBpedia (people), Wikidata (cities), or Custom endpoint queries</li>
+      </ul>
+    </div>
+  </div>
+  
+  <script>
+    function toggleInstructions() {
+      const content = document.querySelector('.instructions-content');
+      const icon = document.querySelector('.toggle-icon');
+      content.classList.toggle('collapsed');
+      icon.classList.toggle('collapsed');
+    }
+  </script>
+  
+  <div id="yasgui"></div>
+  
+  <!-- YASGUI JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/@matdata/yasgui@5.5.0/build/yasgui.min.js"></script>
+  
+  <!-- Table Plugin JavaScript -->
+  <!-- Vite will automatically replace this with ES modules during dev, or use the built version for production -->
+  <script type="module">
+    // Detect if running in Vite dev server (module system available)
+    const isViteDev = import.meta.env?.DEV;
+    
+    if (isViteDev) {
+      // Development mode: Load plugin from source
+      const { TablePlugin } = await import('@matdata/yasgui-table-plugin');
+      window.YasguiTablePlugin = { TablePlugin };
+      console.log('✅ Table Plugin loaded from source (Vite dev mode)');
+    } else {
+      // Production mode: Load from built UMD bundle
+      // This runs when opening index.html directly in browser
+      if (!window.YasguiTablePlugin) {
+        const script = document.createElement('script');
+        script.src = '../dist/table-plugin.umd.js';
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+        console.log('✅ Table Plugin loaded from bundle (production mode)');
+      }
+    }
+    
+    // Initialize demo after plugin is loaded
+    // Sample SELECT queries for testing the table plugin
+    const queries = {
+      dbpedia: `PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+# Query DBpedia for notable people
+SELECT ?person ?name ?birth ?description
+WHERE {
+  ?person a dbo:Person ;
+          rdfs:label ?name ;
+          dbo:birthDate ?birth .
+  FILTER (lang(?name) = 'en')
+  FILTER (year(?birth) > 1950)
+}
+LIMIT 100`,
+
+      wikidata: `PREFIX bd: <http://www.bigdata.com/rdf#>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+
+# Query Wikidata for cities with population
+SELECT ?city ?cityLabel ?country ?countryLabel ?population ?coord
+WHERE {
+  ?city wdt:P31 wd:Q515 ;           # instance of city
+        wdt:P17 ?country ;           # country
+        wdt:P1082 ?population ;      # population
+        wdt:P625 ?coord .            # coordinates
+  FILTER (?population > 1000000)     # cities with 1M+ people
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}
+ORDER BY DESC(?population)
+LIMIT 50`,
+
+      datatypes: `# Test different SPARQL datatypes
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX ex: <http://example.org/>
+
+SELECT ?subject ?stringVal ?intVal ?dateVal ?boolVal ?uriVal
+WHERE {
+  VALUES (?subject ?stringVal ?intVal ?dateVal ?boolVal ?uriVal) {
+    (ex:Item1 "Hello World" 42 "2023-01-15"^^xsd:date true <http://example.org/resource1>)
+    (ex:Item2 "Test String with a very long value to test ellipsis mode truncation feature" 100 "2023-06-20"^^xsd:date false <http://example.org/resource2>)
+    (ex:Item3 "Another Value" -15 "2023-12-25"^^xsd:date true <http://example.org/resource3>)
+  }
+}`,
+
+      large: `# Large result set to test virtual scrolling
+SELECT ?s ?p ?o
+WHERE {
+  ?s ?p ?o .
+}
+LIMIT 1000`
+    };
+    
+    // Register the table plugin
+    if (window.Yasgui && window.YasguiTablePlugin) {
+      Yasgui.Yasr.registerPlugin('Table-Dev', window.YasguiTablePlugin.TablePlugin);
+      console.log('✅ Table Plugin registered as "Table-Dev"');
+    } else {
+      console.error('❌ Failed to load Table Plugin - check that table-plugin.umd.js loaded correctly');
+    }
+    
+    // Initialize YASGUI
+    const yasgui = new Yasgui(document.getElementById('yasgui'), {
+      requestConfig: {
+        endpoint: 'https://dbpedia.org/sparql',
+      },
+      endpointButtons: [
+        { endpoint: "https://dbpedia.org/sparql", label: "DBpedia" },
+        { endpoint: "https://query.wikidata.org/sparql", label: "Wikidata" },
+        { endpoint: "http://localhost:3030/g/", label: "Local Fuseki" },
+        { endpoint: "https://data-interop.era.europa.eu/api/sparql", label: "ERA" }
+      ],
+      yasqe: {
+        value: queries.dbpedia
+      },
+      yasr: {
+        defaultPlugin: 'Table-Dev',
+        pluginsOptions: {
+          Table: {
+            displayConfig: {
+              uriDisplayMode: 'abbreviated',
+              showDatatypes: true,
+              ellipsisMode: false
+            },
+            persistenceEnabled: true
+          }
+        }
+      }
+    });
+    
+    // Add example query tabs
+    const tabs = [
+      { name: 'DBpedia People', query: queries.dbpedia, endpoint: 'https://dbpedia.org/sparql' },
+      { name: 'Wikidata Cities', query: queries.wikidata, endpoint: 'https://query.wikidata.org/sparql' },
+      { name: 'Datatypes Test', query: queries.datatypes, endpoint: 'https://dbpedia.org/sparql' },
+      { name: 'Large Dataset', query: queries.large, endpoint: 'https://dbpedia.org/sparql' }
+    ];
+    
+    // Close all existing tabs
+    let tab;
+    while ((tab = yasgui.getTab()) != null) {
+      try {
+        tab.close();
+      } catch (e) {
+        console.error('Failed to close tab:', e);
+        break;
+      }
+    }
+    
+    // Add sample tabs
+    tabs.forEach((tab, index) => {
+      yasgui.addTab(
+        index === 0, // set first tab as active
+        { 
+          name: tab.name,
+          requestConfig: { endpoint: tab.endpoint },
+          yasqe: { value: tab.query }
+        }
+      );
+    });
+    
+    // Log plugin info for debugging
+    setTimeout(() => {
+      const currentTab = yasgui.getTab();
+      if (currentTab && currentTab.yasr) {
+        console.log('✅ YASR instance ready');
+        console.log('Available plugins:', Object.keys(currentTab.yasr.plugins));
+        
+        // Note: Event listeners would be attached here if the plugin exposes an event API
+        // The table plugin works through YASR's plugin system automatically
+      }
+    }, 1000);
+  </script>
+  </script>
+</body>
+</html>
