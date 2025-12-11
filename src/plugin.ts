@@ -10,6 +10,7 @@ import { SelectionRange } from './types/table.js';
 import { Tabulator } from './types/tabulator.js';
 import { TableRenderer } from './table-renderer.js';
 import { SearchControl } from './controls/search-control.js';
+import { DisplayControls } from './controls/display-controls.js';
 import { loadDisplayConfig, saveDisplayConfig } from './utils/storage.js';
 import { validateConfig } from './utils/validators.js';
 
@@ -44,6 +45,7 @@ export class TablePlugin {
   private container: HTMLElement | null = null;
   private renderer: TableRenderer | null = null;
   private searchControl: SearchControl | null = null;
+  private displayControls: DisplayControls | null = null;
   private eventHandlers: Map<string, EventHandler[]> = new Map();
 
   constructor(yasr: Yasr, pluginConfig?: TabulatorPluginConfig) {
@@ -119,8 +121,21 @@ export class TablePlugin {
         onSearch: (searchTerm: string) => this.handleSearch(searchTerm),
       });
 
-      // Add search control to container
-      container.appendChild(this.searchControl.getElement());
+      // Create display controls
+      const displayConfig = this.config.displayConfig || {};
+      this.displayControls = new DisplayControls({
+        uriDisplayMode: displayConfig.uriDisplayMode || 'full',
+        showDatatypes: displayConfig.showDatatypes || false,
+        onUriDisplayChange: (mode) => this.handleUriDisplayChange(mode),
+        onShowDatatypesChange: (show) => this.handleShowDatatypesChange(show),
+      });
+
+      // Add controls toolbar to container
+      const toolbar = document.createElement('div');
+      toolbar.className = 'table-controls-toolbar';
+      toolbar.appendChild(this.searchControl.getElement());
+      toolbar.appendChild(this.displayControls.getElement());
+      container.appendChild(toolbar);
 
       // Create table container (separate from search control)
       const tableContainer = document.createElement('div');
@@ -205,6 +220,10 @@ export class TablePlugin {
       this.searchControl.destroy();
       this.searchControl = null;
     }
+    if (this.displayControls) {
+      this.displayControls.destroy();
+      this.displayControls = null;
+    }
     this.eventHandlers.clear();
     this.container = null;
   }
@@ -220,8 +239,48 @@ export class TablePlugin {
    * Update plugin configuration
    */
   updateConfig(updates: Partial<TabulatorPluginConfig>): void {
+    // Merge updates
     this.config = { ...this.config, ...updates };
-    // TODO: Re-render if needed
+    if (updates.displayConfig) {
+      this.config.displayConfig = { ...this.config.displayConfig, ...updates.displayConfig };
+    }
+
+    // Validate
+    const validated = validateConfig(this.config);
+    this.config = { ...this.config, ...validated };
+
+    // Update renderer if it exists
+    if (this.renderer) {
+      this.renderer.updateDisplayConfig(this.config);
+    }
+
+    // Persist if enabled
+    if (this.config.persistenceEnabled && this.config.displayConfig) {
+      const dc = this.config.displayConfig;
+      if (dc.uriDisplayMode) {
+        saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
+          uriDisplayMode: dc.uriDisplayMode,
+          showDatatypes: dc.showDatatypes || false,
+          ellipsisMode: dc.ellipsisMode || false,
+          columnWidths: dc.columnWidths,
+          sortState: dc.sortState,
+          lastSearch: dc.lastSearch,
+        });
+      }
+    }
+
+    // Emit event
+    this.emit('configChange', { config: this.config });
+
+    // Re-render table if it exists
+    if (this.table && this.container && this.yasr.results) {
+      // Find the table container
+      const tableContainer = this.container.querySelector('.yasgui-table-container') as HTMLElement;
+      if (tableContainer) {
+        tableContainer.innerHTML = '';
+        this.table = this.renderer?.render(tableContainer, this.yasr.results) || null;
+      }
+    }
   }
 
   /**
@@ -318,6 +377,30 @@ export class TablePlugin {
 
     // Emit event
     this.emit('columnSort', { column, dir });
+  }
+
+  /**
+   * Handle URI display mode change
+   */
+  private handleUriDisplayChange(mode: 'full' | 'abbreviated'): void {
+    this.updateConfig({
+      displayConfig: {
+        ...this.config.displayConfig,
+        uriDisplayMode: mode,
+      },
+    });
+  }
+
+  /**
+   * Handle show datatypes change
+   */
+  private handleShowDatatypesChange(show: boolean): void {
+    this.updateConfig({
+      displayConfig: {
+        ...this.config.displayConfig,
+        showDatatypes: show,
+      },
+    });
   }
 
   /**

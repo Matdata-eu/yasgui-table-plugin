@@ -164,14 +164,14 @@
 
 ### Implementation for User Story 4
 
-- [ ] T061 [P] [US4] Create display controls component in src/controls/display-controls.ts (URI and datatype toggle buttons)
-- [ ] T062 [US4] Update URI formatter to respect uriDisplayMode config in src/formatters/uri-formatter.ts
-- [ ] T063 [US4] Update literal formatter to respect showDatatypes config in src/formatters/literal-formatter.ts
-- [ ] T064 [US4] Integrate display controls into plugin toolbar in src/plugin.ts
-- [ ] T065 [US4] Implement updateConfig() method in src/plugin.ts (merge updates, save, re-render)
-- [ ] T066 [US4] Wire toggle button clicks to updateConfig() in src/controls/display-controls.ts
-- [ ] T067 [US4] Emit configChange event on configuration updates in src/plugin.ts
-- [ ] T068 [US4] Add WCAG AA contrast validation for datatype annotations in styles/plugin.css
+- [X] T061 [P] [US4] Create display controls component in src/controls/display-controls.ts (URI and datatype toggle buttons)
+- [X] T062 [US4] Update URI formatter to respect uriDisplayMode config in src/formatters/uri-formatter.ts
+- [X] T063 [US4] Update literal formatter to respect showDatatypes config in src/formatters/literal-formatter.ts
+- [X] T064 [US4] Integrate display controls into plugin toolbar in src/plugin.ts
+- [X] T065 [US4] Implement updateConfig() method in src/plugin.ts (merge updates, save, re-render)
+- [X] T066 [US4] Wire toggle button clicks to updateConfig() in src/controls/display-controls.ts
+- [X] T067 [US4] Emit configChange event on configuration updates in src/plugin.ts
+- [X] T068 [US4] Add WCAG AA contrast validation for datatype annotations in styles/plugin.css
 
 **Checkpoint**: User Story 4 complete - display controls fully functional
 
