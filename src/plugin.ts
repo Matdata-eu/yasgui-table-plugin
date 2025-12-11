@@ -11,6 +11,11 @@ import { Tabulator } from './types/tabulator.js';
 import { TableRenderer } from './table-renderer.js';
 import { SearchControl } from './controls/search-control.js';
 import { DisplayControls } from './controls/display-controls.js';
+import { FitControls } from './controls/fit-controls.js';
+import { ContentModal } from './controls/content-modal.js';
+import { ExportControls } from './controls/export-controls.js';
+import { CellSelection } from './features/cell-selection.js';
+import { ClipboardManager } from './features/clipboard.js';
 import { loadDisplayConfig, saveDisplayConfig } from './utils/storage.js';
 import { validateConfig } from './utils/validators.js';
 
@@ -46,6 +51,11 @@ export class TablePlugin {
   private renderer: TableRenderer | null = null;
   private searchControl: SearchControl | null = null;
   private displayControls: DisplayControls | null = null;
+  private fitControls: FitControls | null = null;
+  private contentModal: ContentModal | null = null;
+  private exportControls: ExportControls | null = null;
+  private cellSelection: CellSelection | null = null;
+  private clipboardManager: ClipboardManager | null = null;
   private eventHandlers: Map<string, EventHandler[]> = new Map();
 
   constructor(yasr: Yasr, pluginConfig?: TabulatorPluginConfig) {
@@ -114,6 +124,15 @@ export class TablePlugin {
         return container;
       }
 
+      // Performance warning for very large datasets
+      const rowCount = this.yasr.results.results.bindings.length;
+      if (rowCount > 100000) {
+        const warning = document.createElement('div');
+        warning.className = 'table-performance-warning';
+        warning.innerHTML = `<strong>⚠️ Performance Notice:</strong> This table contains ${rowCount.toLocaleString()} rows. Rendering may be slow. Consider filtering your query.`;
+        container.appendChild(warning);
+      }
+
       // Create search control
       this.searchControl = new SearchControl({
         placeholder: 'Search in table...',
@@ -126,8 +145,26 @@ export class TablePlugin {
       this.displayControls = new DisplayControls({
         uriDisplayMode: displayConfig.uriDisplayMode || 'full',
         showDatatypes: displayConfig.showDatatypes || false,
+        ellipsisMode: displayConfig.ellipsisMode || false,
         onUriDisplayChange: (mode) => this.handleUriDisplayChange(mode),
         onShowDatatypesChange: (show) => this.handleShowDatatypesChange(show),
+        onEllipsisModeChange: (enabled) => this.handleEllipsisModeChange(enabled),
+      });
+
+      // Create fit controls
+      this.fitControls = new FitControls({
+        onFitToData: () => this.handleFitToData(),
+        onFitToWindow: () => this.handleFitToWindow(),
+      });
+
+      // Create content modal
+      this.contentModal = new ContentModal();
+
+      // Create export controls
+      this.exportControls = new ExportControls({
+        onMarkdownExport: () => this.handleMarkdownExport(),
+        onCsvExport: () => this.handleCsvExport(),
+        onDownload: () => this.handleDownloadCsv(),
       });
 
       // Add controls toolbar to container
@@ -135,6 +172,8 @@ export class TablePlugin {
       toolbar.className = 'table-controls-toolbar';
       toolbar.appendChild(this.searchControl.getElement());
       toolbar.appendChild(this.displayControls.getElement());
+      toolbar.appendChild(this.fitControls.getElement());
+      toolbar.appendChild(this.exportControls.getElement());
       container.appendChild(toolbar);
 
       // Create table container (separate from search control)
@@ -145,6 +184,32 @@ export class TablePlugin {
       // Render table
       if (this.renderer) {
         this.table = this.renderer.render(tableContainer, this.yasr.results);
+
+        // Initialize clipboard manager
+        this.clipboardManager = new ClipboardManager();
+
+        // Initialize cell selection
+        this.cellSelection = new CellSelection(this.table, (range) => {
+          this.emit('selectionChange', { range });
+        });
+
+        // Add cell double-click handler for content modal
+        if (this.table && this.contentModal) {
+          this.table.on('cellDblClick', (_e: never, cell: { getValue: () => unknown }) => {
+            const value = cell.getValue();
+            let content = '';
+            if (value && typeof value === 'object' && 'value' in value) {
+              content = (value as { value: string }).value || '';
+            } else {
+              content = String(value || '');
+            }
+            this.contentModal?.show(content, 'Cell Content');
+            this.emit('cellDoubleClick', { content });
+          });
+        }
+
+        // Add keyboard handler for Ctrl+C / Cmd+C
+        this.attachKeyboardHandlers();
 
         // Restore last search term if available
         const lastSearch = this.config.displayConfig?.lastSearch;
@@ -224,6 +289,18 @@ export class TablePlugin {
       this.displayControls.destroy();
       this.displayControls = null;
     }
+    if (this.fitControls) {
+      this.fitControls.destroy();
+      this.fitControls = null;
+    }
+    if (this.exportControls) {
+      this.exportControls.destroy();
+      this.exportControls = null;
+    }
+    if (this.contentModal) {
+      this.contentModal.close();
+      this.contentModal = null;
+    }
     this.eventHandlers.clear();
     this.container = null;
   }
@@ -287,15 +364,15 @@ export class TablePlugin {
    * Get current cell/row selection
    */
   getSelection(): SelectionRange | null {
-    // TODO: Implement selection tracking
-    return null;
+    return this.cellSelection?.getSelectionRange() || null;
   }
 
   /**
    * Clear current selection
    */
   clearSelection(): void {
-    // TODO: Implement selection clearing
+    this.cellSelection?.clearSelection();
+    this.emit('selectionCleared', {});
   }
 
   /**
@@ -400,6 +477,167 @@ export class TablePlugin {
         ...this.config.displayConfig,
         showDatatypes: show,
       },
+    });
+  }
+
+  /**
+   * Handle ellipsis mode change
+   */
+  private handleEllipsisModeChange(enabled: boolean): void {
+    this.updateConfig({
+      displayConfig: {
+        ...this.config.displayConfig,
+        ellipsisMode: enabled,
+      },
+    });
+  }
+
+  /**
+   * Handle fit to data
+   */
+  private handleFitToData(): void {
+    if (this.table) {
+      // Tabulator's fitData layout
+      this.table.setLayout('fitData');
+      this.emit('layoutChange', { layout: 'fitData' });
+    }
+  }
+
+  /**
+   * Handle fit to window
+   */
+  private handleFitToWindow(): void {
+    if (this.table) {
+      // Tabulator's fitColumns layout
+      this.table.setLayout('fitColumns');
+      this.emit('layoutChange', { layout: 'fitColumns' });
+    }
+  }
+
+  /**
+   * Handle Markdown export
+   */
+  private handleMarkdownExport(): void {
+    if (!this.clipboardManager || !this.table || !this.yasr.results) {
+      return;
+    }
+
+    const data = this.getExportData();
+    const headers = this.yasr.results.head?.vars || [];
+    const markdown = this.clipboardManager.formatAsMarkdown(data, headers);
+
+    this.clipboardManager.copyToClipboard(markdown).then((success) => {
+      if (success) {
+        this.emit('export', { format: 'markdown', success: true });
+      }
+    });
+  }
+
+  /**
+   * Handle CSV export to clipboard
+   */
+  private handleCsvExport(): void {
+    if (!this.clipboardManager || !this.table || !this.yasr.results) {
+      return;
+    }
+
+    const data = this.getExportData();
+    const headers = this.yasr.results.head?.vars || [];
+    const csv = this.clipboardManager.formatAsCSV(data, headers);
+
+    this.clipboardManager.copyToClipboard(csv).then((success) => {
+      if (success) {
+        this.emit('export', { format: 'csv', success: true });
+      }
+    });
+  }
+
+  /**
+   * Handle CSV download
+   */
+  private handleDownloadCsv(): void {
+    if (!this.clipboardManager || !this.table || !this.yasr.results) {
+      return;
+    }
+
+    const data = this.getExportData();
+    const headers = this.yasr.results.head?.vars || [];
+    const csv = this.clipboardManager.formatAsCSV(data, headers);
+    const filename = this.generateFilename();
+
+    this.clipboardManager.downloadAsFile(csv, filename, 'text/csv');
+    this.emit('export', { format: 'csv', success: true, downloaded: true });
+  }
+
+  /**
+   * Get export data respecting search filter
+   */
+  private getExportData(): string[][] {
+    if (!this.table) {
+      return [];
+    }
+
+    // Get currently displayed rows (respects search filter)
+    const rows = this.table.getDataFiltered ? this.table.getDataFiltered() : this.table.getData();
+    
+    return rows.map((row: never) => {
+      const data: string[] = [];
+      const rowObj = row as Record<string, unknown>;
+      
+      // Get values for each variable (exclude internal fields like _id, _rowNum)
+      for (const key of Object.keys(rowObj)) {
+        if (!key.startsWith('_')) {
+          const value = rowObj[key];
+          if (value && typeof value === 'object' && 'value' in value) {
+            data.push((value as { value: string }).value || '');
+          } else {
+            data.push(String(value || ''));
+          }
+        }
+      }
+      
+      return data;
+    });
+  }
+
+  /**
+   * Generate filename with timestamp
+   */
+  private generateFilename(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    
+    return `sparql-results-${year}${month}${day}-${hours}${minutes}${seconds}.csv`;
+  }
+
+  /**
+   * Attach keyboard handlers for copy operations
+   */
+  private attachKeyboardHandlers(): void {
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      // Ctrl+C or Cmd+C
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        if (this.cellSelection?.hasSelection()) {
+          e.preventDefault();
+          const text = this.cellSelection.getSelectionAsText();
+          this.clipboardManager?.copyToClipboard(text).then((success) => {
+            if (success) {
+              this.emit('clipboardCopy', { format: 'tsv', success: true });
+            }
+          });
+        }
+      }
+      // Escape to clear selection
+      else if (e.key === 'Escape') {
+        if (this.cellSelection?.hasSelection()) {
+          this.clearSelection();
+        }
+      }
     });
   }
 

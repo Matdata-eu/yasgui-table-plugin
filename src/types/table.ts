@@ -24,7 +24,9 @@ export interface TableColumn extends ColumnDefinition {
 }
 
 export interface SelectionRange {
-  start: { row: number; col: number };
-  end: { row: number; col: number };
+  startRow: number;
+  startColumn: number;
+  endRow: number;
+  endColumn: number;
   cells: Array<{ row: number; col: number; value: string }>;
 }

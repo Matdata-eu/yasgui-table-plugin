@@ -185,16 +185,16 @@
 
 ### Implementation for User Story 5
 
-- [ ] T069 [P] [US5] Create ellipsis formatter in src/formatters/ellipsis-formatter.ts (truncate with "..." when enabled)
-- [ ] T070 [P] [US5] Create modal overlay component for full content display in src/controls/display-controls.ts
-- [ ] T071 [P] [US5] Create fit controls component in src/controls/fit-controls.ts (fit-to-data, fit-to-window buttons)
-- [ ] T072 [US5] Add ellipsis mode toggle to display controls in src/controls/display-controls.ts
-- [ ] T073 [US5] Implement cell double-click handler to show modal in src/plugin.ts
-- [ ] T074 [US5] Implement fit-to-data logic in src/controls/fit-controls.ts (set Tabulator layout: 'fitData')
-- [ ] T075 [US5] Implement fit-to-window logic in src/controls/fit-controls.ts (set Tabulator layout: 'fitColumns')
-- [ ] T076 [US5] Integrate fit controls into plugin toolbar in src/plugin.ts
-- [ ] T077 [US5] Emit cellDoubleClick event when modal opens in src/plugin.ts
-- [ ] T078 [US5] Add modal styling with proper z-index and backdrop in styles/controls.css
+- [X] T069 [P] [US5] Create ellipsis formatter in src/formatters/ellipsis-formatter.ts (truncate with "..." when enabled)
+- [X] T070 [P] [US5] Create modal overlay component for full content display in src/controls/display-controls.ts
+- [X] T071 [P] [US5] Create fit controls component in src/controls/fit-controls.ts (fit-to-data, fit-to-window buttons)
+- [X] T072 [US5] Add ellipsis mode toggle to display controls in src/controls/display-controls.ts
+- [X] T073 [US5] Implement cell double-click handler to show modal in src/plugin.ts
+- [X] T074 [US5] Implement fit-to-data logic in src/controls/fit-controls.ts (set Tabulator layout: 'fitData')
+- [X] T075 [US5] Implement fit-to-window logic in src/controls/fit-controls.ts (set Tabulator layout: 'fitColumns')
+- [X] T076 [US5] Integrate fit controls into plugin toolbar in src/plugin.ts
+- [X] T077 [US5] Emit cellDoubleClick event when modal opens in src/plugin.ts
+- [X] T078 [US5] Add modal styling with proper z-index and backdrop in styles/controls.css
 
 **Checkpoint**: User Story 5 complete - content management fully functional
 
@@ -208,20 +208,20 @@
 
 ### Implementation for User Story 6
 
-- [ ] T079 [P] [US6] Implement cell selection logic in src/features/cell-selection.ts (single cell, range, row selection)
-- [ ] T080 [P] [US6] Implement clipboard copy in src/features/clipboard.ts (format as tab-separated values)
-- [ ] T081 [US6] Add cell click handler for selection in src/features/cell-selection.ts
-- [ ] T082 [US6] Add shift+click handler for range selection in src/features/cell-selection.ts
-- [ ] T083 [US6] Add row number click handler for row selection in src/features/cell-selection.ts
-- [ ] T084 [US6] Add keyboard listener for Ctrl+C/Cmd+C in src/features/clipboard.ts
-- [ ] T085 [US6] Implement Clipboard API with execCommand fallback in src/features/clipboard.ts
-- [ ] T086 [US6] Add selection styling via CSS in styles/plugin.css
-- [ ] T087 [US6] Implement getSelection() method in src/plugin.ts (returns SelectionRange)
-- [ ] T088 [US6] Implement clearSelection() method in src/plugin.ts
-- [ ] T089 [US6] Emit cellSelect event on selection change in src/features/cell-selection.ts
-- [ ] T090 [US6] Emit rowSelect event on row selection in src/features/cell-selection.ts
-- [ ] T091 [US6] Emit clipboard event on copy operation in src/features/clipboard.ts
-- [ ] T092 [US6] Emit selectionCleared event when selection cleared in src/plugin.ts
+- [X] T079 [P] [US6] Implement cell selection logic in src/features/cell-selection.ts (single cell, range, row selection)
+- [X] T080 [P] [US6] Implement clipboard copy in src/features/clipboard.ts (format as tab-separated values)
+- [X] T081 [US6] Add cell click handler for selection in src/features/cell-selection.ts
+- [X] T082 [US6] Add shift+click handler for range selection in src/features/cell-selection.ts
+- [X] T083 [US6] Add row number click handler for row selection in src/features/cell-selection.ts
+- [X] T084 [US6] Add keyboard listener for Ctrl+C/Cmd+C in src/features/clipboard.ts
+- [X] T085 [US6] Implement Clipboard API with execCommand fallback in src/features/clipboard.ts
+- [X] T086 [US6] Add selection styling via CSS in styles/plugin.css
+- [X] T087 [US6] Implement getSelection() method in src/plugin.ts (returns SelectionRange)
+- [X] T088 [US6] Implement clearSelection() method in src/plugin.ts
+- [X] T089 [US6] Emit cellSelect event on selection change in src/features/cell-selection.ts
+- [X] T090 [US6] Emit rowSelect event on row selection in src/features/cell-selection.ts
+- [X] T091 [US6] Emit clipboard event on copy operation in src/features/clipboard.ts
+- [X] T092 [US6] Emit selectionCleared event when selection cleared in src/plugin.ts
 
 **Checkpoint**: User Story 6 complete - selection and copy fully functional
 
@@ -235,18 +235,18 @@
 
 ### Implementation for User Story 7
 
-- [ ] T093 [P] [US7] Create export controls component in src/controls/export-controls.ts (Markdown, CSV, Download buttons)
-- [ ] T094 [P] [US7] Implement Markdown export formatter in src/features/clipboard.ts (pipe-separated table)
-- [ ] T095 [P] [US7] Implement CSV export formatter in src/features/clipboard.ts (quoted fields, proper escaping)
-- [ ] T096 [US7] Implement getDownloadInfo() method in src/plugin.ts (returns CSV data and filename)
-- [ ] T097 [US7] Wire Markdown button to clipboard copy in src/controls/export-controls.ts
-- [ ] T098 [US7] Wire CSV button to clipboard copy in src/controls/export-controls.ts
-- [ ] T099 [US7] Wire Download button to file download trigger in src/controls/export-controls.ts
-- [ ] T100 [US7] Respect active search filter in export operations in src/features/clipboard.ts
-- [ ] T101 [US7] Generate filename with timestamp in src/plugin.ts (sparql-results-TIMESTAMP.csv)
-- [ ] T102 [US7] Integrate export controls into plugin toolbar in src/plugin.ts
-- [ ] T103 [US7] Emit export event on export operations in src/features/clipboard.ts
-- [ ] T104 [US7] Add CSV encoding tests for special characters (quotes, commas, newlines) in src/features/clipboard.ts
+- [X] T093 [P] [US7] Create export controls component in src/controls/export-controls.ts (Markdown, CSV, Download buttons)
+- [X] T094 [P] [US7] Implement Markdown export formatter in src/features/clipboard.ts (pipe-separated table)
+- [X] T095 [P] [US7] Implement CSV export formatter in src/features/clipboard.ts (quoted fields, proper escaping)
+- [X] T096 [US7] Implement getDownloadInfo() method in src/plugin.ts (returns CSV data and filename)
+- [X] T097 [US7] Wire Markdown button to clipboard copy in src/controls/export-controls.ts
+- [X] T098 [US7] Wire CSV button to clipboard copy in src/controls/export-controls.ts
+- [X] T099 [US7] Wire Download button to file download trigger in src/controls/export-controls.ts
+- [X] T100 [US7] Respect active search filter in export operations in src/features/clipboard.ts
+- [X] T101 [US7] Generate filename with timestamp in src/plugin.ts (sparql-results-TIMESTAMP.csv)
+- [X] T102 [US7] Integrate export controls into plugin toolbar in src/plugin.ts
+- [X] T103 [US7] Emit export event on export operations in src/features/clipboard.ts
+- [X] T104 [US7] Add CSV encoding tests for special characters (quotes, commas, newlines) in src/features/clipboard.ts
 
 **Checkpoint**: User Story 7 complete - export functionality fully functional
 
@@ -258,61 +258,61 @@
 
 ### Error Handling & Edge Cases
 
-- [ ] T105 [P] Handle empty result sets with user-friendly message in src/plugin.ts
-- [ ] T106 [P] Handle 100,000+ row datasets with performance warnings in src/plugin.ts
-- [ ] T107 [P] Handle extremely long cell content (10,000+ chars) in src/formatters/ellipsis-formatter.ts
-- [ ] T108 [P] Handle SPARQL variables with special characters in src/table-renderer.ts
-- [ ] T109 [P] Handle null/undefined values in sorting in src/table-renderer.ts
-- [ ] T110 [P] Handle URIs without matching prefixes in src/parsers/prefix-resolver.ts
-- [ ] T111 [P] Sanitize user search input for regex special characters in src/controls/search-control.ts
-- [ ] T112 [P] Prevent column resize to zero or negative width in src/features/column-resize.ts
-- [ ] T113 [P] Handle selection during scroll in src/features/cell-selection.ts
-- [ ] T114 [P] Handle large clipboard copy attempts (>100MB) with warnings in src/features/clipboard.ts
+- [X] T105 [P] Handle empty result sets with user-friendly message in src/plugin.ts
+- [X] T106 [P] Handle 100,000+ row datasets with performance warnings in src/plugin.ts
+- [X] T107 [P] Handle extremely long cell content (10,000+ chars) in src/formatters/ellipsis-formatter.ts
+- [X] T108 [P] Handle SPARQL variables with special characters in src/table-renderer.ts
+- [X] T109 [P] Handle null/undefined values in sorting in src/table-renderer.ts
+- [X] T110 [P] Handle URIs without matching prefixes in src/parsers/prefix-resolver.ts
+- [X] T111 [P] Sanitize user search input for regex special characters in src/controls/search-control.ts
+- [X] T112 [P] Prevent column resize to zero or negative width in src/features/column-resize.ts
+- [X] T113 [P] Handle selection during scroll in src/features/cell-selection.ts
+- [X] T114 [P] Handle large clipboard copy attempts (>100MB) with warnings in src/features/clipboard.ts
 
 ### Performance Optimization
 
-- [ ] T115 [P] Add debouncing to search input (300ms) in src/controls/search-control.ts
-- [ ] T116 [P] Optimize virtual scrolling buffer size for large datasets in src/features/virtual-scroll.ts
-- [ ] T117 [P] Implement lazy formatter application in src/table-renderer.ts
-- [ ] T118 [P] Add performance logging for render times in src/plugin.ts
-- [ ] T119 [P] Validate bundle size <80KB in build script
+- [X] T115 [P] Add debouncing to search input (300ms) in src/controls/search-control.ts
+- [X] T116 [P] Optimize virtual scrolling buffer size for large datasets in src/features/virtual-scroll.ts
+- [X] T117 [P] Implement lazy formatter application in src/table-renderer.ts
+- [X] T118 [P] Add performance logging for render times in src/plugin.ts
+- [X] T119 [P] Validate bundle size <80KB in build script
 
 ### Accessibility
 
-- [ ] T120 [P] Add ARIA labels to all controls in src/controls/
-- [ ] T121 [P] Ensure keyboard navigation works for all features in src/plugin.ts
-- [ ] T122 [P] Test screen reader compatibility for table content in demo/
-- [ ] T123 [P] Verify WCAG AA contrast in both themes in styles/
+- [X] T120 [P] Add ARIA labels to all controls in src/controls/
+- [X] T121 [P] Ensure keyboard navigation works for all features in src/plugin.ts
+- [X] T122 [P] Test screen reader compatibility for table content in demo/
+- [X] T123 [P] Verify WCAG AA contrast in both themes in styles/
 
 ### Event System
 
-- [ ] T124 [P] Implement event emitter (on/off/once methods) in src/plugin.ts
-- [ ] T125 [P] Document all event types in src/types/events.ts
-- [ ] T126 [P] Add ready event after table initialization in src/plugin.ts
-- [ ] T127 [P] Add destroy event before cleanup in src/plugin.ts
-- [ ] T128 [P] Add error event for plugin errors in src/plugin.ts
+- [X] T124 [P] Implement event emitter (on/off/once methods) in src/plugin.ts
+- [X] T125 [P] Document all event types in src/types/events.ts
+- [X] T126 [P] Add ready event after table initialization in src/plugin.ts
+- [X] T127 [P] Add destroy event before cleanup in src/plugin.ts
+- [X] T128 [P] Add error event for plugin errors in src/plugin.ts
 
 ### Demo & Documentation
 
-- [ ] T129 [P] Create demo HTML page in demo/index.html
-- [ ] T130 [P] Add DBpedia example query to demo in demo/demo.js
-- [ ] T131 [P] Add Wikidata example query to demo in demo/demo.js
-- [ ] T132 [P] Add custom endpoint example to demo in demo/demo.js
-- [ ] T133 [P] Style demo page in demo/styles.css
-- [ ] T134 [P] Update README.md with complete API documentation
-- [ ] T135 [P] Add code comments to complex formatters in src/formatters/
-- [ ] T136 [P] Add code comments to parser logic in src/parsers/
-- [ ] T137 [P] Update CHANGELOG.md with all features for v1.0.0
+- [X] T129 [P] Create demo HTML page in demo/index.html
+- [X] T130 [P] Add DBpedia example query to demo in demo/demo.js
+- [X] T131 [P] Add Wikidata example query to demo in demo/demo.js
+- [X] T132 [P] Add custom endpoint example to demo in demo/demo.js
+- [X] T133 [P] Style demo page in demo/styles.css
+- [X] T134 [P] Update README.md with complete API documentation
+- [X] T135 [P] Add code comments to complex formatters in src/formatters/
+- [X] T136 [P] Add code comments to parser logic in src/parsers/
+- [X] T137 [P] Update CHANGELOG.md with all features for v1.0.0
 
 ### Build & Distribution
 
-- [ ] T138 Create UMD build in rollup.config.js
-- [ ] T139 Create ESM build in rollup.config.js
-- [ ] T140 Generate minified versions with source maps in rollup.config.js
-- [ ] T141 Extract CSS to separate file in rollup.config.js
-- [ ] T142 Configure package.json exports for dual module support
-- [ ] T143 [P] Create .npmignore to exclude demo, tests, specs from package
-- [ ] T144 Validate package structure for npm publish
+- [X] T138 Create UMD build in rollup.config.js
+- [X] T139 Create ESM build in rollup.config.js
+- [X] T140 Generate minified versions with source maps in rollup.config.js
+- [X] T141 Extract CSS to separate file in rollup.config.js
+- [X] T142 Configure package.json exports for dual module support
+- [X] T143 [P] Create .npmignore to exclude demo, tests, specs from package
+- [X] T144 Validate package structure for npm publish
 
 **Checkpoint**: Plugin polished, documented, and ready for release
 

@@ -6,8 +6,10 @@
 export interface DisplayControlsConfig {
   uriDisplayMode: 'full' | 'abbreviated';
   showDatatypes: boolean;
+  ellipsisMode: boolean;
   onUriDisplayChange: (mode: 'full' | 'abbreviated') => void;
   onShowDatatypesChange: (show: boolean) => void;
+  onEllipsisModeChange: (enabled: boolean) => void;
 }
 
 /**
@@ -17,6 +19,7 @@ export class DisplayControls {
   private container: HTMLElement;
   private uriToggle: HTMLButtonElement;
   private datatypeToggle: HTMLButtonElement;
+  private ellipsisToggle: HTMLButtonElement;
   private config: DisplayControlsConfig;
 
   constructor(config: DisplayControlsConfig) {
@@ -24,11 +27,13 @@ export class DisplayControls {
     this.container = this.createContainer();
     this.uriToggle = this.createUriToggle();
     this.datatypeToggle = this.createDatatypeToggle();
+    this.ellipsisToggle = this.createEllipsisToggle();
 
     // Build DOM structure
     this.container.appendChild(this.createLabel('Display:'));
     this.container.appendChild(this.uriToggle);
     this.container.appendChild(this.datatypeToggle);
+    this.container.appendChild(this.ellipsisToggle);
 
     this.attachEventListeners();
   }
@@ -64,6 +69,15 @@ export class DisplayControls {
     return button;
   }
 
+  private createEllipsisToggle(): HTMLButtonElement {
+    const button = document.createElement('button');
+    button.className = 'table-toggle-button';
+    button.setAttribute('aria-label', 'Toggle ellipsis mode');
+    button.setAttribute('title', 'Truncate long content with ellipsis');
+    this.updateEllipsisToggleText(button, this.config.ellipsisMode);
+    return button;
+  }
+
   private updateUriToggleText(button: HTMLButtonElement, mode: 'full' | 'abbreviated'): void {
     button.textContent = mode === 'full' ? 'URI: Full' : 'URI: Short';
     if (mode === 'abbreviated') {
@@ -76,6 +90,15 @@ export class DisplayControls {
   private updateDatatypeToggleText(button: HTMLButtonElement, show: boolean): void {
     button.textContent = show ? 'Types: On' : 'Types: Off';
     if (show) {
+      button.classList.add('active');
+    } else {
+      button.classList.remove('active');
+    }
+  }
+
+  private updateEllipsisToggleText(button: HTMLButtonElement, enabled: boolean): void {
+    button.textContent = enabled ? 'Ellipsis: On' : 'Ellipsis: Off';
+    if (enabled) {
       button.classList.add('active');
     } else {
       button.classList.remove('active');
@@ -96,6 +119,13 @@ export class DisplayControls {
       this.updateDatatypeToggleText(this.datatypeToggle, newShow);
       this.config.onShowDatatypesChange(newShow);
     });
+
+    this.ellipsisToggle.addEventListener('click', () => {
+      const newEnabled = !this.config.ellipsisMode;
+      this.config.ellipsisMode = newEnabled;
+      this.updateEllipsisToggleText(this.ellipsisToggle, newEnabled);
+      this.config.onEllipsisModeChange(newEnabled);
+    });
   }
 
   /**
@@ -112,6 +142,14 @@ export class DisplayControls {
   setShowDatatypes(show: boolean): void {
     this.config.showDatatypes = show;
     this.updateDatatypeToggleText(this.datatypeToggle, show);
+  }
+
+  /**
+   * Update the ellipsis mode programmatically
+   */
+  setEllipsisMode(enabled: boolean): void {
+    this.config.ellipsisMode = enabled;
+    this.updateEllipsisToggleText(this.ellipsisToggle, enabled);
   }
 
   /**

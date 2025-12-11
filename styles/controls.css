@@ -331,3 +331,80 @@
 .table-modal-button-secondary:hover {
   background: var(--table-control-hover, #e8e8e8);
 }
+
+/* Fit Controls */
+.table-fit-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-left: 1px solid var(--table-control-border, #dddddd);
+}
+
+.table-fit-button {
+  padding: 6px 12px;
+  border: 1px solid var(--table-control-border, #dddddd);
+  border-radius: 4px;
+  background: var(--table-background, #ffffff);
+  color: var(--table-text, #000000);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.table-fit-button:hover {
+  background: var(--table-control-hover, #e8e8e8);
+  border-color: var(--table-primary, #1976d2);
+}
+
+.table-fit-button:active {
+  transform: translateY(1px);
+}
+
+/* Export Controls */
+.table-export-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-left: 1px solid var(--table-control-border, #dddddd);
+}
+
+.table-export-label {
+  font-size: 13px;
+  color: var(--table-text-secondary, #666666);
+  margin-right: 4px;
+}
+
+.table-export-button {
+  padding: 6px 12px;
+  border: 1px solid var(--table-control-border, #dddddd);
+  border-radius: 4px;
+  background: var(--table-background, #ffffff);
+  color: var(--table-text, #000000);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.table-export-button:hover {
+  background: var(--table-control-hover, #e8e8e8);
+  border-color: var(--table-primary, #1976d2);
+}
+
+.table-export-button:active {
+  transform: translateY(1px);
+}
+
+.table-export-download {
+  background: var(--table-primary, #1976d2);
+  color: #ffffff;
+  border-color: var(--table-primary, #1976d2);
+}
+
+.table-export-download:hover {
+  background: var(--table-link-hover, #1565c0);
+  border-color: var(--table-link-hover, #1565c0);
+}

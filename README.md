@@ -65,6 +65,60 @@ const yasgui = new Yasgui(document.getElementById('yasgui'), {
 });
 ```
 
+## Event API
+
+The plugin emits events that can be used to integrate with your application:
+
+```javascript
+const tablePlugin = yasgui.getTab().yasr.plugins.table;
+
+// Listen for search events
+tablePlugin.on('search', (data) => {
+  console.log(`Filtered to ${data.filteredCount} of ${data.totalCount} rows`);
+});
+
+// Listen for column sort
+tablePlugin.on('columnSort', (data) => {
+  console.log(`Sorted by ${data.column} ${data.dir}`);
+});
+
+// Listen for selection changes
+tablePlugin.on('selectionChange', (data) => {
+  console.log('Selection:', data.range);
+});
+
+// Listen for export events
+tablePlugin.on('export', (data) => {
+  console.log(`Exported as ${data.format}`);
+});
+
+// Available events:
+// - ready, search, columnSort, columnResize, cellDoubleClick
+// - selectionChange, selectionCleared, clipboardCopy
+// - export, layoutChange, error, destroy
+```
+
+## Public Methods
+
+```javascript
+// Get current selection
+const selection = tablePlugin.getSelection();
+
+// Clear selection
+tablePlugin.clearSelection();
+
+// Get download info
+const downloadInfo = tablePlugin.getDownloadInfo();
+
+// Update configuration
+tablePlugin.updateConfig({ displayConfig: { ellipsisMode: true } });
+
+// Event listeners
+tablePlugin.on('eventName', handler);
+tablePlugin.off('eventName', handler);
+tablePlugin.once('eventName', handler);
+```
+
 ## Browser Compatibility
 
 - Chrome (latest 2 versions)
