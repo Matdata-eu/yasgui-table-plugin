@@ -30,8 +30,8 @@ npm install @yasgui/table-plugin
 ### CDN (Browser)
 
 ```html
-<script src="https://unpkg.com/@yasgui/table-plugin/dist/table-plugin.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/@yasgui/table-plugin/dist/table-plugin.min.css">
+<script src="https://unpkg.com/@matdata/yasgui-table-plugin/dist/table-plugin.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@matdata/yasgui-table-plugin/dist/table-plugin.min.css">
 ```
 
 ---
@@ -85,7 +85,7 @@ LIMIT 100`
   <link rel="stylesheet" href="https://unpkg.com/@yasgui/yasgui/build/yasgui.min.css">
   
   <!-- Table plugin styles -->
-  <link rel="stylesheet" href="https://unpkg.com/@yasgui/table-plugin/dist/table-plugin.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@matdata/yasgui-table-plugin/dist/table-plugin.min.css">
   
   <style>
     #yasgui {
@@ -98,7 +98,7 @@ LIMIT 100`
   
   <script type="module">
     import Yasgui from 'https://unpkg.com/@yasgui/yasgui/build/yasgui.esm.js';
-    import TablePlugin from 'https://unpkg.com/@yasgui/table-plugin/dist/table-plugin.esm.js';
+    import TablePlugin from 'https://unpkg.com/@matdata/yasgui-table-plugin/dist/table-plugin.esm.js';
     
     Yasgui.Yasr.plugins.table = TablePlugin;
     
@@ -524,11 +524,11 @@ const yasgui = new Yasgui(...);
 **Solution**:
 ```html
 <!-- Ensure CSS is loaded -->
-<link rel="stylesheet" href="@yasgui/table-plugin/dist/table-plugin.min.css">
+<link rel="stylesheet" href="@matdata/yasgui-table-plugin/dist/table-plugin.min.css">
 
 <!-- Check CSS loading order (YASGUI first, then plugin) -->
 <link rel="stylesheet" href="@yasgui/yasgui/build/yasgui.min.css">
-<link rel="stylesheet" href="@yasgui/table-plugin/dist/table-plugin.min.css">
+<link rel="stylesheet" href="@matdata/yasgui-table-plugin/dist/table-plugin.min.css">
 ```
 
 ---

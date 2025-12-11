@@ -31,7 +31,7 @@
 **Purpose**: Initialize project structure, dependencies, and development tools
 
 - [ ] T001 Create project structure per plan.md in repository root
-- [ ] T002 Initialize npm package with package.json (name: @yasgui/table-plugin, version: 1.0.0)
+- [ ] T002 Initialize npm package with package.json (name: @matdata/yasgui-table-plugin, version: 1.0.0)
 - [ ] T003 [P] Install TypeScript 5.x as dev dependency with tsconfig.json (target: ES2018, strict mode)
 - [ ] T004 [P] Install and configure ESLint with standard config in .eslintrc.js
 - [ ] T005 [P] Install and configure Prettier with 100-char line limit in .prettierrc
