@@ -3,13 +3,13 @@
  * Manages cell and row selection in the table
  */
 
-import { Tabulator, CellComponent, RowComponent } from '../types/tabulator.js';
+import { Tabulator, CellComponent, RowComponent, ColumnComponent } from '../types/tabulator.js';
 import { SelectionRange } from '../types/table.js';
 
 export class CellSelection {
   private table: Tabulator;
   private selectedCells: Set<CellComponent> = new Set();
-  private selectionStart: CellComponent | null = null;
+  private _selectionStart: CellComponent | null = null;
   private onSelectionChange?: (range: SelectionRange | null) => void;
 
   constructor(table: Tabulator, onSelectionChange?: (range: SelectionRange | null) => void) {
@@ -20,7 +20,7 @@ export class CellSelection {
 
   private attachListeners(): void {
     // Cell click for single selection
-    this.table.on('cellClick', (_e: never, cell: CellComponent) => {
+    this.table.on('cellClick', (_e: any, cell: CellComponent) => {
       const field = cell.getField();
       if (field === '_rowNum') {
         // Row number clicked - select entire row
@@ -49,7 +49,7 @@ export class CellSelection {
     }
 
     this.selectedCells.add(cell);
-    this.selectionStart = cell;
+    this._selectionStart = cell;
     this.applyCellStyle(cell, true);
     this.notifySelectionChange();
   }
@@ -80,7 +80,7 @@ export class CellSelection {
       this.applyCellStyle(cell, false);
     }
     this.selectedCells.clear();
-    this.selectionStart = null;
+    this._selectionStart = null;
     this.notifySelectionChange();
   }
 
@@ -132,8 +132,8 @@ export class CellSelection {
 
     // Get column indices from table columns
     const columns = this.table.getColumns();
-    const startColIndex = columns.findIndex((col: never) => (col as { getField: () => string }).getField() === firstCell.getField());
-    const endColIndex = columns.findIndex((col: never) => (col as { getField: () => string }).getField() === lastCell.getField());
+    const startColIndex = columns.findIndex((col: ColumnComponent) => col.getField() === firstCell.getField());
+    const endColIndex = columns.findIndex((col: ColumnComponent) => col.getField() === lastCell.getField());
 
     return {
       startRow: firstCell.getRow().getPosition(),
@@ -142,7 +142,7 @@ export class CellSelection {
       endColumn: endColIndex,
       cells: cells.map(cell => ({
         row: cell.getRow().getPosition(),
-        col: columns.findIndex((col: never) => (col as { getField: () => string }).getField() === cell.getField()),
+        col: columns.findIndex((col: ColumnComponent) => col.getField() === cell.getField()),
         value: String(cell.getValue() || ''),
       })),
     };

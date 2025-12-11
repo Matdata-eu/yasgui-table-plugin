@@ -7,4 +7,4 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 
 // Re-export Tabulator types
 export { Tabulator };
-export type { ColumnDefinition, Options, CellComponent, RowComponent } from 'tabulator-tables';
+export type { ColumnDefinition, Options, CellComponent, RowComponent, ColumnComponent } from 'tabulator-tables';

@@ -18,6 +18,7 @@ import { CellSelection } from './features/cell-selection.js';
 import { ClipboardManager } from './features/clipboard.js';
 import { loadDisplayConfig, saveDisplayConfig } from './utils/storage.js';
 import { validateConfig } from './utils/validators.js';
+import { getCurrentTheme, watchThemeChanges } from './utils/theme.js';
 
 type EventHandler = (...args: unknown[]) => void;
 
@@ -39,10 +40,12 @@ interface DownloadInfo {
 }
 
 export class TablePlugin {
-  // Plugin metadata (required by YASR)
-  static readonly label: string = 'Table';
-  static readonly icon: string = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v4h4V5H5zm6 0v4h4V5h-4zm6 0v4h4V5h-4zM5 11v4h4v-4H5zm6 0v4h4v-4h-4zm6 0v4h4v-4h-4zM5 17v2h4v-2H5zm6 0v2h4v-2h-4zm6 0v2h4v-2h-4z"/></svg>';
-  static readonly priority: number = 10;
+  // Plugin metadata (required by YASR) - must be instance properties
+  public label: string = 'Table-Dev';
+  public priority: number = 10;
+  public helpReference?: string;
+  
+  private iconSvg: string = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v4h4V5H5zm6 0v4h4V5h-4zm6 0v4h4V5h-4zM5 11v4h4v-4H5zm6 0v4h4v-4h-4zm6 0v4h4v-4h-4zM5 17v2h4v-2H5zm6 0v2h4v-2h-4zm6 0v2h4v-2h-4z"/></svg>';
 
   private yasr: Yasr;
   private config: TabulatorPluginConfig;
@@ -57,9 +60,14 @@ export class TablePlugin {
   private cellSelection: CellSelection | null = null;
   private clipboardManager: ClipboardManager | null = null;
   private eventHandlers: Map<string, EventHandler[]> = new Map();
+  private themeObserverCleanup: (() => void) | null = null;
 
-  constructor(yasr: Yasr, pluginConfig?: TabulatorPluginConfig) {
+  constructor(yasr: Yasr) {
     this.yasr = yasr;
+    this.helpReference = 'https://yasgui-doc.matdata.eu/docs/user-guide#table-plugin';
+    
+    // Get plugin config from yasr.config if available
+    const pluginConfig = (yasr.config as any)?.pluginsOptions?.['Table-Dev'] as TabulatorPluginConfig | undefined;
     this.config = { ...DEFAULT_CONFIG, ...pluginConfig };
 
     // Validate and merge config
@@ -83,49 +91,100 @@ export class TablePlugin {
   }
 
   /**
+   * Return icon for plugin selector
+   */
+  getIcon(): Element | undefined {
+    const iconEl = document.createElement('div');
+    iconEl.innerHTML = this.iconSvg;
+    return iconEl.firstElementChild || undefined;
+  }
+
+  /**
    * Determines if plugin can handle current results
    * Returns true for SPARQL SELECT queries only
    */
   canHandleResults(): boolean {
     const results = this.yasr.results;
+    if (!results) return false;
+    
+    // YASR wraps results in a json property
+    const data = (results as { json?: SparqlResults }).json || (results as SparqlResults);
+    
     return !!(
-      results &&
-      results.head &&
-      Array.isArray(results.head.vars) &&
-      results.head.vars.length > 0 &&
-      results.results &&
-      Array.isArray(results.results.bindings)
+      data &&
+      data.head &&
+      Array.isArray(data.head.vars) &&
+      data.head.vars.length > 0 &&
+      data.results &&
+      Array.isArray(data.results.bindings)
     );
+  }
+  
+  /**
+   * Get the actual SPARQL results from YASR's wrapper
+   */
+  private getResultsData(): SparqlResults | null {
+    if (!this.yasr.results) return null;
+    
+    // YASR may wrap results in a json property
+    const data = (this.yasr.results as { json?: SparqlResults }).json || (this.yasr.results as SparqlResults);
+    
+    return data && data.head && data.results ? data : null;
   }
 
   /**
    * Renders the table visualization
    */
-  draw(_persistentConfig?: PersistentConfig): HTMLElement {
+  async draw(_persistentConfig?: PersistentConfig): Promise<void> {
     // Create container
     const container = document.createElement('div');
     container.className = 'yasgui-table-plugin';
+    
+    // Detect and apply theme
+    const theme = getCurrentTheme();
+    container.setAttribute('data-theme', theme);
+    
     this.container = container;
 
+    // Watch for theme changes
+    this.themeObserverCleanup = watchThemeChanges(container, (newTheme) => {
+      this.emit('themeChange', { theme: newTheme });
+    });
+
     try {
+      // Get actual results data
+      const results = this.getResultsData();
+      
       // Check if we have results
-      if (!this.yasr.results) {
+      if (!results) {
         container.appendChild(this.createEmptyState('No query results available'));
-        return container;
+        // Append to YASR results element
+        const resultsEl = (this.yasr as any).resultsEl as HTMLElement;
+        if (resultsEl) {
+          resultsEl.innerHTML = '';
+          resultsEl.appendChild(container);
+        }
+        return;
       }
 
       // Check if results are empty
       if (
-        !this.yasr.results.results ||
-        !this.yasr.results.results.bindings ||
-        this.yasr.results.results.bindings.length === 0
+        !results.results ||
+        !results.results.bindings ||
+        results.results.bindings.length === 0
       ) {
         container.appendChild(this.createEmptyState('No results returned by the query'));
-        return container;
+        // Append to YASR results element
+        const resultsEl = (this.yasr as any).resultsEl as HTMLElement;
+        if (resultsEl) {
+          resultsEl.innerHTML = '';
+          resultsEl.appendChild(container);
+        }
+        return;
       }
 
       // Performance warning for very large datasets
-      const rowCount = this.yasr.results.results.bindings.length;
+      const rowCount = results.results.bindings.length;
       if (rowCount > 100000) {
         const warning = document.createElement('div');
         warning.className = 'table-performance-warning';
@@ -183,7 +242,7 @@ export class TablePlugin {
 
       // Render table
       if (this.renderer) {
-        this.table = this.renderer.render(tableContainer, this.yasr.results);
+        this.table = this.renderer.render(tableContainer, results);
 
         // Initialize clipboard manager
         this.clipboardManager = new ClipboardManager();
@@ -195,7 +254,7 @@ export class TablePlugin {
 
         // Add cell double-click handler for content modal
         if (this.table && this.contentModal) {
-          this.table.on('cellDblClick', (_e: never, cell: { getValue: () => unknown }) => {
+          this.table.on('cellDblClick', (_e: any, cell: { getValue: () => unknown }) => {
             const value = cell.getValue();
             let content = '';
             if (value && typeof value === 'object' && 'value' in value) {
@@ -242,7 +301,12 @@ export class TablePlugin {
       );
     }
 
-    return container;
+    // Append to YASR results element
+    const resultsEl = (this.yasr as any).resultsEl as HTMLElement;
+    if (resultsEl) {
+      resultsEl.innerHTML = '';
+      resultsEl.appendChild(container);
+    }
   }
 
   /**
@@ -259,14 +323,35 @@ export class TablePlugin {
   }
 
   /**
-   * Returns download information for current table
+   * Provide download functionality (required by Plugin interface)
+   */
+  download(filename?: string): DownloadInfo | undefined {
+    const results = this.getResultsData();
+    if (!results || !this.table) return undefined;
+
+    const data = this.getExportData();
+    const headers = results.head?.vars || [];
+    
+    // Generate TSV
+    let tsv = headers.join('\t') + '\n';
+    data.forEach(row => {
+      tsv += row.join('\t') + '\n';
+    });
+
+    return {
+      contentType: 'text/tab-separated-values',
+      getData: () => tsv,
+      filename: filename || this.generateFilename().replace('.csv', '.tsv'),
+      buttonTitle: 'Download as TSV'
+    };
+  }
+  
+  /**
+   * Returns download information for current table (legacy method)
    */
   getDownloadInfo(): DownloadInfo {
-    return {
-      getData: () => {
-        // TODO: Implement data export
-        return 'Export not yet implemented';
-      },
+    return this.download() || {
+      getData: () => 'Export not yet implemented',
       filename: 'sparql-results.tsv',
       contentType: 'text/tab-separated-values',
       buttonTitle: 'Download as TSV',
@@ -277,6 +362,12 @@ export class TablePlugin {
    * Cleanup method called when plugin is destroyed
    */
   destroy(): void {
+    // Cleanup theme observer
+    if (this.themeObserverCleanup) {
+      this.themeObserverCleanup();
+      this.themeObserverCleanup = null;
+    }
+    
     if (this.table) {
       this.table.destroy();
       this.table = null;
@@ -350,13 +441,10 @@ export class TablePlugin {
     this.emit('configChange', { config: this.config });
 
     // Re-render table if it exists
-    if (this.table && this.container && this.yasr.results) {
-      // Find the table container
-      const tableContainer = this.container.querySelector('.yasgui-table-container') as HTMLElement;
-      if (tableContainer) {
-        tableContainer.innerHTML = '';
-        this.table = this.renderer?.render(tableContainer, this.yasr.results) || null;
-      }
+    const results = this.getResultsData();
+    if (this.table && this.container && results) {
+      // Re-draw asynchronously
+      this.draw().catch(err => console.error('Failed to re-render table:', err));
     }
   }
 
@@ -496,9 +584,9 @@ export class TablePlugin {
    * Handle fit to data
    */
   private handleFitToData(): void {
-    if (this.table) {
-      // Tabulator's fitData layout
-      this.table.setLayout('fitData');
+    if (this.table && this.renderer) {
+      // Re-render with fitData layout
+      this.renderer.setLayout('fitData');
       this.emit('layoutChange', { layout: 'fitData' });
     }
   }
@@ -507,9 +595,9 @@ export class TablePlugin {
    * Handle fit to window
    */
   private handleFitToWindow(): void {
-    if (this.table) {
-      // Tabulator's fitColumns layout
-      this.table.setLayout('fitColumns');
+    if (this.table && this.renderer) {
+      // Re-render with fitColumns layout
+      this.renderer.setLayout('fitColumns');
       this.emit('layoutChange', { layout: 'fitColumns' });
     }
   }
@@ -518,12 +606,13 @@ export class TablePlugin {
    * Handle Markdown export
    */
   private handleMarkdownExport(): void {
-    if (!this.clipboardManager || !this.table || !this.yasr.results) {
+    const results = this.getResultsData();
+    if (!this.clipboardManager || !this.table || !results) {
       return;
     }
 
     const data = this.getExportData();
-    const headers = this.yasr.results.head?.vars || [];
+    const headers = results.head?.vars || [];
     const markdown = this.clipboardManager.formatAsMarkdown(data, headers);
 
     this.clipboardManager.copyToClipboard(markdown).then((success) => {
@@ -537,12 +626,13 @@ export class TablePlugin {
    * Handle CSV export to clipboard
    */
   private handleCsvExport(): void {
-    if (!this.clipboardManager || !this.table || !this.yasr.results) {
+    const results = this.getResultsData();
+    if (!this.clipboardManager || !this.table || !results) {
       return;
     }
 
     const data = this.getExportData();
-    const headers = this.yasr.results.head?.vars || [];
+    const headers = results.head?.vars || [];
     const csv = this.clipboardManager.formatAsCSV(data, headers);
 
     this.clipboardManager.copyToClipboard(csv).then((success) => {
@@ -556,12 +646,13 @@ export class TablePlugin {
    * Handle CSV download
    */
   private handleDownloadCsv(): void {
-    if (!this.clipboardManager || !this.table || !this.yasr.results) {
+    const results = this.getResultsData();
+    if (!this.clipboardManager || !this.table || !results) {
       return;
     }
 
     const data = this.getExportData();
-    const headers = this.yasr.results.head?.vars || [];
+    const headers = results.head?.vars || [];
     const csv = this.clipboardManager.formatAsCSV(data, headers);
     const filename = this.generateFilename();
 
@@ -580,7 +671,7 @@ export class TablePlugin {
     // Get currently displayed rows (respects search filter)
     const rows = this.table.getDataFiltered ? this.table.getDataFiltered() : this.table.getData();
     
-    return rows.map((row: never) => {
+    return rows.map((row: any) => {
       const data: string[] = [];
       const rowObj = row as Record<string, unknown>;
       

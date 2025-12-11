@@ -3,6 +3,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
 import postcss from 'rollup-plugin-postcss';
+import postcssImport from 'postcss-import';
 import cssnano from 'cssnano';
 
 const production = !process.env.ROLLUP_WATCH;
@@ -11,7 +12,7 @@ export default {
   input: 'src/index.ts',
   output: [
     {
-      file: 'dist/table-plugin.umd.js',
+      file: 'dist/yasgui-table-plugin.umd.js',
       format: 'umd',
       name: 'YasguiTablePlugin',
       sourcemap: true,
@@ -23,11 +24,28 @@ export default {
       }
     },
     {
-      file: 'dist/table-plugin.esm.js',
+      file: 'dist/yasgui-table-plugin.esm.js',
       format: 'es',
       sourcemap: true
+    },
+    production && {
+      file: 'dist/yasgui-table-plugin.min.js',
+      format: 'umd',
+      name: 'YasguiTablePlugin',
+      sourcemap: true,
+      exports: 'named',
+      plugins: [terser({
+        output: {
+          comments: false
+        }
+      })],
+      globals: {
+        '@yasgui/yasr': 'Yasr',
+        '@yasgui/utils': 'YasguiUtils',
+        'tabulator-tables': 'Tabulator'
+      }
     }
-  ],
+  ].filter(Boolean),
   external: ['@yasgui/yasr', '@yasgui/utils', 'tabulator-tables'],
   plugins: [
     resolve({ browser: true }),
@@ -38,14 +56,12 @@ export default {
       declarationDir: './dist/types'
     }),
     postcss({
-      extract: 'table-plugin.css',
+      extract: 'yasgui-table-plugin.css',
       minimize: production,
-      plugins: production ? [cssnano()] : []
-    }),
-    production && terser({
-      output: {
-        comments: false
-      }
+      plugins: [
+        postcssImport(), // Process @import statements
+        ...(production ? [cssnano()] : [])
+      ]
     })
   ]
 };

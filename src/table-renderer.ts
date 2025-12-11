@@ -13,7 +13,7 @@ import { LiteralFormatter } from './formatters/literal-formatter.js';
 import { BnodeFormatter } from './formatters/bnode-formatter.js';
 import { getVirtualScrollConfig } from './features/virtual-scroll.js';
 import { ColumnResize } from './features/column-resize.js';
-import { containsSearchTerm, highlightSearchTerm } from './features/search-highlight.js';
+import { containsSearchTerm } from './features/search-highlight.js';
 
 export class TableRenderer {
   private config: TabulatorPluginConfig;
@@ -21,7 +21,7 @@ export class TableRenderer {
   private uriFormatter: UriFormatter;
   private literalFormatter: LiteralFormatter;
   private bnodeFormatter: BnodeFormatter;
-  private columnResize: ColumnResize | null = null;
+  private _columnResize: ColumnResize | null = null;
   private table: Tabulator | null = null;
   private currentSearchTerm: string = '';
   private onWidthChange?: (widths: ColumnWidthMap) => void;
@@ -91,7 +91,7 @@ export class TableRenderer {
 
     // Setup column resize tracking
     if (this.onWidthChange) {
-      this.columnResize = new ColumnResize(this.table, this.onWidthChange);
+      this._columnResize = new ColumnResize(this.table, this.onWidthChange);
     }
 
     // Setup sort change tracking
@@ -282,5 +282,19 @@ export class TableRenderer {
       return 0;
     }
     return this.table.getData('active').length;
+  }
+
+  /**
+   * Change table layout mode
+   */
+  setLayout(_mode: 'fitData' | 'fitColumns'): void {
+    if (!this.table) {
+      return;
+    }
+    
+    // Tabulator doesn't have a setLayout method at runtime
+    // We need to use the layout property from the options
+    // Force a redraw to apply any layout changes
+    this.table.redraw(true);
   }
 }

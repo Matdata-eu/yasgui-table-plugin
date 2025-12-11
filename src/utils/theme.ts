@@ -41,19 +41,47 @@ export function applyCustomTheme(container: HTMLElement, themeName: string): voi
 /**
  * Detect current YASGUI theme (light/dark)
  */
-export function detectTheme(): 'light' | 'dark' {
-  const computedStyle = getComputedStyle(document.documentElement);
-  const background = computedStyle.getPropertyValue('--yasgui-background');
+export function getCurrentTheme() : 'light' | 'dark' {
+  return (document.documentElement.getAttribute('data-theme') as 'light' | 'dark') || 'light';
+}
 
-  // Heuristic: if background is dark, assume dark theme
-  if (background) {
-    const rgb = background.match(/\d+/g);
-    if (rgb && rgb.length >= 3) {
-      const brightness = (parseInt(rgb[0]) + parseInt(rgb[1]) + parseInt(rgb[2])) / 3;
-      return brightness < 128 ? 'dark' : 'light';
+
+/**
+ * Watch for theme changes and update container
+ */
+export function watchThemeChanges(
+  container: HTMLElement,
+  callback?: (theme: 'light' | 'dark') => void
+): () => void {
+  let lastTheme = getCurrentTheme();
+  
+  // Create a MutationObserver to watch for style changes
+  const observer = new MutationObserver(() => {
+    const currentTheme = getCurrentTheme();
+    container.setAttribute('data-theme', currentTheme);
+    callback?.(currentTheme);
+  });
+
+  // Watch for changes to style attributes and class changes on document
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['style', 'class', 'data-theme'],
+    subtree: false,
+  });
+
+  // Also watch for CSS variable changes using a polling fallback
+  const intervalId = setInterval(() => {
+    const currentTheme = getCurrentTheme();
+    if (currentTheme !== lastTheme) {
+      lastTheme = currentTheme;
+      container.setAttribute('data-theme', currentTheme);
+      callback?.(currentTheme);
     }
-  }
+  }, 500);
 
-  // Fallback to system preference
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  // Return cleanup function
+  return () => {
+    observer.disconnect();
+    clearInterval(intervalId);
+  };
 }

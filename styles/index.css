@@ -3,6 +3,10 @@
  * Imports all style modules
  */
 
+/* Import base Tabulator CSS */
+@import 'tabulator-tables/dist/css/tabulator.min.css';
+
+/* Import plugin styles */
 @import './theme-light.css';
 @import './theme-dark.css';
 @import './plugin.css';

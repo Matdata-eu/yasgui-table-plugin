@@ -136,7 +136,7 @@ For detailed documentation, see the [specification](./specs/001-advanced-table/s
 # Install dependencies
 npm install
 
-# Development mode (watch)
+# Start development server with Vite (http://localhost:3000)
 npm run dev
 
 # Build for production
@@ -151,6 +151,16 @@ npm run lint
 # Format code
 npm run format
 ```
+
+### Development Server
+
+The `npm run dev` command starts a Vite development server at `http://localhost:3000` with:
+- Hot module replacement (HMR) for instant updates
+- Source maps for debugging TypeScript
+- Serves the demo page from `demo/index.html`
+- Plugin source loaded directly from `src/` (no build needed)
+
+The demo automatically loads the plugin from source during development for live reload.
 
 ## License
 

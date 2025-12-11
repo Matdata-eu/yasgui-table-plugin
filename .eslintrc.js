@@ -11,6 +11,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended'
   ],
+  ignorePatterns: ['*.config.js', 'dist', 'node_modules'],
   env: {
     browser: true,
     es6: true,
