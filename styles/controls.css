@@ -1,0 +1,111 @@
+/**
+ * Control Bar Styles
+ * Toolbar for search, display toggles, and export controls
+ */
+
+.yasgui-table-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--table-control-background, #f5f5f5);
+  border-bottom: 1px solid var(--table-control-border, #dddddd);
+  flex-wrap: wrap;
+}
+
+.yasgui-table-control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.yasgui-table-control-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--table-control-border, #dddddd);
+}
+
+/* Search input */
+.yasgui-table-search {
+  position: relative;
+}
+
+.yasgui-table-search input {
+  padding: 6px 32px 6px 10px;
+  border: 1px solid var(--table-control-border, #dddddd);
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 200px;
+  background: var(--table-background, #ffffff);
+  color: var(--table-text, #000000);
+}
+
+.yasgui-table-search input:focus {
+  outline: none;
+  border-color: var(--table-primary, #1976d2);
+}
+
+.yasgui-table-search-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--table-text-muted, #999999);
+  pointer-events: none;
+}
+
+/* Buttons */
+.yasgui-table-button {
+  padding: 6px 12px;
+  border: 1px solid var(--table-control-border, #dddddd);
+  border-radius: 4px;
+  background: var(--table-background, #ffffff);
+  color: var(--table-text, #000000);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.yasgui-table-button:hover {
+  background: var(--table-control-hover, #e8e8e8);
+}
+
+.yasgui-table-button:active {
+  transform: translateY(1px);
+}
+
+.yasgui-table-button.active {
+  background: var(--table-primary, #1976d2);
+  color: #ffffff;
+  border-color: var(--table-primary, #1976d2);
+}
+
+/* Icon buttons */
+.yasgui-table-icon-button {
+  padding: 6px;
+  border: 1px solid var(--table-control-border, #dddddd);
+  border-radius: 4px;
+  background: var(--table-background, #ffffff);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.yasgui-table-icon-button:hover {
+  background: var(--table-control-hover, #e8e8e8);
+}
+
+.yasgui-table-icon-button svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Labels */
+.yasgui-table-label {
+  font-size: 14px;
+  color: var(--table-text, #000000);
+  margin-right: 4px;
+}

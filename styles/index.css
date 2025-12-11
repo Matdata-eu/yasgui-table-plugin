@@ -1,0 +1,9 @@
+/**
+ * Main Styles Entry Point
+ * Imports all style modules
+ */
+
+@import './theme-light.css';
+@import './theme-dark.css';
+@import './plugin.css';
+@import './controls.css';

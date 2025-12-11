@@ -30,21 +30,21 @@
 
 **Purpose**: Initialize project structure, dependencies, and development tools
 
-- [ ] T001 Create project structure per plan.md in repository root
-- [ ] T002 Initialize npm package with package.json (name: @matdata/yasgui-table-plugin, version: 1.0.0)
-- [ ] T003 [P] Install TypeScript 5.x as dev dependency with tsconfig.json (target: ES2018, strict mode)
-- [ ] T004 [P] Install and configure ESLint with standard config in .eslintrc.js
-- [ ] T005 [P] Install and configure Prettier with 100-char line limit in .prettierrc
-- [ ] T006 Install Tabulator 6.x as direct dependency
-- [ ] T007 [P] Install YASGUI/YASR as peer dependencies in package.json
-- [ ] T008 [P] Configure Rollup for UMD + ESM builds in rollup.config.js
-- [ ] T009 [P] Configure Terser for minification and cssnano for CSS minification
-- [ ] T010 [P] Setup Jest for unit testing in jest.config.js
-- [ ] T011 Create src/, styles/, tests/, demo/, dist/ directory structure
-- [ ] T012 [P] Create .gitignore with node_modules, dist/, coverage/
-- [ ] T013 [P] Create README.md with installation and basic usage instructions
-- [ ] T014 [P] Create CHANGELOG.md with version 1.0.0 entry
-- [ ] T015 [P] Add npm scripts in package.json (dev, build, test, lint, format)
+- [X] T001 Create project structure per plan.md in repository root
+- [X] T002 Initialize npm package with package.json (name: @matdata/yasgui-table-plugin, version: 1.0.0)
+- [X] T003 [P] Install TypeScript 5.x as dev dependency with tsconfig.json (target: ES2018, strict mode)
+- [X] T004 [P] Install and configure ESLint with standard config in .eslintrc.js
+- [X] T005 [P] Install and configure Prettier with 100-char line limit in .prettierrc
+- [X] T006 Install Tabulator 6.x as direct dependency
+- [X] T007 [P] Install YASGUI/YASR as peer dependencies in package.json
+- [X] T008 [P] Configure Rollup for UMD + ESM builds in rollup.config.js
+- [X] T009 [P] Configure Terser for minification and cssnano for CSS minification
+- [X] T010 [P] Setup Jest for unit testing in jest.config.js
+- [X] T011 Create src/, styles/, tests/, demo/, dist/ directory structure
+- [X] T012 [P] Create .gitignore with node_modules, dist/, coverage/
+- [X] T013 [P] Create README.md with installation and basic usage instructions
+- [X] T014 [P] Create CHANGELOG.md with version 1.0.0 entry
+- [X] T015 [P] Add npm scripts in package.json (dev, build, test, lint, format)
 
 **Checkpoint**: Project structure complete and ready for code development
 
@@ -58,30 +58,30 @@
 
 ### Type Definitions
 
-- [ ] T016 [P] Create SPARQL result types in src/types/sparql.ts (SparqlBinding, ResultRow, SparqlResults)
-- [ ] T017 [P] Create plugin configuration types in src/types/config.ts (TabulatorPluginConfig, DisplayConfiguration, SortState)
-- [ ] T018 [P] Create Tabulator type extensions in src/types/tabulator.d.ts
-- [ ] T019 [P] Create table data types in src/types/table.ts (TableRow, TableColumn, SelectionRange)
+- [X] T016 [P] Create SPARQL result types in src/types/sparql.ts (SparqlBinding, ResultRow, SparqlResults)
+- [X] T017 [P] Create plugin configuration types in src/types/config.ts (TabulatorPluginConfig, DisplayConfiguration, SortState)
+- [X] T018 [P] Create Tabulator type extensions in src/types/tabulator.d.ts
+- [X] T019 [P] Create table data types in src/types/table.ts (TableRow, TableColumn, SelectionRange)
 
 ### Core Plugin Infrastructure
 
-- [ ] T020 Create plugin entry point in src/index.ts (exports TablePlugin class)
-- [ ] T021 Implement main plugin class skeleton in src/plugin.ts (canHandleResults, draw, getDownloadInfo, destroy methods)
-- [ ] T022 [P] Implement configuration validation in src/utils/validators.ts (validateConfig function)
-- [ ] T023 [P] Implement localStorage wrapper in src/utils/storage.ts (load/save display config)
-- [ ] T024 [P] Implement theme utilities in src/utils/theme.ts (CSS variable bridge for YASGUI themes)
+- [X] T020 Create plugin entry point in src/index.ts (exports TablePlugin class)
+- [X] T021 Implement main plugin class skeleton in src/plugin.ts (canHandleResults, draw, getDownloadInfo, destroy methods)
+- [X] T022 [P] Implement configuration validation in src/utils/validators.ts (validateConfig function)
+- [X] T023 [P] Implement localStorage wrapper in src/utils/storage.ts (load/save display config)
+- [X] T024 [P] Implement theme utilities in src/utils/theme.ts (CSS variable bridge for YASGUI themes)
 
 ### SPARQL Parsing
 
-- [ ] T025 [P] Implement bindings parser in src/parsers/bindings-parser.ts (transforms SPARQL results to TableRow[])
-- [ ] T026 [P] Implement prefix resolver in src/parsers/prefix-resolver.ts (abbreviate/expand URIs)
+- [X] T025 [P] Implement bindings parser in src/parsers/bindings-parser.ts (transforms SPARQL results to TableRow[])
+- [X] T026 [P] Implement prefix resolver in src/parsers/prefix-resolver.ts (abbreviate/expand URIs)
 
 ### Base Styles
 
-- [ ] T027 [P] Create base plugin styles in styles/plugin.css (container, table wrapper)
-- [ ] T028 [P] Create light theme variables in styles/theme-light.css
-- [ ] T029 [P] Create dark theme variables in styles/theme-dark.css
-- [ ] T030 [P] Create control bar styles in styles/controls.css
+- [X] T027 [P] Create base plugin styles in styles/plugin.css (container, table wrapper)
+- [X] T028 [P] Create light theme variables in styles/theme-light.css
+- [X] T029 [P] Create dark theme variables in styles/theme-dark.css
+- [X] T030 [P] Create control bar styles in styles/controls.css
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

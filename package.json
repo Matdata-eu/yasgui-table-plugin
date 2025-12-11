@@ -1,0 +1,62 @@
+{
+  "name": "@matdata/yasgui-table-plugin",
+  "version": "1.0.0",
+  "description": "High-performance YASGUI plugin for rendering SPARQL SELECT results with interactive table features",
+  "main": "dist/table-plugin.umd.js",
+  "module": "dist/table-plugin.esm.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"styles/**/*.css\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"styles/**/*.css\""
+  },
+  "keywords": [
+    "yasgui",
+    "yasr",
+    "sparql",
+    "table",
+    "plugin",
+    "semantic-web",
+    "rdf"
+  ],
+  "author": "matdata",
+  "license": "MIT",
+  "dependencies": {
+    "tabulator-tables": "^6.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/matdata/yasgui-table-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/matdata/yasgui-table-plugin/issues"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.8",
+    "@rollup/plugin-node-resolve": "^15.3.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/jest": "^29.5.14",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "cssnano": "^6.1.2",
+    "eslint": "^8.57.1",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0",
+    "jsdom": "^23.2.0",
+    "prettier": "^3.7.4",
+    "rollup": "^4.53.3",
+    "rollup-plugin-postcss": "^4.0.2",
+    "ts-jest": "^29.4.6",
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.3"
+  }
+}

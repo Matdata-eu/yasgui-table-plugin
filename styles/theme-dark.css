@@ -1,0 +1,42 @@
+/**
+ * Dark Theme Variables
+ */
+
+[data-theme='dark'] {
+  /* Background colors */
+  --table-background: #1e1e1e;
+  --table-header-background: #2a2a2a;
+  --table-row-hover: #2a2a2a;
+  --table-row-selected: #1a3a52;
+  --table-rownumber-background: #252525;
+
+  /* Text colors */
+  --table-text: #e0e0e0;
+  --table-header-text: #ffffff;
+  --table-text-muted: #808080;
+  --table-rownumber-text: #b0b0b0;
+
+  /* Border colors */
+  --table-border: #404040;
+  --table-border-light: #333333;
+
+  /* Interactive colors */
+  --table-primary: #42a5f5;
+  --table-link: #64b5f6;
+  --table-link-hover: #90caf9;
+
+  /* URI and literal styling */
+  --table-uri-color: #64b5f6;
+  --table-literal-color: #e0e0e0;
+  --table-datatype-color: #b0b0b0;
+  --table-bnode-color: #808080;
+
+  /* Search highlight */
+  --table-search-highlight: #ffeb3b;
+  --table-search-highlight-text: #000000;
+
+  /* Controls */
+  --table-control-background: #2a2a2a;
+  --table-control-border: #404040;
+  --table-control-hover: #353535;
+}
