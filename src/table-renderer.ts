@@ -24,6 +24,7 @@ export class TableRenderer {
   private _columnResize: ColumnResize | null = null;
   private table: Tabulator | null = null;
   private currentSearchTerm: string = '';
+  private currentLayout: 'fitData' | 'fitColumns' = 'fitData';
   private onWidthChange?: (widths: ColumnWidthMap) => void;
   private onSortChange?: (column: string, dir: 'asc' | 'desc') => void;
 
@@ -287,14 +288,68 @@ export class TableRenderer {
   /**
    * Change table layout mode
    */
-  setLayout(_mode: 'fitData' | 'fitColumns'): void {
+  setLayout(mode: 'fitData' | 'fitColumns'): void {
     if (!this.table) {
       return;
     }
     
-    // Tabulator doesn't have a setLayout method at runtime
-    // We need to use the layout property from the options
-    // Force a redraw to apply any layout changes
-    this.table.redraw(true);
+    // Store current state
+    const currentData = this.table.getData();
+    const currentColumns = this.table.getColumns().map(col => col.getDefinition());
+    const container = this.table.element;
+    
+    // Check if container is valid
+    if (!container) {
+      console.error('Table container element is null');
+      return;
+    }
+    
+    // Get virtual scroll config
+    const virtualScrollConfig = getVirtualScrollConfig(currentData.length);
+    
+    // Get display config
+    const displayConfig = this.config.displayConfig || {};
+    
+    // Destroy old table
+    this.table.destroy();
+    
+    // Create new table with new layout
+    this.table = new Tabulator(container, {
+      data: currentData,
+      columns: currentColumns,
+      layout: mode,
+      ...virtualScrollConfig,
+      placeholder: 'No results',
+      initialSort: displayConfig.sortState
+        ? [
+            {
+              column: displayConfig.sortState.column,
+              dir: displayConfig.sortState.dir,
+            },
+          ]
+        : [],
+      ...this.config.tabulatorOptions,
+    });
+    
+    // Re-setup column resize tracking
+    if (this.onWidthChange) {
+      this._columnResize = new ColumnResize(this.table, this.onWidthChange);
+    }
+    
+    // Re-setup sort change tracking
+    if (this.onSortChange) {
+      this.table.on('dataSorted', (sorters: Array<{ field: string; dir: 'asc' | 'desc' }>) => {
+        if (sorters.length > 0 && this.onSortChange) {
+          this.onSortChange(sorters[0].field, sorters[0].dir);
+        }
+      });
+    }
+    
+    // Re-apply search filter if one was active
+    if (this.currentSearchTerm) {
+      this.applySearchFilter(this.currentSearchTerm);
+    }
+    
+    this.currentLayout = mode;
   }
 }
