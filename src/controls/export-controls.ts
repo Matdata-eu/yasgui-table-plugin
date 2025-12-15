@@ -1,19 +1,17 @@
 /**
  * Export Controls Component
- * Buttons for exporting table data as Markdown, CSV, or downloading CSV file
+ * Buttons for copying table data as Markdown or CSV to clipboard
  */
 
 export interface ExportControlsConfig {
-  onMarkdownExport?: () => void;
-  onCsvExport?: () => void;
-  onDownload?: () => void;
+  onMarkdownCopy?: () => void;
+  onCsvCopy?: () => void;
 }
 
 export class ExportControls {
   private container: HTMLDivElement;
   private markdownButton: HTMLButtonElement;
   private csvButton: HTMLButtonElement;
-  private downloadButton: HTMLButtonElement;
   private config: ExportControlsConfig;
 
   constructor(config: ExportControlsConfig) {
@@ -25,17 +23,15 @@ export class ExportControls {
     // Create label
     const label = document.createElement('span');
     label.className = 'table-export-label';
-    label.textContent = 'Export:';
+    label.textContent = 'Copy:';
     this.container.appendChild(label);
 
     // Create buttons
     this.markdownButton = this.createMarkdownButton();
     this.csvButton = this.createCsvButton();
-    this.downloadButton = this.createDownloadButton();
 
     this.container.appendChild(this.markdownButton);
     this.container.appendChild(this.csvButton);
-    this.container.appendChild(this.downloadButton);
   }
 
   private createMarkdownButton(): HTMLButtonElement {
@@ -45,8 +41,8 @@ export class ExportControls {
     button.title = 'Copy table as Markdown to clipboard';
     button.setAttribute('aria-label', 'Copy as Markdown');
     button.addEventListener('click', () => {
-      if (this.config.onMarkdownExport) {
-        this.config.onMarkdownExport();
+      if (this.config.onMarkdownCopy) {
+        this.config.onMarkdownCopy();
       }
     });
     return button;
@@ -59,22 +55,8 @@ export class ExportControls {
     button.title = 'Copy table as CSV to clipboard';
     button.setAttribute('aria-label', 'Copy as CSV');
     button.addEventListener('click', () => {
-      if (this.config.onCsvExport) {
-        this.config.onCsvExport();
-      }
-    });
-    return button;
-  }
-
-  private createDownloadButton(): HTMLButtonElement {
-    const button = document.createElement('button');
-    button.className = 'table-export-button table-export-download';
-    button.textContent = 'Download CSV';
-    button.title = 'Download table as CSV file';
-    button.setAttribute('aria-label', 'Download CSV file');
-    button.addEventListener('click', () => {
-      if (this.config.onDownload) {
-        this.config.onDownload();
+      if (this.config.onCsvCopy) {
+        this.config.onCsvCopy();
       }
     });
     return button;

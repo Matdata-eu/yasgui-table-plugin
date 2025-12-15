@@ -221,9 +221,8 @@ export class TablePlugin {
 
       // Create export controls
       this.exportControls = new ExportControls({
-        onMarkdownExport: () => this.handleMarkdownExport(),
-        onCsvExport: () => this.handleCsvExport(),
-        onDownload: () => this.handleDownloadCsv(),
+        onMarkdownCopy: () => this.handleMarkdownExport(),
+        onCsvCopy: () => this.handleCsvExport(),
       });
 
       // Add controls toolbar to container
@@ -327,37 +326,20 @@ export class TablePlugin {
    */
   download(filename?: string): DownloadInfo | undefined {
     const results = this.getResultsData();
-    if (!results || !this.table) return undefined;
+    if (!results || !this.table || !this.clipboardManager) return undefined;
 
     const data = this.getExportData();
     const headers = results.head?.vars || [];
-    
-    // Generate TSV
-    let tsv = headers.join('\t') + '\n';
-    data.forEach(row => {
-      tsv += row.join('\t') + '\n';
-    });
+    const csv = this.clipboardManager.formatAsCSV(data, headers);
 
     return {
-      contentType: 'text/tab-separated-values',
-      getData: () => tsv,
-      filename: filename || this.generateFilename().replace('.csv', '.tsv'),
-      buttonTitle: 'Download as TSV'
+      contentType: 'text/csv',
+      getData: () => csv,
+      filename: filename || this.generateFilename(),
+      buttonTitle: 'Download as CSV'
     };
   }
   
-  /**
-   * Returns download information for current table (legacy method)
-   */
-  getDownloadInfo(): DownloadInfo {
-    return this.download() || {
-      getData: () => 'Export not yet implemented',
-      filename: 'sparql-results.tsv',
-      contentType: 'text/tab-separated-values',
-      buttonTitle: 'Download as TSV',
-    };
-  }
-
   /**
    * Cleanup method called when plugin is destroyed
    */
@@ -655,16 +637,16 @@ export class TablePlugin {
     this.clipboardManager.copyToClipboard(markdown).then((success) => {
       if (success) {
         this.showNotification('✓ Copied as Markdown', 'success');
-        this.emit('export', { format: 'markdown', success: true });
+        this.emit('copy', { format: 'markdown', success: true });
       } else {
         console.error('Failed to copy markdown to clipboard');
         this.showNotification('✗ Failed to copy to clipboard', 'error');
-        this.emit('export', { format: 'markdown', success: false, error: 'Failed to copy to clipboard' });
+        this.emit('copy', { format: 'markdown', success: false, error: 'Failed to copy to clipboard' });
       }
     }).catch((error) => {
       console.error('Error copying markdown to clipboard:', error);
       this.showNotification('✗ Failed to copy to clipboard', 'error');
-      this.emit('export', { format: 'markdown', success: false, error: error.message });
+      this.emit('copy', { format: 'markdown', success: false, error: error.message });
     });
   }
 
@@ -684,35 +666,17 @@ export class TablePlugin {
     this.clipboardManager.copyToClipboard(csv).then((success) => {
       if (success) {
         this.showNotification('✓ Copied as CSV', 'success');
-        this.emit('export', { format: 'csv', success: true });
+        this.emit('copy', { format: 'csv', success: true });
       } else {
         console.error('Failed to copy CSV to clipboard');
         this.showNotification('✗ Failed to copy to clipboard', 'error');
-        this.emit('export', { format: 'csv', success: false, error: 'Failed to copy to clipboard' });
+        this.emit('copy', { format: 'csv', success: false, error: 'Failed to copy to clipboard' });
       }
     }).catch((error) => {
       console.error('Error copying CSV to clipboard:', error);
       this.showNotification('✗ Failed to copy to clipboard', 'error');
-      this.emit('export', { format: 'csv', success: false, error: error.message });
+      this.emit('copy', { format: 'csv', success: false, error: error.message });
     });
-  }
-
-  /**
-   * Handle CSV download
-   */
-  private handleDownloadCsv(): void {
-    const results = this.getResultsData();
-    if (!this.clipboardManager || !this.table || !results) {
-      return;
-    }
-
-    const data = this.getExportData();
-    const headers = results.head?.vars || [];
-    const csv = this.clipboardManager.formatAsCSV(data, headers);
-    const filename = this.generateFilename();
-
-    this.clipboardManager.downloadAsFile(csv, filename, 'text/csv');
-    this.emit('export', { format: 'csv', success: true, downloaded: true });
   }
 
   /**
