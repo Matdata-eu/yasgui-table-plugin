@@ -369,31 +369,36 @@ plugin.on('configChange', (e) => {
 
 ---
 
-## Export Events
+## Copy Events
 
-### `export`
+### `copy`
 
-**Fired**: When user exports table data (FR-031, FR-032, FR-033).
+**Fired**: When user copies table data to clipboard (FR-029, FR-030, FR-030a).
 
 **Event Object**:
 ```typescript
-interface ExportEvent extends BaseEvent {
-  type: 'export';
+interface CopyEvent extends BaseEvent {
+  type: 'copy';
   format: 'tsv' | 'csv' | 'markdown';
-  rowCount: number;       // Number of exported rows
-  columnCount: number;    // Number of exported columns
-  dataSize: number;       // Size of exported data (bytes)
+  rowCount: number;       // Number of copied rows
+  columnCount: number;    // Number of copied columns
+  dataSize: number;       // Size of copied data (bytes)
+  success: boolean;       // Whether copy succeeded
 }
 ```
 
 **Example**:
 ```javascript
-plugin.on('export', (e) => {
-  console.log(`Exported ${e.rowCount} rows as ${e.format} (${e.dataSize} bytes)`);
+plugin.on('copy', (e) => {
+  if (e.success) {
+    console.log(`Copied ${e.rowCount} rows as ${e.format} (${e.dataSize} bytes)`);
+  }
 });
 ```
 
-**Timing**: Fired after export data generated, before download initiated
+**Timing**: Fired after copy operation completes
+
+**Notifications**: Visual notification shown to user on success/failure
 
 ---
 
@@ -427,7 +432,9 @@ plugin.on('clipboard', (e) => {
 - Ctrl+C / Cmd+C with selection (FR-027)
 - Click "Copy" button (if implemented)
 
-**Browser Compatibility**: May fail in insecure contexts (non-HTTPS)
+**Browser Compatibility**: May fail in insecure contexts (non-HTTPS). Fallback to execCommand provided.
+
+**Notifications**: Visual notification shown to user on success/failure
 
 ---
 
@@ -549,10 +556,11 @@ plugin.on('search', (e) => {
   });
 });
 
-plugin.on('export', (e) => {
-  analytics.track('Table Export', {
+plugin.on('copy', (e) => {
+  analytics.track('Table Copy', {
     format: e.format,
-    rows: e.rowCount
+    rows: e.rowCount,
+    success: e.success
   });
 });
 ```
@@ -648,8 +656,8 @@ interface SearchHighlightEvent extends BaseEvent { searchTerm, highlightedCells 
 // Configuration events
 interface ConfigChangeEvent extends BaseEvent { changes, config, previousConfig }
 
-// Export events
-interface ExportEvent extends BaseEvent { format, rowCount, columnCount, dataSize }
+// Copy/Export events
+interface CopyEvent extends BaseEvent { format, rowCount, columnCount, dataSize, success }
 interface ClipboardEvent extends BaseEvent { selection, format, dataSize, success }
 
 // Lifecycle events

@@ -1,6 +1,6 @@
 {
   "name": "@matdata/yasgui-table-plugin",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "High-performance YASGUI plugin for rendering SPARQL SELECT results with interactive table features",
   "type": "module",
   "main": "dist/yasgui-table-plugin.umd.js",

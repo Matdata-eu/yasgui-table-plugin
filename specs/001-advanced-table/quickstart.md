@@ -14,7 +14,7 @@ This guide demonstrates how to integrate the advanced table plugin with YASGUI t
 
 - **YASGUI**: Version 4.x or higher
 - **Browser**: Chrome, Firefox, Safari, or Edge (latest 2 versions)
-- **Build Tool**: Webpack, Rollup, or module bundler with ES6 support
+- **Build Tool**: esbuild (used internally), or any module bundler with ES6 support
 - **Node.js**: 16+ (for development)
 
 ---
@@ -269,9 +269,11 @@ yasr.on('drawn', () => {
     console.log('Clicked:', e.value);
   });
   
-  // Monitor exports
-  tablePlugin.on('export', (e) => {
-    console.log(`Exported ${e.rowCount} rows as ${e.format}`);
+  // Monitor copy operations
+  tablePlugin.on('copy', (e) => {
+    if (e.success) {
+      console.log(`Copied ${e.rowCount} rows as ${e.format}`);
+    }
   });
 });
 ```
@@ -324,7 +326,9 @@ LIMIT 100`
 - Abbreviated URIs (dbr:London instead of http://dbpedia.org/resource/London)
 - Sortable columns (click "population" to sort)
 - Searchable (search for "London")
-- Exportable (download as CSV/TSV)
+- Copy to clipboard as Markdown, CSV, or TSV (tab-delimited)
+- Tooltips showing full cell content on hover
+- CSV download via YASR's download interface
 
 ---
 
@@ -405,8 +409,9 @@ const yasgui = new Yasgui(document.getElementById('yasgui'), {
 **Features**:
 - Custom authentication headers
 - Isolated localStorage (won't conflict with other instances)
-- Markdown export format
+- Markdown export format (also supports CSV and TSV)
 - Full URI display
+- Visual notifications for copy operations
 
 ---
 
@@ -487,11 +492,12 @@ yasr.on('drawn', () => {
     });
   });
   
-  // Track exports
-  tablePlugin.on('export', (e) => {
-    analytics.track('Table Export', {
+  // Track copy operations
+  tablePlugin.on('copy', (e) => {
+    analytics.track('Table Copy', {
       format: e.format,
-      rows: e.rowCount
+      rows: e.rowCount,
+      success: e.success
     });
   });
 });
@@ -595,10 +601,13 @@ console.log('Persistence enabled:', config.persistenceEnabled);
 // Check HTTPS context (Clipboard API requires secure context)
 console.log('Secure context:', window.isSecureContext);
 
-// Fallback to execCommand on HTTP
+// Automatic fallback to execCommand on HTTP or when Clipboard API fails
 if (!window.isSecureContext) {
-  console.warn('Clipboard API unavailable. Using legacy execCommand.');
+  console.warn('Clipboard API unavailable. Using legacy execCommand fallback.');
 }
+
+// Plugin automatically handles focus issues and fallbacks
+// Visual notifications will indicate success or failure
 
 // Check browser permissions
 navigator.permissions.query({ name: 'clipboard-write' })
@@ -631,9 +640,10 @@ navigator.permissions.query({ name: 'clipboard-write' })
 
 1. **Clone repository**: `git clone https://github.com/yasgui/table-plugin.git`
 2. **Install dependencies**: `npm install`
-3. **Run dev server**: `npm run dev` (opens demo at http://localhost:3000)
+3. **Run dev server**: `npm run dev` (opens demo at http://localhost:3000 with Vite)
 4. **Run tests**: `npm test`
-5. **Build**: `npm run build` (outputs to `dist/`)
+5. **Build**: `npm run build` (uses esbuild, outputs UMD and ESM to `dist/`)
+6. **Watch mode**: `npm run dev:build` (esbuild watch mode for incremental builds)
 
 ### Further Reading
 
