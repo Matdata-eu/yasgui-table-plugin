@@ -152,6 +152,32 @@ export class TablePlugin {
     });
 
     try {
+      // Fetch and merge prefixes from YASR instance (can be updated on each draw)
+      // Note: config.prefixMap accumulates prefixes across multiple draw() calls
+      // - Initialized once to {} if undefined
+      // - YASR prefixes are merged in (same prefix = overwrite)
+      // - COMMON_PREFIXES are always included via PrefixResolver
+      if (!this.config.prefixMap) {
+        this.config.prefixMap = {};
+      }
+      
+      if (this.yasr && (this.yasr as any).getPrefixes) {
+        const prefixes = (this.yasr as any).getPrefixes();
+        if (prefixes && typeof prefixes === 'object') {
+          Object.entries(prefixes).forEach(([prefix, uri]) => {
+            if (uri && prefix && typeof uri === 'string') {
+              // Merge prefix into existing map (preserves previous prefixes)
+              this.config.prefixMap![prefix] = uri;
+            }
+          });
+          
+          // Update renderer with merged prefixes
+          if (this.renderer) {
+            this.renderer.updatePrefixes(this.config.prefixMap);
+          }
+        }
+      }
+
       // Get actual results data
       const results = this.getResultsData();
       

@@ -294,6 +294,19 @@ export class TableRenderer {
   }
 
   /**
+   * Update prefix resolver with new prefixes from YASR
+   */
+  updatePrefixes(prefixMap: Record<string, string>): void {
+    this.prefixResolver = new PrefixResolver(prefixMap);
+    // Update URI formatter with new prefix resolver
+    const displayConfig = this.config.displayConfig || {};
+    this.uriFormatter = new UriFormatter(
+      this.prefixResolver,
+      displayConfig.uriDisplayMode || 'full'
+    );
+  }
+
+  /**
    * Apply search filter to table
    * @param searchTerm Search term to filter by (case-insensitive)
    * @returns Number of rows matching the filter
