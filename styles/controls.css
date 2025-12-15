@@ -154,6 +154,8 @@
 .yasgui-table-container {
   flex: 1;
   overflow: hidden;
+  position: relative;
+  min-height: 0; /* Important for flex child to respect parent height */
 }
 
 /* Controls toolbar (combines search and display controls) */

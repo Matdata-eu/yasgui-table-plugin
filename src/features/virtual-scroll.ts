@@ -6,7 +6,7 @@
 export interface VirtualScrollOptions {
   renderVertical: 'virtual';
   virtualDomBuffer: number;
-  height: string | number;
+  height: string;
 }
 
 /**
@@ -20,6 +20,8 @@ export function getVirtualScrollConfig(rowCount: number): VirtualScrollOptions {
   return {
     renderVertical: 'virtual',
     virtualDomBuffer: buffer,
+    // Use '100%' for height (not maxHeight) to fill container
+    // This works with flex layout without causing resize loops
     height: '100%',
   };
 }
