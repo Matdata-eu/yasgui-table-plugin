@@ -11,6 +11,7 @@ import { PrefixResolver } from './parsers/prefix-resolver.js';
 import { UriFormatter } from './formatters/uri-formatter.js';
 import { LiteralFormatter } from './formatters/literal-formatter.js';
 import { BnodeFormatter } from './formatters/bnode-formatter.js';
+import { EllipsisFormatter } from './formatters/ellipsis-formatter.js';
 import { getVirtualScrollConfig } from './features/virtual-scroll.js';
 import { ColumnResize } from './features/column-resize.js';
 import { containsSearchTerm } from './features/search-highlight.js';
@@ -21,6 +22,7 @@ export class TableRenderer {
   private uriFormatter: UriFormatter;
   private literalFormatter: LiteralFormatter;
   private bnodeFormatter: BnodeFormatter;
+  private ellipsisFormatter: EllipsisFormatter;
   private _columnResize: ColumnResize | null = null;
   private table: Tabulator | null = null;
   private currentSearchTerm: string = '';
@@ -46,6 +48,7 @@ export class TableRenderer {
     );
     this.literalFormatter = new LiteralFormatter(displayConfig.showDatatypes || false);
     this.bnodeFormatter = new BnodeFormatter();
+    this.ellipsisFormatter = new EllipsisFormatter(displayConfig.ellipsisMode || false);
   }
 
   /**
@@ -153,16 +156,94 @@ export class TableRenderer {
       return '';
     }
 
+    let result: string | HTMLElement;
     switch (binding.type) {
       case 'uri':
-        return this.uriFormatter.format(cell as never);
+        result = this.uriFormatter.format(cell as never);
+        break;
       case 'literal':
-        return this.literalFormatter.format(cell as never);
+        result = this.literalFormatter.format(cell as never);
+        break;
       case 'bnode':
-        return this.bnodeFormatter.format(cell as never);
+        result = this.bnodeFormatter.format(cell as never);
+        break;
       default:
-        return binding.value || '';
+        result = binding.value || '';
     }
+
+    // Get full text for tooltip
+    const fullText = this.getFullTextContent(result, binding);
+
+    // Apply ellipsis formatting if enabled
+    if (this.ellipsisFormatter.isEnabled()) {
+      if (typeof result === 'string') {
+        const formatted = this.ellipsisFormatter.format(result);
+        return formatted.isTruncated ? this.createEllipsisElement(fullText, formatted.display) : this.addTooltip(result, fullText);
+      } else if (result instanceof HTMLElement) {
+        const textContent = result.textContent || '';
+        const formatted = this.ellipsisFormatter.format(textContent);
+        if (formatted.isTruncated) {
+          return this.createEllipsisElement(fullText, formatted.display);
+        }
+        // Ensure tooltip is on the element
+        if (!result.title) {
+          result.title = fullText;
+        }
+        return result;
+      }
+    }
+
+    // Add tooltip even when ellipsis is disabled
+    if (typeof result === 'string') {
+      return this.addTooltip(result, fullText);
+    } else if (result instanceof HTMLElement && !result.title) {
+      result.title = fullText;
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the full text content for tooltip
+   */
+  private getFullTextContent(result: string | HTMLElement, binding: SparqlBinding): string {
+    if (binding.type === 'literal') {
+      let text = binding.value;
+      if (binding['xml:lang']) {
+        text += ` @${binding['xml:lang']}`;
+      }
+      if (binding.datatype) {
+        text += ` ^^${binding.datatype}`;
+      }
+      return text;
+    }
+    
+    if (typeof result === 'string') {
+      return result;
+    }
+    
+    return result.textContent || binding.value || '';
+  }
+
+  /**
+   * Add tooltip to string content
+   */
+  private addTooltip(content: string, tooltip: string): HTMLElement {
+    const span = document.createElement('span');
+    span.textContent = content;
+    span.title = tooltip;
+    return span;
+  }
+
+  /**
+   * Create an element with ellipsis and full text on hover
+   */
+  private createEllipsisElement(fullText: string, truncatedText: string): HTMLElement {
+    const span = document.createElement('span');
+    span.textContent = truncatedText;
+    span.title = fullText;
+    span.className = 'table-ellipsis-content';
+    return span;
   }
 
   /**
@@ -205,6 +286,10 @@ export class TableRenderer {
 
     if (displayConfig.showDatatypes !== undefined) {
       this.literalFormatter.setShowDatatypes(displayConfig.showDatatypes);
+    }
+
+    if (displayConfig.ellipsisMode !== undefined) {
+      this.ellipsisFormatter.setEnabled(displayConfig.ellipsisMode);
     }
   }
 

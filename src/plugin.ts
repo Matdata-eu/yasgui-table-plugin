@@ -603,6 +603,43 @@ export class TablePlugin {
   }
 
   /**
+   * Show temporary notification to user
+   */
+  private showNotification(message: string, type: 'success' | 'error' = 'success'): void {
+    if (!this.container) return;
+
+    const notification = document.createElement('div');
+    notification.className = `table-notification table-notification-${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: ${type === 'success' ? '#4caf50' : '#f44336'};
+      color: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 10000;
+      font-size: 14px;
+      animation: slideIn 0.3s ease-out;
+    `;
+
+    // Add to body
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease-in';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          document.body.removeChild(notification);
+        }
+      }, 300);
+    }, 3000);
+  }
+
+  /**
    * Handle Markdown export
    */
   private handleMarkdownExport(): void {
@@ -617,8 +654,17 @@ export class TablePlugin {
 
     this.clipboardManager.copyToClipboard(markdown).then((success) => {
       if (success) {
+        this.showNotification('✓ Copied as Markdown', 'success');
         this.emit('export', { format: 'markdown', success: true });
+      } else {
+        console.error('Failed to copy markdown to clipboard');
+        this.showNotification('✗ Failed to copy to clipboard', 'error');
+        this.emit('export', { format: 'markdown', success: false, error: 'Failed to copy to clipboard' });
       }
+    }).catch((error) => {
+      console.error('Error copying markdown to clipboard:', error);
+      this.showNotification('✗ Failed to copy to clipboard', 'error');
+      this.emit('export', { format: 'markdown', success: false, error: error.message });
     });
   }
 
@@ -637,8 +683,17 @@ export class TablePlugin {
 
     this.clipboardManager.copyToClipboard(csv).then((success) => {
       if (success) {
+        this.showNotification('✓ Copied as CSV', 'success');
         this.emit('export', { format: 'csv', success: true });
+      } else {
+        console.error('Failed to copy CSV to clipboard');
+        this.showNotification('✗ Failed to copy to clipboard', 'error');
+        this.emit('export', { format: 'csv', success: false, error: 'Failed to copy to clipboard' });
       }
+    }).catch((error) => {
+      console.error('Error copying CSV to clipboard:', error);
+      this.showNotification('✗ Failed to copy to clipboard', 'error');
+      this.emit('export', { format: 'csv', success: false, error: error.message });
     });
   }
 

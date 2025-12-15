@@ -10,15 +10,32 @@ export class ClipboardManager {
    */
   async copyToClipboard(text: string): Promise<boolean> {
     try {
+      // Try modern clipboard API first
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(text);
-        return true;
+        // Ensure document has focus before attempting clipboard write
+        if (document.hasFocus()) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } else {
+          // If document doesn't have focus, try to gain focus first
+          window.focus();
+          await new Promise(resolve => setTimeout(resolve, 10)); // Brief delay to allow focus
+          
+          if (document.hasFocus()) {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } else {
+            // Still no focus, use fallback
+            return this.fallbackCopyToClipboard(text);
+          }
+        }
       } else {
         // Fallback for older browsers
         return this.fallbackCopyToClipboard(text);
       }
     } catch (error) {
       console.error('Failed to copy to clipboard:', error);
+      // Always try fallback on any error
       return this.fallbackCopyToClipboard(text);
     }
   }
@@ -27,21 +44,45 @@ export class ClipboardManager {
    * Fallback copy method using execCommand
    */
   private fallbackCopyToClipboard(text: string): boolean {
+    let textarea: HTMLTextAreaElement | null = null;
     try {
-      const textarea = document.createElement('textarea');
+      textarea = document.createElement('textarea');
       textarea.value = text;
+      
+      // Style to make invisible but still selectable
       textarea.style.position = 'fixed';
       textarea.style.opacity = '0';
-      textarea.style.top = '0';
-      textarea.style.left = '0';
+      textarea.style.top = '-9999px';
+      textarea.style.left = '-9999px';
+      textarea.style.width = '1px';
+      textarea.style.height = '1px';
+      textarea.setAttribute('readonly', '');
+      textarea.setAttribute('aria-hidden', 'true');
+      textarea.setAttribute('tabindex', '-1');
+      
       document.body.appendChild(textarea);
+      
+      // Focus and select the text
+      textarea.focus();
       textarea.select();
+      textarea.setSelectionRange(0, text.length);
+      
+      // Try to copy
       const success = document.execCommand('copy');
-      document.body.removeChild(textarea);
+      
+      if (!success) {
+        console.warn('execCommand("copy") returned false');
+      }
+      
       return success;
     } catch (error) {
       console.error('Fallback copy failed:', error);
       return false;
+    } finally {
+      // Always clean up
+      if (textarea && textarea.parentNode) {
+        document.body.removeChild(textarea);
+      }
     }
   }
 

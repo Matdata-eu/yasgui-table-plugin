@@ -5,10 +5,10 @@
 
 export interface EllipsisOptions {
   enabled: boolean;
-  maxLength?: number; // Default: 150 characters
+  maxLength?: number; // Default: 50 characters
 }
 
-const DEFAULT_MAX_LENGTH = 150;
+const DEFAULT_MAX_LENGTH = 50;
 
 /**
  * Ellipsis formatter for truncating long cell content
