@@ -11,6 +11,7 @@
 
 - Q: Search Highlight Color - Should search term highlighting use a hardcoded yellow color or adapt to themes? → A: Use theme-responsive highlight color (via CSS variable) that adapts to light/dark mode
 - Q: Ellipsized Cell Expansion Behavior - Should full content appear in overlay, inline expansion, or side panel? → A: Modal/tooltip overlay that appears above the table (preserves table layout)
+- Q: Theme Change Detection - How should plugin respond to YASGUI theme changes? → A: Use MutationObserver to watch data-theme attribute changes with 500ms polling fallback for dynamic theme adaptation
 - Q: Visual Guides During Column Resize - What type of visual guides should appear (column highlight, vertical line, measurements)? → A: Standard behavior of the library that we are going to use to implement the table
 - Q: Infinite Scroll Implementation Strategy - Should infinite scroll load all rows, use virtual scrolling, or batch loading? → A: Virtual scrolling (windowing) - render only visible rows plus buffer
 - Q: Row Number Column Behavior During Horizontal Scroll - Should row numbers be fixed/sticky, scroll with content, or use floating overlay? → A: Whatever is used by the library that we are going to implement
@@ -121,18 +122,19 @@ Users can select individual cells, ranges of cells, or entire rows, and copy sel
 
 ### User Story 7 - Export Functionality (Priority: P3)
 
-Users can export the complete table (or filtered results) to clipboard as Markdown or CSV, and download results as CSV file.
+Users can export the complete table (or filtered results) to clipboard as Markdown, CSV, or TSV (tab-delimited) formats, and download results as CSV file through YASR's download interface.
 
-**Why this priority**: While cell selection handles small data extraction, full table export is valuable for documentation (Markdown) and data analysis in external tools (CSV). Lower priority than core viewing and interaction features.
+**Why this priority**: While cell selection handles small data extraction, full table export is valuable for documentation (Markdown) and data analysis in external tools (CSV/TSV). Lower priority than core viewing and interaction features.
 
-**Independent Test**: Can be fully tested by clicking export controls and verifying that clipboard receives properly formatted Markdown or CSV, and that CSV download produces a valid file.
+**Independent Test**: Can be fully tested by clicking export controls and verifying that clipboard receives properly formatted Markdown, CSV, or TSV, and that CSV download through YASR produces a valid file.
 
 **Acceptance Scenarios**:
 
-1. **Given** a table with data is displayed, **When** user clicks "Copy as Markdown", **Then** clipboard contains properly formatted Markdown table with headers and alignment
-2. **Given** a table with data is displayed, **When** user clicks "Copy as CSV", **Then** clipboard contains CSV format with headers and quoted fields where necessary
-3. **Given** a table is displayed, **When** user clicks "Download CSV", **Then** browser downloads a `.csv` file with all visible data (respecting active filters)
-4. **Given** a search filter is active showing 50 of 500 rows, **When** user exports or downloads, **Then** only the 50 filtered rows are included
+1. **Given** a table with data is displayed, **When** user clicks "Copy as Markdown", **Then** clipboard contains properly formatted Markdown table with headers and alignment, and visual notification confirms success
+2. **Given** a table with data is displayed, **When** user clicks "Copy as CSV", **Then** clipboard contains CSV format with headers and quoted fields where necessary, and visual notification confirms success
+3. **Given** a table with data is displayed, **When** user clicks "Copy as TSV", **Then** clipboard contains tab-delimited format with headers, and visual notification confirms success
+4. **Given** a table is displayed, **When** user uses YASR's download interface, **Then** browser downloads a `.csv` file with all visible data (respecting active filters)
+5. **Given** a search filter is active showing 50 of 500 rows, **When** user exports or downloads, **Then** only the 50 filtered rows are included
 
 ---
 
@@ -168,6 +170,7 @@ Users can export the complete table (or filtered results) to clipboard as Markdo
 - **FR-010**: Plugin MUST provide a toggle control to show or hide datatype annotations on literals
 - **FR-011**: Plugin MUST provide an ellipsis mode control that truncates cell content with "..." when enabled
 - **FR-012**: Plugin MUST display full cell content in a modal or tooltip overlay when user clicks on an ellipsized cell, preserving table layout
+- **FR-012a**: Plugin MUST display full cell content as tooltip when user hovers over any cell
 
 #### Sorting
 - **FR-013**: Plugin MUST allow users to sort rows by clicking on column headers
@@ -194,13 +197,14 @@ Users can export the complete table (or filtered results) to clipboard as Markdo
 - **FR-028**: Plugin MUST format copied data as tab-separated values (rows separated by newlines)
 
 #### Export and Download
-- **FR-029**: Plugin MUST provide a control to copy entire table to clipboard as Markdown format
-- **FR-030**: Plugin MUST provide a control to copy entire table to clipboard as CSV format
-- **FR-031**: Plugin MUST provide a control to download table as CSV file
+- **FR-029**: Plugin MUST provide a control to copy entire table to clipboard as Markdown format with visual notification
+- **FR-030**: Plugin MUST provide a control to copy entire table to clipboard as CSV format with visual notification
+- **FR-030a**: Plugin MUST provide a control to copy entire table to clipboard as TSV (tab-delimited) format with visual notification
+- **FR-031**: Plugin MUST integrate with YASR's download interface to provide CSV download capability
 - **FR-032**: Plugin MUST respect active search filters when exporting or downloading
 
 #### Theming
-- **FR-033**: Plugin MUST respond to YASGUI theme changes (light/dark mode)
+- **FR-033**: Plugin MUST respond to YASGUI theme changes (light/dark mode) dynamically using MutationObserver with polling fallback
 - **FR-034**: Plugin MUST use YASGUI CSS variables for colors, borders, and backgrounds
 - **FR-035**: Plugin MUST ensure text contrast meets WCAG AA standards in both themes
 
@@ -238,8 +242,9 @@ Users can export the complete table (or filtered results) to clipboard as Markdo
 1. SPARQL results are provided in standard YASGUI result format (JSON bindings)
 2. Browser supports modern JavaScript features (ES2018) and CSS features required by YASGUI
 3. Users have basic familiarity with SPARQL query results and table interfaces
-4. Prefix definitions are available from YASQE or query context for URI abbreviation
+4. Prefix definitions are fetched from YASR's getPrefixes() method and merged with common prefixes for URI abbreviation
 5. LocalStorage is available for persisting user preferences
-6. Clipboard API is available for copy operations (with appropriate fallbacks)
+6. Clipboard API is available for copy operations (with execCommand fallback for older browsers)
 7. Result sets are finite (not streaming) and fit in browser memory
 8. The plugin is used within YASGUI/YASR environment with standard plugin lifecycle
+9. Build system uses esbuild for UMD and ESM module generation

@@ -28,7 +28,8 @@ interface TabulatorPluginConfig {
   persistenceKey?: string;
   persistenceEnabled?: boolean;
   
-  // Export Configuration (FR-031, FR-032, FR-033)
+  // Export Configuration (FR-029, FR-030, FR-030a)
+  // Note: CSV download integrated with YASR's download interface (FR-031)
   exportFormat?: 'tsv' | 'csv' | 'markdown';
   
   // Theme Configuration
@@ -36,6 +37,7 @@ interface TabulatorPluginConfig {
   customTheme?: string;
   
   // Prefix Configuration (for URI abbreviation)
+  // Fetched from YASR's getPrefixes() method and merged with common prefixes
   prefixMap?: PrefixMap;
 }
 ```
@@ -50,7 +52,7 @@ interface TabulatorPluginConfig {
   exportFormat: 'tsv',
   themeIntegration: true,
   customTheme: undefined,
-  prefixMap: {} // Populated from YASQE if available
+  prefixMap: {} // Populated from YASR's getPrefixes() merged with COMMON_PREFIXES
 }
 ```
 
@@ -318,13 +320,15 @@ if (sortState.direction && !['asc', 'desc'].includes(sortState.direction)) {
 ```javascript
 {
   layout: 'fitData',
-  height: '100%',
+  height: '100%',  // Not maxHeight to avoid resize loops
   renderVertical: 'virtual',
   virtualDomBuffer: 300,
   headerSort: true,
   pagination: false
 }
 ```
+
+**Note**: Using `maxHeight: '100%'` with virtual scrolling causes infinite resize loops. Always use `height: '100%'` instead.
 
 **Validation**: Delegated to Tabulator library (will throw if invalid)
 

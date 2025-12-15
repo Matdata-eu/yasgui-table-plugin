@@ -7,11 +7,14 @@ High-performance YASGUI plugin for rendering SPARQL SELECT results in an interac
 - 🚀 **Virtual Scrolling** - Efficiently handles 10,000+ rows
 - 🔍 **Search & Filter** - Real-time search with highlighting
 - 📊 **Interactive Columns** - Sort and resize columns
-- 🎨 **Theme Support** - Integrates with YASGUI themes
+- 🎨 **Dynamic Theme Support** - Automatically adapts to YASGUI light/dark theme changes
 - 📋 **Selection & Copy** - Select cells/rows and copy to clipboard
-- 💾 **Export** - Export to Markdown, CSV, or TSV formats
+- 💾 **Copy** - Copy to clipboard as Markdown, CSV, or TSV (tab-delimited) formats
+- 📥 **YASR Integration** - Integrated with YASR's download interface for CSV export
+- 💬 **Tooltips** - Hover over any cell to view full content
+- 🔔 **Notifications** - Visual feedback for copy operations
 - ♿ **Accessible** - WCAG AA compliant with keyboard navigation
-- 🎯 **SPARQL-Aware** - Proper rendering of URIs, literals, datatypes, and blank nodes
+- 🎯 **SPARQL-Aware** - Proper rendering of URIs, literals, datatypes, and blank nodes with prefix support from YASR
 
 ## Installation
 
@@ -87,15 +90,15 @@ tablePlugin.on('selectionChange', (data) => {
   console.log('Selection:', data.range);
 });
 
-// Listen for export events
-tablePlugin.on('export', (data) => {
-  console.log(`Exported as ${data.format}`);
+// Listen for copy events
+tablePlugin.on('copy', (data) => {
+  console.log(`Copied as ${data.format}`);
 });
 
 // Available events:
 // - ready, search, columnSort, columnResize, cellDoubleClick
 // - selectionChange, selectionCleared, clipboardCopy
-// - export, layoutChange, error, destroy
+// - copy, layoutChange, error, destroy
 ```
 
 ## Public Methods
@@ -139,7 +142,7 @@ npm install
 # Start development server with Vite (http://localhost:3000)
 npm run dev
 
-# Build for production
+# Build for production with esbuild
 npm run build
 
 # Run tests
@@ -161,6 +164,16 @@ The `npm run dev` command starts a Vite development server at `http://localhost:
 - Plugin source loaded directly from `src/` (no build needed)
 
 The demo automatically loads the plugin from source during development for live reload.
+
+### Build System
+
+The project uses **esbuild** for production builds with:
+- UMD and ESM module formats
+- PostCSS for CSS processing
+- TypeScript type declarations
+- Watch mode for development (`npm run dev:build`)
+
+Build outputs are generated in `dist/` with both `.umd.js` and `.esm.js` formats.
 
 ## License
 
