@@ -89,7 +89,7 @@ export class DisplayControls {
 
   private updateDatatypeToggleText(button: HTMLButtonElement, show: boolean): void {
     button.textContent = show ? 'Types: On' : 'Types: Off';
-    if (show) {
+    if (!show) {
       button.classList.add('active');
     } else {
       button.classList.remove('active');
