@@ -249,6 +249,7 @@ export class TablePlugin {
       this.exportControls = new ExportControls({
         onMarkdownCopy: () => this.handleMarkdownExport(),
         onCsvCopy: () => this.handleCsvExport(),
+        onTsvCopy: () => this.handleTsvExport(),
       });
 
       // Add controls toolbar to container
@@ -702,6 +703,35 @@ export class TablePlugin {
       console.error('Error copying CSV to clipboard:', error);
       this.showNotification('✗ Failed to copy to clipboard', 'error');
       this.emit('copy', { format: 'csv', success: false, error: error.message });
+    });
+  }
+
+  /**
+   * Handle TSV export to clipboard
+   */
+  private handleTsvExport(): void {
+    const results = this.getResultsData();
+    if (!this.clipboardManager || !this.table || !results) {
+      return;
+    }
+
+    const data = this.getExportData();
+    const headers = results.head?.vars || [];
+    const tsv = this.clipboardManager.formatAsTSV(data, headers);
+
+    this.clipboardManager.copyToClipboard(tsv).then((success) => {
+      if (success) {
+        this.showNotification('✓ Copied as TSV', 'success');
+        this.emit('copy', { format: 'tsv', success: true });
+      } else {
+        console.error('Failed to copy TSV to clipboard');
+        this.showNotification('✗ Failed to copy to clipboard', 'error');
+        this.emit('copy', { format: 'tsv', success: false, error: 'Failed to copy to clipboard' });
+      }
+    }).catch((error) => {
+      console.error('Error copying TSV to clipboard:', error);
+      this.showNotification('✗ Failed to copy to clipboard', 'error');
+      this.emit('copy', { format: 'tsv', success: false, error: error.message });
     });
   }
 

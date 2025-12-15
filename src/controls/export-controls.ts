@@ -6,12 +6,14 @@
 export interface ExportControlsConfig {
   onMarkdownCopy?: () => void;
   onCsvCopy?: () => void;
+  onTsvCopy?: () => void;
 }
 
 export class ExportControls {
   private container: HTMLDivElement;
   private markdownButton: HTMLButtonElement;
   private csvButton: HTMLButtonElement;
+  private tsvButton: HTMLButtonElement;
   private config: ExportControlsConfig;
 
   constructor(config: ExportControlsConfig) {
@@ -29,9 +31,11 @@ export class ExportControls {
     // Create buttons
     this.markdownButton = this.createMarkdownButton();
     this.csvButton = this.createCsvButton();
+    this.tsvButton = this.createTsvButton();
 
     this.container.appendChild(this.markdownButton);
     this.container.appendChild(this.csvButton);
+    this.container.appendChild(this.tsvButton);
   }
 
   private createMarkdownButton(): HTMLButtonElement {
@@ -57,6 +61,20 @@ export class ExportControls {
     button.addEventListener('click', () => {
       if (this.config.onCsvCopy) {
         this.config.onCsvCopy();
+      }
+    });
+    return button;
+  }
+
+  private createTsvButton(): HTMLButtonElement {
+    const button = document.createElement('button');
+    button.className = 'table-export-button';
+    button.textContent = 'TSV';
+    button.title = 'Copy table as TSV (tab-delimited) to clipboard';
+    button.setAttribute('aria-label', 'Copy as TSV');
+    button.addEventListener('click', () => {
+      if (this.config.onTsvCopy) {
+        this.config.onTsvCopy();
       }
     });
     return button;
