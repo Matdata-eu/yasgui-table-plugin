@@ -48,7 +48,7 @@
     "eslint": "^9.39.2",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.2.0",
-    "jsdom": "^27.3.0",
+    "jest-environment-jsdom": "^30.2.0",
     "postcss": "^8.4.32",
     "postcss-import": "^16.1.1",
     "prettier": "^3.7.4",
