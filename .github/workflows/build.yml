@@ -31,7 +31,7 @@ jobs:
 
       - name: Build unminified bundle with esbuild
         run: |
-          npx esbuild src/index.js \
+          npx esbuild src/index.ts \
             --bundle \
             --format=iife \
             --global-name=YasguitablePlugin \
@@ -44,7 +44,7 @@ jobs:
 
       - name: Build minified bundle with esbuild
         run: |
-          npx esbuild src/index.js \
+          npx esbuild src/index.ts \
             --bundle \
             --minify \
             --format=iife \
