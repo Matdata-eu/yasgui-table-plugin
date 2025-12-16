@@ -2,9 +2,14 @@
  * Plugin Entry Point
  * Exports the TablePlugin class as default export
  */
+import TablePlugin from './TablePlugin.js';
 
-export { TablePlugin } from './plugin';
-export { TablePlugin as default } from './plugin';
+// Auto-register plugin if Yasgui is available (UMD global)
+if (typeof window !== 'undefined' && window.Yasgui && window.Yasgui.Yasr) {
+  window.Yasgui.Yasr.registerPlugin('Table', TablePlugin);
+}
+
+export default TablePlugin;
 
 // Export types for consumers
 export type {

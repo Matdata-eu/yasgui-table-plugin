@@ -22,12 +22,6 @@ import { getCurrentTheme, watchThemeChanges } from './utils/theme.js';
 
 type EventHandler = (...args: unknown[]) => void;
 
-interface Yasr {
-  results?: SparqlResults;
-  container: HTMLElement;
-  config: unknown;
-}
-
 interface PersistentConfig {
   [key: string]: unknown;
 }
@@ -39,15 +33,11 @@ interface DownloadInfo {
   buttonTitle: string;
 }
 
-export class TablePlugin {
-  // Plugin metadata (required by YASR) - must be instance properties
-  public label: string = 'Table-Dev';
-  public priority: number = 10;
+class TablePlugin {
   public helpReference?: string;
   
   private iconSvg: string = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v4h4V5H5zm6 0v4h4V5h-4zm6 0v4h4V5h-4zM5 11v4h4v-4H5zm6 0v4h4v-4h-4zm6 0v4h4v-4h-4zM5 17v2h4v-2H5zm6 0v2h4v-2h-4zm6 0v2h4v-2h-4z"/></svg>';
 
-  private yasr: Yasr;
   private config: TabulatorPluginConfig;
   private table: Tabulator | null = null;
   private container: HTMLElement | null = null;
@@ -62,12 +52,12 @@ export class TablePlugin {
   private eventHandlers: Map<string, EventHandler[]> = new Map();
   private themeObserverCleanup: (() => void) | null = null;
 
-  constructor(yasr: Yasr) {
+  constructor(yasr) {
     this.yasr = yasr;
     this.helpReference = 'https://yasgui-doc.matdata.eu/docs/user-guide#table-plugin';
     
     // Get plugin config from yasr.config if available
-    const pluginConfig = (yasr.config as any)?.pluginsOptions?.['Table-Dev'] as TabulatorPluginConfig | undefined;
+    const pluginConfig = (yasr.config as any)?.pluginsOptions?.['Table'] as TabulatorPluginConfig | undefined;
     this.config = { ...DEFAULT_CONFIG, ...pluginConfig };
 
     // Validate and merge config
@@ -91,7 +81,22 @@ export class TablePlugin {
   }
 
   /**
+   * Plugin priority (higher = shown first in tabs)
+   */
+  static get priority() {
+    return 10;
+  }
+
+  /**
+   * Plugin label for tab display
+   */
+  static get label() {
+    return 'Table';
+  }
+
+  /**
    * Return icon for plugin selector
+   * @returns {Element} Icon element
    */
   getIcon(): Element | undefined {
     const iconEl = document.createElement('div');
@@ -100,12 +105,13 @@ export class TablePlugin {
   }
 
   /**
-   * Determines if plugin can handle current results
-   * Returns true for SPARQL SELECT queries only
+   * Check if plugin can handle the current results
+   * @returns {boolean} True if results are tabular
    */
   canHandleResults(): boolean {
+    if (!this.yasr || !this.yasr.results) return false;
+
     const results = this.yasr.results;
-    if (!results) return false;
     
     // YASR wraps results in a json property
     const data = (results as { json?: SparqlResults }).json || (results as SparqlResults);
@@ -349,7 +355,7 @@ export class TablePlugin {
   }
 
   /**
-   * Provide download functionality (required by Plugin interface)
+   * Provide download functionality (used by Yasr Plugin interface)
    */
   download(filename?: string): DownloadInfo | undefined {
     const results = this.getResultsData();
@@ -844,3 +850,5 @@ export class TablePlugin {
     this.emit('search', { searchTerm, filteredCount, totalCount });
   }
 }
+
+export default TablePlugin;
