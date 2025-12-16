@@ -2,8 +2,12 @@
 <!--
   YASGUI Table Plugin - Demo Page
   
-  Demonstrates the advanced table plugin for YASGUI with virtual scrolling,
-  search, filtering, column management, cell selection, and export features.
+  This demo automatically detects the environment:
+  - Development (localhost/file): Loads ES modules from src/ for live reload
+  - Production (GitHub Pages): Loads minified bundle from dist/
+  
+  To develop locally: Open this file directly or run: npm run dev
+  For production builds: npm run build
 -->
 <html lang="en">
 <head>
@@ -12,7 +16,7 @@
   <title>YASGUI Table Plugin Demo</title>
   
   <!-- YASGUI CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@matdata/yasgui@5.5.0/build/yasgui.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@matdata/yasgui@5.6.0/build/yasgui.min.css">
   
   <!-- Table Plugin CSS -->
   <link rel="stylesheet" href="../dist/table-plugin.css">
@@ -98,6 +102,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
   </style>
+  
 </head>
 <body>
   <h1>🔷 YASGUI TABLE Plugin Demo</h1>
@@ -133,7 +138,7 @@
   <div id="yasgui"></div>
   
   <!-- YASGUI JavaScript -->
-  <script src="https://cdn.jsdelivr.net/npm/@matdata/yasgui@5.5.0/build/yasgui.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@matdata/yasgui@5.6.0/build/yasgui.min.js"></script>
   
   <!-- Table Plugin JavaScript -->
   <!-- Vite will automatically replace this with ES modules during dev, or use the built version for production -->
@@ -141,26 +146,33 @@
     // Detect if running in Vite dev server (module system available)
     const isViteDev = import.meta.env?.DEV;
     
+    let pluginLoaded = false;
+
     if (isViteDev) {
       // Development mode: Load plugin from source
-      const { TablePlugin } = await import('@matdata/yasgui-table-plugin');
+      const { default: TablePlugin } = await import('@matdata/yasgui-table-plugin');
       window.YasguiTablePlugin = { TablePlugin };
+      pluginLoaded = true;
       console.log('✅ Table Plugin loaded from source (Vite dev mode)');
-    } else {
-      // Production mode: Load from built UMD bundle
-      // This runs when opening index.html directly in browser
-      if (!window.YasguiTablePlugin) {
-        const script = document.createElement('script');
-        script.src = '../dist/table-plugin.umd.js';
-        await new Promise((resolve, reject) => {
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
-        console.log('✅ Table Plugin loaded from bundle (production mode)');
-      }
-    }
+    }     
     
+    // In production mode or if dev load failed, load the bundle
+    if (!pluginLoaded) {
+      const script = document.createElement('script');
+      await new Promise((resolve, reject) => {
+        script.onload = () => {
+          console.log('✅ Table Plugin loaded from bundle (production mode)');
+          resolve();
+        };
+        script.onerror = () => {
+          console.error('❌ Failed to load Table Plugin bundle');
+          reject();
+        };
+        document.head.appendChild(script);
+        script.src = './dist/yasgui-table-plugin.min.js';
+      });
+    }
+
     // Initialize demo after plugin is loaded
     // Sample SELECT queries for testing the table plugin
     const queries = {
