@@ -1,5 +1,8 @@
 # YASGUI Table Plugin
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![npm version](https://img.shields.io/npm/v/@matdata/yasgui-table-plugin.svg)](https://www.npmjs.com/package/@matdata/yasgui-table-plugin)
+
 High-performance YASGUI plugin for rendering SPARQL SELECT results in an interactive table with advanced features.
 
 ## Features
