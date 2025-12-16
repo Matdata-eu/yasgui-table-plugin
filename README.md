@@ -30,8 +30,8 @@ npm install @matdata/yasgui-table-plugin
 ### CDN
 
 ```html
-<script src="https://unpkg.com/@matdata/yasgui-table-plugin/dist/table-plugin.umd.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/@matdata/yasgui-table-plugin/dist/table-plugin.css">
+<script src="https://unpkg.com/@matdata/yasgui-table-plugin/dist/yasgui-table-plugin.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@matdata/yasgui-table-plugin/dist/yasgui-table-plugin.css">
 ```
 
 ## Quick Start
@@ -40,7 +40,7 @@ npm install @matdata/yasgui-table-plugin
 import Yasgui from '@yasgui/yasgui';
 import TablePlugin from '@matdata/yasgui-table-plugin';
 import '@yasgui/yasgui/build/yasgui.min.css';
-import '@matdata/yasgui-table-plugin/dist/table-plugin.css';
+import '@matdata/yasgui-table-plugin/dist/yasgui-table-plugin.css';
 
 // Register the plugin
 Yasgui.Yasr.plugins.table = TablePlugin;
@@ -151,11 +151,11 @@ npm run build
 # Run tests
 npm run test
 
-# Lint
-npm run lint
+# Run tests in watch mode
+npm run test:watch
 
-# Format code
-npm run format
+# Run tests with coverage
+npm run test:coverage
 ```
 
 ### Development Server
@@ -171,16 +171,15 @@ The demo automatically loads the plugin from source during development for live 
 ### Build System
 
 The project uses **esbuild** for production builds with:
-- UMD and ESM module formats
+- CJS, ESM, and minified UMD module formats
 - PostCSS for CSS processing
 - TypeScript type declarations
-- Watch mode for development (`npm run dev:build`)
 
-Build outputs are generated in `dist/` with both `.umd.js` and `.esm.js` formats.
+Build outputs are generated in `dist/` with `.cjs.js`, `.esm.js`, and `.min.js` formats.
 
 ## License
 
-MIT
+Apache-2.0
 
 ## Contributing
 
