@@ -3,7 +3,7 @@
  */
 
 :root,
-[data-theme='light'] {
+.yasgui-table-plugin[data-theme='light'] {
   /* Background colors */
   --table-background: #ffffff;
   --table-header-background: #f5f5f5;

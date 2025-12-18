@@ -67,15 +67,15 @@
 }
 
 .yasgui-table-plugin .tabulator-header {
-  background-color: var(--table-header-background);
+  background-color: var(--table-header-background) !important;
   border-bottom-color: var(--table-border);
   color: var(--table-text);
 }
 
 .yasgui-table-plugin .tabulator-col {
-  background-color: var(--table-header-background);
+  background-color: var(--table-header-background) !important;
   border-right-color: var(--table-border);
-  color: var(--table-text);
+  color: var(--table-text) !important;
 }
 
 .yasgui-table-plugin .tabulator-row {
