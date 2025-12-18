@@ -1,149 +1,138 @@
 <!DOCTYPE html>
 <!--
-  YASGUI Table Plugin - Demo Page
+  Table Plugin Standalone Demo
   
-  This demo automatically detects the environment:
-  - Development (localhost/file): Loads ES modules from src/ for live reload
-  - Production (GitHub Pages): Loads minified bundle from dist/
+  This demo runs the table plugin independently without YASGUI to avoid conflicts.
+  It uses mock SPARQL results to demonstrate all plugin features.
   
-  To develop locally: Open this file directly or run: npm run dev
+  To develop locally: npm run dev (http://localhost:3000)
   For production builds: npm run build
 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YASGUI Table Plugin Demo</title>
+  <title>Table Plugin - Standalone Demo</title>
   
-  <!-- YASGUI CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@matdata/yasgui@5.6.0/build/yasgui.min.css">
-    
   <style>
+    * {
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       margin: 0;
       padding: 20px;
-      padding-top: 0px;
       background: #f5f5f5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
     
     h1 {
       color: #333;
-      margin-bottom: 5px;
+      margin: 0 0 10px 0;
+      font-size: 28px;
     }
     
-    .instructions {
+    .controls-bar {
       background: white;
-      padding: 5px;
+      padding: 12px;
       border-radius: 4px;
-      margin-bottom: 5px;      
+      margin-bottom: 12px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
     }
     
-    .instructions h2 {
-      margin-top: 0;
-      font-size: 18px;
-      color: #2196F3;
+    .controls-bar button {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
       cursor: pointer;
-      user-select: none;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .controls-bar button:hover {
+      background: #f5f5f5;
+      border-color: #1976d2;
+    }
+    
+    .controls-bar button.active {
+      background: #1976d2;
+      color: white;
+      border-color: #1976d2;
+    }
+    
+    .controls-bar select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      background: white;
+    }
+    
+    .controls-bar label {
+      font-size: 14px;
+      color: #666;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
     
-    .instructions h2:hover {
-      color: #0b7dda;
-    }
-    
-    .toggle-icon {
-      transition: transform 0.3s ease;
-      font-size: 14px;
-    }
-    
-    .toggle-icon.collapsed {
-      transform: rotate(-90deg);
-    }
-    
-    .instructions-content {
-      max-height: 500px;
-      overflow: hidden;
-      transition: max-height 0.3s ease, opacity 0.3s ease;
-      opacity: 1;
-    }
-    
-    .instructions-content.collapsed {
-      max-height: 0;
-      opacity: 0;
-    }
-    
-    .instructions ul {
-      margin: 10px 0;
-      padding-left: 20px;
-    }
-    
-    .instructions li {
-      margin: 5px 0;
-    }
-    
-    .instructions code {
-      background: #f0f0f0;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-family: monospace;
-    }
-    
-    #yasgui {
-      height: 800px;
+    #demo-container {
+      flex: 1;
       background: white;
       border-radius: 4px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+    
+    .info {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      border-left: 3px solid #1976d2;
     }
   </style>
   
 </head>
 <body>
-  <h1>🔷 YASGUI TABLE Plugin Demo</h1>
+  <h1>🔷 Table Plugin Standalone Demo</h1>
   
-  <div class="instructions">
-    <h2 onclick="toggleInstructions()">
-      <span class="toggle-icon collapsed">▼</span>
-      <span>📖 Features & Instructions</span>
-    </h2>
-    <div class="instructions-content collapsed">
-      <ul>
-        <li><strong>🚀 Virtual Scrolling</strong>: Efficiently handles 10,000+ rows with smooth performance</li>
-        <li><strong>🔍 Search & Filter</strong>: Type in the search box to filter rows in real-time</li>
-        <li><strong>📊 Column Management</strong>: Click headers to sort, drag edges to resize columns</li>
-        <li><strong>🎨 Display Controls</strong>: Toggle between full/abbreviated URIs, show/hide datatypes, enable ellipsis mode</li>
-        <li><strong>📋 Selection & Copy</strong>: Click cells to select, <code>Ctrl+C</code> to copy as TSV, <code>Esc</code> to clear</li>
-        <li><strong>💾 Export</strong>: Export table as Markdown, CSV to clipboard, or download CSV file</li>
-        <li><strong>🎯 SPARQL-Aware</strong>: Proper rendering of URIs, literals with datatypes, and blank nodes</li>
-        <li><strong>Sample Queries</strong>: Try DBpedia (people), Wikidata (cities), or Custom endpoint queries</li>
-      </ul>
+  <div class="controls-bar">
+    <label>
+      Dataset:
+      <select id="dataset-selector">
+        <option value="people">Sample People (20 rows)</option>
+        <option value="datatypes">Datatypes Test (10 rows)</option>
+        <option value="large">Large Dataset (1000 rows)</option>
+        <option value="unicode">Unicode & Special Chars</option>
+      </select>
+    </label>
+    
+    <button id="theme-toggle">Toggle Theme</button>
+    
+    <div class="info">
+      💡 This demo runs the plugin standalone without YASGUI to avoid conflicts
     </div>
   </div>
   
-  <script>
-    function toggleInstructions() {
-      const content = document.querySelector('.instructions-content');
-      const icon = document.querySelector('.toggle-icon');
-      content.classList.toggle('collapsed');
-      icon.classList.toggle('collapsed');
-    }
-  </script>
+  <div id="demo-container"></div>
   
-  <div id="yasgui"></div>
-  
-  <!-- YASGUI JavaScript -->
-  <script src="https://cdn.jsdelivr.net/npm/@matdata/yasgui@5.6.0/build/yasgui.min.js"></script>
-  
-  <!-- Table Plugin JavaScript -->
-  <!-- Vite will automatically replace this with ES modules during dev, or use the built version for production -->
   <script type="module">
-    // Detect if running in Vite dev server (module system available)
+    // Detect if running in Vite dev server
     const isViteDev = import.meta.env?.DEV;
     
-    // Load appropriate CSS based on environment
+    // Load appropriate CSS
     const cssPath = isViteDev ? '../dist/yasgui-table-plugin.css' : 'dist/yasgui-table-plugin.css';
     const cssLink = document.createElement('link');
     cssLink.rel = 'stylesheet';
@@ -151,113 +140,117 @@
     document.head.appendChild(cssLink);
     console.log(`📄 Loading CSS from: ${cssPath}`);
     
-    let pluginLoaded = false;
-
+    // Load plugin
+    let TablePlugin;
     if (isViteDev) {
-      // Development mode: Load plugin from source
-      const { default: TablePlugin } = await import('@matdata/yasgui-table-plugin');
-      window.YasguiTablePlugin = { TablePlugin };
-      pluginLoaded = true;
-      console.log('✅ Table Plugin loaded from source (Vite dev mode)');
-    }     
-    
-    // In production mode or if dev load failed, load the bundle
-    if (!pluginLoaded) {
+      const module = await import('@matdata/yasgui-table-plugin');
+      TablePlugin = module.default;
+      console.log('✅ Loaded from source (dev mode)');
+    } else {
+      // In production, load from dist
       const script = document.createElement('script');
       await new Promise((resolve, reject) => {
-        script.onload = () => {
-          console.log('✅ Table Plugin loaded from bundle (production mode)');
-          resolve();
-        };
-        script.onerror = () => {
-          console.error('❌ Failed to load Table Plugin bundle');
-          reject();
-        };
-        document.head.appendChild(script);
+        script.onload = resolve;
+        script.onerror = reject;
         script.src = './dist/yasgui-table-plugin.min.js';
+        document.head.appendChild(script);
       });
+      TablePlugin = window.YasguiTablePlugin?.TablePlugin;
+      console.log('✅ Loaded from bundle (production mode)');
     }
 
-    // Initialize demo after plugin is loaded
-    // Sample SELECT queries for testing the table plugin
-    const queries = {
-      dbpedia: `PREFIX dbo: <http://dbpedia.org/ontology/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-
-# Query DBpedia for notable people
-SELECT ?person ?name ?birth ?description
-WHERE {
-  ?person a dbo:Person ;
-          rdfs:label ?name ;
-          dbo:birthDate ?birth .
-  FILTER (lang(?name) = 'en')
-  FILTER (year(?birth) > 1950)
-}
-LIMIT 100`,
-
-      wikidata: `PREFIX bd: <http://www.bigdata.com/rdf#>
-PREFIX wikibase: <http://wikiba.se/ontology#>
-PREFIX wd: <http://www.wikidata.org/entity/>
-PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-
-# Query Wikidata for cities with population
-SELECT ?city ?cityLabel ?country ?countryLabel ?population ?coord
-WHERE {
-  ?city wdt:P31 wd:Q515 ;           # instance of city
-        wdt:P17 ?country ;           # country
-        wdt:P1082 ?population ;      # population
-        wdt:P625 ?coord .            # coordinates
-  FILTER (?population > 1000000)     # cities with 1M+ people
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-}
-ORDER BY DESC(?population)
-LIMIT 50`,
-
-      datatypes: `# Test different SPARQL datatypes
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX ex: <http://example.org/>
-
-SELECT ?subject ?stringVal ?intVal ?dateVal ?boolVal ?uriVal
-WHERE {
-  VALUES (?subject ?stringVal ?intVal ?dateVal ?boolVal ?uriVal) {
-    (ex:Item1 "Hello World" 42 "2023-01-15"^^xsd:date true <http://example.org/resource1>)
-    (ex:Item2 "Test String with a very long value to test ellipsis mode truncation feature" 100 "2023-06-20"^^xsd:date false <http://example.org/resource2>)
-    (ex:Item3 "Another Value" -15 "2023-12-25"^^xsd:date true <http://example.org/resource3>)
-  }
-}`,
-
-      large: `# Large result set to test virtual scrolling
-SELECT ?s ?p ?o
-WHERE {
-  ?s ?p ?o .
-}
-LIMIT 1000`
+    // Mock SPARQL results datasets
+    const mockData = {
+      people: {
+        head: { vars: ['person', 'name', 'birthDate', 'nationality', 'occupation', 'email', 'phone', 'address', 'city', 'country', 'postalCode', 'company', 'department', 'title', 'salary', 'hireDate', 'manager', 'projects', 'skills', 'certifications'] },
+        results: {
+          bindings: Array.from({ length: 20 }, (_, i) => ({
+            person: { type: 'uri', value: `http://example.org/person/${i + 1}` },
+            name: { type: 'literal', value: `Person ${i + 1}` },
+            birthDate: { type: 'literal', value: `${1950 + i}-0${(i % 9) + 1}-${(i % 28) + 1}`, datatype: 'http://www.w3.org/2001/XMLSchema#date' },
+            nationality: { type: 'literal', value: ['American', 'British', 'French', 'German', 'Italian'][i % 5], 'xml:lang': 'en' },
+            occupation: { type: 'literal', value: ['Scientist', 'Artist', 'Writer', 'Musician', 'Engineer'][i % 5] },
+            email: { type: 'literal', value: `person${i + 1}@example.org` },
+            phone: { type: 'literal', value: `+1-555-${String(i).padStart(4, '0')}` },
+            address: { type: 'literal', value: `${100 + i * 10} Main Street` },
+            city: { type: 'literal', value: ['New York', 'London', 'Paris', 'Berlin', 'Tokyo'][i % 5] },
+            country: { type: 'literal', value: ['USA', 'UK', 'France', 'Germany', 'Japan'][i % 5] },
+            postalCode: { type: 'literal', value: `${10000 + i * 100}` },
+            company: { type: 'uri', value: `http://example.org/company/${(i % 5) + 1}` },
+            department: { type: 'literal', value: ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance'][i % 5] },
+            title: { type: 'literal', value: ['Senior Developer', 'Manager', 'Director', 'VP', 'CEO'][i % 5] },
+            salary: { type: 'literal', value: `${50000 + i * 5000}`, datatype: 'http://www.w3.org/2001/XMLSchema#decimal' },
+            hireDate: { type: 'literal', value: `${2010 + (i % 10)}-${String((i % 12) + 1).padStart(2, '0')}-15`, datatype: 'http://www.w3.org/2001/XMLSchema#date' },
+            manager: { type: 'uri', value: `http://example.org/person/${((i + 1) % 5) + 1}` },
+            projects: { type: 'literal', value: `${(i % 10) + 1}`, datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+            skills: { type: 'literal', value: ['Python, JavaScript, SQL', 'Java, C++, Go', 'React, Vue, Angular', 'AWS, Azure, GCP', 'Docker, Kubernetes, CI/CD'][i % 5] },
+            certifications: { type: 'literal', value: ['AWS Certified', 'Google Cloud Pro', 'Azure Expert', 'Kubernetes Admin', 'Scrum Master'][i % 5] }
+          }))
+        }
+      },
+      
+      datatypes: {
+        head: { vars: ['subject', 'stringVal', 'intVal', 'dateVal', 'boolVal', 'uriVal'] },
+        results: {
+          bindings: [
+            {
+              subject: { type: 'uri', value: 'http://example.org/item/1' },
+              stringVal: { type: 'literal', value: 'Hello World' },
+              intVal: { type: 'literal', value: '42', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              dateVal: { type: 'literal', value: '2023-01-15', datatype: 'http://www.w3.org/2001/XMLSchema#date' },
+              boolVal: { type: 'literal', value: 'true', datatype: 'http://www.w3.org/2001/XMLSchema#boolean' },
+              uriVal: { type: 'uri', value: 'http://example.org/resource/1' }
+            },
+            {
+              subject: { type: 'uri', value: 'http://example.org/item/2' },
+              stringVal: { type: 'literal', value: 'This is a very long string value that should test the ellipsis mode truncation feature when it is enabled in the plugin configuration settings' },
+              intVal: { type: 'literal', value: '100', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              dateVal: { type: 'literal', value: '2023-06-20', datatype: 'http://www.w3.org/2001/XMLSchema#date' },
+              boolVal: { type: 'literal', value: 'false', datatype: 'http://www.w3.org/2001/XMLSchema#boolean' },
+              uriVal: { type: 'uri', value: 'http://example.org/resource/2' }
+            },
+            {
+              subject: { type: 'bnode', value: '_:b1' },
+              stringVal: { type: 'literal', value: 'Blank node example' },
+              intVal: { type: 'literal', value: '-15', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              dateVal: { type: 'literal', value: '2023-12-25', datatype: 'http://www.w3.org/2001/XMLSchema#date' },
+              boolVal: { type: 'literal', value: 'true', datatype: 'http://www.w3.org/2001/XMLSchema#boolean' },
+              uriVal: { type: 'uri', value: 'http://example.org/resource/3' }
+            }
+          ]
+        }
+      },
+      
+      large: {
+        head: { vars: ['id', 'subject', 'predicate', 'object', 'timestamp'] },
+        results: {
+          bindings: Array.from({ length: 1000 }, (_, i) => ({
+            id: { type: 'literal', value: `${i + 1}`, datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+            subject: { type: 'uri', value: `http://example.org/subject/${i % 100}` },
+            predicate: { type: 'uri', value: `http://example.org/predicate/${i % 20}` },
+            object: { type: 'literal', value: `Object value ${i}` },
+            timestamp: { type: 'literal', value: new Date(2023, 0, 1 + (i % 365)).toISOString().split('T')[0], datatype: 'http://www.w3.org/2001/XMLSchema#date' }
+          }))
+        }
+      },
+      
+      unicode: {
+        head: { vars: ['language', 'text', 'special'] },
+        results: {
+          bindings: [
+            { language: { type: 'literal', value: 'Chinese', 'xml:lang': 'en' }, text: { type: 'literal', value: '你好世界', 'xml:lang': 'zh' }, special: { type: 'literal', value: '<>&"\'@#$%' } },
+            { language: { type: 'literal', value: 'Japanese', 'xml:lang': 'en' }, text: { type: 'literal', value: 'こんにちは世界', 'xml:lang': 'ja' }, special: { type: 'literal', value: '\\n\\t\\r' } },
+            { language: { type: 'literal', value: 'Arabic', 'xml:lang': 'en' }, text: { type: 'literal', value: 'مرحبا بالعالم', 'xml:lang': 'ar' }, special: { type: 'literal', value: '🔷🚀📊' } },
+            { language: { type: 'literal', value: 'Russian', 'xml:lang': 'en' }, text: { type: 'literal', value: 'Привет мир', 'xml:lang': 'ru' }, special: { type: 'literal', value: 'test@example.com' } },
+            { language: { type: 'literal', value: 'Greek', 'xml:lang': 'en' }, text: { type: 'literal', value: 'Γεια σου κόσμε', 'xml:lang': 'el' }, special: { type: 'literal', value: 'http://example.org/path?query=value&foo=bar' } }
+          ]
+        }
+      }
     };
-    
-    // Register the table plugin
-    if (window.Yasgui && window.YasguiTablePlugin) {
-      Yasgui.Yasr.registerPlugin('Table-Dev', window.YasguiTablePlugin.TablePlugin);
-      console.log('✅ Table Plugin registered as "Table-Dev"');
-    } else {
-      console.error('❌ Failed to load Table Plugin - check that table-plugin.umd.js loaded correctly');
-    }
-    
-    // Initialize YASGUI
-    const yasgui = new Yasgui(document.getElementById('yasgui'), {
-      requestConfig: {
-        endpoint: 'https://dbpedia.org/sparql',
-      },
-      endpointButtons: [
-        { endpoint: "https://dbpedia.org/sparql", label: "DBpedia" },
-        { endpoint: "https://query.wikidata.org/sparql", label: "Wikidata" },
-        { endpoint: "http://localhost:3030/g/", label: "Local Fuseki" },
-        { endpoint: "https://data-interop.era.europa.eu/api/sparql", label: "ERA" }
-      ],
-      yasqe: {
-        value: queries.dbpedia
-      },
-      yasr: {
-        defaultPlugin: 'Table-Dev',
+
+    // Mock YASR-like interface
+    const mockYasr = {
+      config: {
         pluginsOptions: {
           Table: {
             displayConfig: {
@@ -265,54 +258,54 @@ LIMIT 1000`
               showDatatypes: true,
               ellipsisMode: false
             },
-            persistenceEnabled: true
+            persistenceEnabled: false
           }
         }
+      },
+      results: mockData.people,
+      resultsEl: document.getElementById('demo-container'),
+      getPrefixes: () => ({
+        'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+        'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
+        'xsd': 'http://www.w3.org/2001/XMLSchema#',
+        'ex': 'http://example.org/'
+      })
+    };
+
+    // Initialize plugin
+    let currentTheme = 'light';
+    let plugin = new TablePlugin(mockYasr);
+    
+    // Draw the plugin
+    await plugin.draw();
+    console.log('✅ Plugin initialized with sample data');
+
+    // Theme toggle
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      const pluginContainer = document.querySelector('.yasgui-table-plugin');
+      if (pluginContainer) {
+        pluginContainer.setAttribute('data-theme', currentTheme);
       }
+      console.log(`🎨 Theme: ${currentTheme}`);
     });
-    
-    // Add example query tabs
-    const tabs = [
-      { name: 'DBpedia People', query: queries.dbpedia, endpoint: 'https://dbpedia.org/sparql' },
-      { name: 'Wikidata Cities', query: queries.wikidata, endpoint: 'https://query.wikidata.org/sparql' },
-      { name: 'Datatypes Test', query: queries.datatypes, endpoint: 'https://dbpedia.org/sparql' },
-      { name: 'Large Dataset', query: queries.large, endpoint: 'https://dbpedia.org/sparql' }
-    ];
-    
-    // Close all existing tabs
-    let tab;
-    while ((tab = yasgui.getTab()) != null) {
-      try {
-        tab.close();
-      } catch (e) {
-        console.error('Failed to close tab:', e);
-        break;
+
+    // Dataset switcher
+    document.getElementById('dataset-selector').addEventListener('change', async (e) => {
+      const dataset = e.target.value;
+      mockYasr.results = mockData[dataset];
+      
+      // Redraw plugin with new data
+      await plugin.draw();
+      
+      // Reapply theme
+      const pluginContainer = document.querySelector('.yasgui-table-plugin');
+      if (pluginContainer) {
+        pluginContainer.setAttribute('data-theme', currentTheme);
       }
-    }
-    
-    // Add sample tabs
-    tabs.forEach((tab, index) => {
-      yasgui.addTab(
-        index === 0, // set first tab as active
-        { 
-          name: tab.name,
-          requestConfig: { endpoint: tab.endpoint },
-          yasqe: { value: tab.query }
-        }
-      );
+      
+      console.log(`📊 Loaded dataset: ${dataset} (${mockData[dataset].results.bindings.length} rows)`);
     });
-    
-    // Log plugin info for debugging
-    setTimeout(() => {
-      const currentTab = yasgui.getTab();
-      if (currentTab && currentTab.yasr) {
-        console.log('✅ YASR instance ready');
-        console.log('Available plugins:', Object.keys(currentTab.yasr.plugins));
-        
-        // Note: Event listeners would be attached here if the plugin exposes an event API
-        // The table plugin works through YASR's plugin system automatically
-      }
-    }, 1000);
   </script>
   </script>
 </body>
