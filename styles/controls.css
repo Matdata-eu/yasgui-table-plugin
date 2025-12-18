@@ -8,8 +8,8 @@
   align-items: center;
   gap: 12px;
   padding: 6px 12px;
-  background: var(--table-control-background, #f5f5f5);
-  border-bottom: 1px solid var(--table-control-border, #dddddd);
+  background: var(--table-control-background);
+  border-bottom: 1px solid var(--table-control-border);
   flex-wrap: wrap;
 }
 
@@ -22,7 +22,7 @@
 .yasgui-table-control-separator {
   width: 1px;
   height: 20px;
-  background: var(--table-control-border, #dddddd);
+  background: var(--table-control-border);
 }
 
 /* Search input */
@@ -32,17 +32,17 @@
 
 .yasgui-table-search input {
   padding: 6px 32px 0px 10px;
-  border: 1px solid var(--table-control-border, #dddddd);
+  border: 1px solid var(--table-control-border);
   border-radius: 4px;
   font-size: 14px;
   min-width: 200px;
-  background: var(--table-background, #ffffff);
-  color: var(--table-text, #000000);
+  background: var(--table-background);
+  color: var(--table-text);
 }
 
 .yasgui-table-search input:focus {
   outline: none;
-  border-color: var(--table-primary, #1976d2);
+  border-color: var(--table-primary);
 }
 
 .yasgui-table-search-icon {
@@ -50,24 +50,24 @@
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--table-text-muted, #999999);
+  color: var(--table-text-muted);
   pointer-events: none;
 }
 
 /* Buttons */
 .yasgui-table-button {
   padding: 6px 12px;
-  border: 1px solid var(--table-control-border, #dddddd);
+  border: 1px solid var(--table-control-border);
   border-radius: 4px;
-  background: var(--table-background, #ffffff);
-  color: var(--table-text, #000000);
+  background: var(--table-background);
+  color: var(--table-text);
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .yasgui-table-button:hover {
-  background: var(--table-control-hover, #e8e8e8);
+  background: var(--table-control-hover);
 }
 
 .yasgui-table-button:active {
@@ -75,17 +75,17 @@
 }
 
 .yasgui-table-button.active {
-  background: var(--table-primary, #1976d2);
+  background: var(--table-primary);
   color: #ffffff;
-  border-color: var(--table-primary, #1976d2);
+  border-color: var(--table-primary);
 }
 
 /* Icon buttons */
 .yasgui-table-icon-button {
   padding: 6px 6px;
-  border: 1px solid var(--table-control-border, #dddddd);
+  border: 1px solid var(--table-control-border);
   border-radius: 4px;
-  background: var(--table-background, #ffffff);
+  background: var(--table-background);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -94,7 +94,7 @@
 }
 
 .yasgui-table-icon-button:hover {
-  background: var(--table-control-hover, #e8e8e8);
+  background: var(--table-control-hover);
 }
 
 .yasgui-table-icon-button svg {
@@ -106,7 +106,7 @@
 /* Labels */
 .yasgui-table-label {
   font-size: 14px;
-  color: var(--table-text, #000000);
+  color: var(--table-text);
   margin-right: 4px;
 }
 
@@ -116,8 +116,8 @@
   align-items: center;
   gap: 12px;
   padding: 6px 12px;
-  background: var(--table-control-background, #f5f5f5);
-  border-bottom: 1px solid var(--table-control-border, #dddddd);
+  background: var(--table-control-background);
+  border-bottom: 1px solid var(--table-control-border);
 }
 
 .table-search-input {
@@ -125,10 +125,10 @@
   min-width: 200px;
   max-width: 400px;
   padding: 6px 12px;
-  border: 1px solid var(--table-control-border, #dddddd);
+  border: 1px solid var(--table-control-border);
   border-radius: 4px;
-  background: var(--table-background, #ffffff);
-  color: var(--table-text, #000000);
+  background: var(--table-background);
+  color: var(--table-text);
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.2s ease;
@@ -136,17 +136,17 @@
 
 .table-search-input:focus {
   outline: none;
-  border-color: var(--table-primary, #1976d2);
+  border-color: var(--table-primary);
   box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
 }
 
 .table-search-input::placeholder {
-  color: var(--table-text-muted, #999999);
+  color: var(--table-text-muted);
 }
 
 .table-row-count {
   font-size: 13px;
-  color: var(--table-text-secondary, #666666);
+  color: var(--table-text-secondary);
   white-space: nowrap;
   user-select: none;
 }
@@ -163,8 +163,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--table-control-background, #f5f5f5);
-  border-bottom: 1px solid var(--table-control-border, #dddddd);
+  background: var(--table-control-background);
+  border-bottom: 1px solid var(--table-control-border);
 }
 
 .table-controls-toolbar .table-search-control {
@@ -182,16 +182,16 @@
 
 .table-control-label {
   font-size: 13px;
-  color: var(--table-text-secondary, #666666);
+  color: var(--table-text-secondary);
   margin-right: 4px;
 }
 
 .table-toggle-button {
   padding: 6px 12px;
-  border: 1px solid var(--table-control-border, #dddddd);
+  border: 1px solid var(--table-control-border);
   border-radius: 4px;
-  background: var(--table-background, #ffffff);
-  color: var(--table-text, #000000);
+  background: var(--table-background);
+  color: var(--table-text);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
@@ -200,8 +200,8 @@
 }
 
 .table-toggle-button:hover {
-  background: var(--table-control-hover, #e8e8e8);
-  border-color: var(--table-primary, #1976d2);
+  background: var(--table-control-hover);
+  border-color: var(--table-primary);
 }
 
 .table-toggle-button:active {
@@ -209,9 +209,9 @@
 }
 
 .table-toggle-button.active {
-  background: var(--table-primary, #1976d2);
+  background: var(--table-primary);
   color: #ffffff;
-  border-color: var(--table-primary, #1976d2);
+  border-color: var(--table-primary);
 }
 
 .table-toggle-button:focus {
@@ -238,8 +238,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: var(--table-background, #ffffff);
-  border: 1px solid var(--table-border, #dddddd);
+  background: var(--table-background);
+  border: 1px solid var(--table-border);
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   z-index: 1001;
@@ -255,14 +255,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 6px 20px;
-  border-bottom: 1px solid var(--table-border, #dddddd);
+  border-bottom: 1px solid var(--table-border);
 }
 
 .table-modal-title {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--table-text, #000000);
+  color: var(--table-text);
 }
 
 .table-modal-close {
@@ -270,7 +270,7 @@
   border: none;
   font-size: 28px;
   line-height: 1;
-  color: var(--table-text-muted, #999999);
+  color: var(--table-text-muted);
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -283,8 +283,8 @@
 }
 
 .table-modal-close:hover {
-  background: var(--table-control-hover, #e8e8e8);
-  color: var(--table-text, #000000);
+  background: var(--table-control-hover);
+  color: var(--table-text);
 }
 
 .table-modal-content {
@@ -294,7 +294,7 @@
   font-family: monospace;
   font-size: 14px;
   line-height: 1.6;
-  color: var(--table-text, #000000);
+  color: var(--table-text);
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -304,14 +304,14 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 6px 20px;
-  border-top: 1px solid var(--table-border, #dddddd);
+  border-top: 1px solid var(--table-border);
 }
 
 .table-modal-button {
   padding: 6px 16px;
-  border: 1px solid var(--table-primary, #1976d2);
+  border: 1px solid var(--table-primary);
   border-radius: 4px;
-  background: var(--table-primary, #1976d2);
+  background: var(--table-primary);
   color: #ffffff;
   font-size: 14px;
   font-family: inherit;
@@ -320,18 +320,18 @@
 }
 
 .table-modal-button:hover {
-  background: var(--table-link-hover, #1565c0);
-  border-color: var(--table-link-hover, #1565c0);
+  background: var(--table-link-hover);
+  border-color: var(--table-link-hover);
 }
 
 .table-modal-button-secondary {
-  background: var(--table-background, #ffffff);
-  color: var(--table-text, #000000);
-  border-color: var(--table-control-border, #dddddd);
+  background: var(--table-background);
+  color: var(--table-text);
+  border-color: var(--table-control-border);
 }
 
 .table-modal-button-secondary:hover {
-  background: var(--table-control-hover, #e8e8e8);
+  background: var(--table-control-hover);
 }
 
 /* Fit Controls */
@@ -340,15 +340,15 @@
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  border-left: 1px solid var(--table-control-border, #dddddd);
+  border-left: 1px solid var(--table-control-border);
 }
 
 .table-fit-button {
   padding: 6px 12px;
-  border: 1px solid var(--table-control-border, #dddddd);
+  border: 1px solid var(--table-control-border);
   border-radius: 4px;
-  background: var(--table-background, #ffffff);
-  color: var(--table-text, #000000);
+  background: var(--table-background);
+  color: var(--table-text);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
@@ -356,8 +356,8 @@
 }
 
 .table-fit-button:hover {
-  background: var(--table-control-hover, #e8e8e8);
-  border-color: var(--table-primary, #1976d2);
+  background: var(--table-control-hover);
+  border-color: var(--table-primary);
 }
 
 .table-fit-button:active {
@@ -370,21 +370,21 @@
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  border-left: 1px solid var(--table-control-border, #dddddd);
+  border-left: 1px solid var(--table-control-border);
 }
 
 .table-export-label {
   font-size: 13px;
-  color: var(--table-text-secondary, #666666);
+  color: var(--table-text-secondary);
   margin-right: 4px;
 }
 
 .table-export-button {
   padding: 6px 12px;
-  border: 1px solid var(--table-control-border, #dddddd);
+  border: 1px solid var(--table-control-border);
   border-radius: 4px;
-  background: var(--table-background, #ffffff);
-  color: var(--table-text, #000000);
+  background: var(--table-background);
+  color: var(--table-text);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
@@ -392,8 +392,8 @@
 }
 
 .table-export-button:hover {
-  background: var(--table-control-hover, #e8e8e8);
-  border-color: var(--table-primary, #1976d2);
+  background: var(--table-control-hover);
+  border-color: var(--table-primary);
 }
 
 .table-export-button:active {
@@ -401,12 +401,12 @@
 }
 
 .table-export-download {
-  background: var(--table-primary, #1976d2);
+  background: var(--table-primary);
   color: #ffffff;
-  border-color: var(--table-primary, #1976d2);
+  border-color: var(--table-primary);
 }
 
 .table-export-download:hover {
-  background: var(--table-link-hover, #1565c0);
-  border-color: var(--table-link-hover, #1565c0);
+  background: var(--table-link-hover);
+  border-color: var(--table-link-hover);
 }

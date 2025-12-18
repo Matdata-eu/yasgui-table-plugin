@@ -9,8 +9,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--table-background, #ffffff);
-  color: var(--table-text, #000000);
+  background: var(--table-background);
+  color: var(--table-text);
   position: absolute;
   top: 0;
   left: 0;
@@ -61,90 +61,71 @@
 .yasgui-table-plugin .tabulator {
   font-size: 14px;
   border: none;
+  background-color: var(--table-background);
+  color: var(--table-text);
+  border-color: var(--table-border);
 }
 
-/* Light mode - use standard Tabulator appearance */
-.yasgui-table-plugin[data-theme='light'] .tabulator {
-  background-color: #fff;
-  color: #333;
+.yasgui-table-plugin .tabulator-header {
+  background-color: var(--table-header-background);
+  border-bottom-color: var(--table-border);
+  color: var(--table-text);
 }
 
-.yasgui-table-plugin[data-theme='light'] .tabulator-header {
-  background-color: #f5f5f5;
-  border-bottom-color: #ddd;
+.yasgui-table-plugin .tabulator-col {
+  background-color: var(--table-header-background);
+  border-right-color: var(--table-border);
+  color: var(--table-text);
 }
 
-.yasgui-table-plugin[data-theme='light'] .tabulator-row:hover {
-  background-color: #f9f9f9;
+.yasgui-table-plugin .tabulator-row {
+  background-color: var(--table-background);
+  border-bottom-color: var(--table-border-light);
+  color: var(--table-text);
 }
 
-/* Dark mode - midnight theme colors */
-.yasgui-table-plugin[data-theme='dark'] .tabulator {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
-  border-color: #404040;
+.yasgui-table-plugin .tabulator-row:hover {
+  background-color: var(--table-row-hover);
 }
 
-.yasgui-table-plugin[data-theme='dark'] .tabulator-header {
-  background-color: #2a2a2a;
-  border-bottom-color: #404040;
-  color: #ffffff;
+.yasgui-table-plugin .tabulator-row.tabulator-selected {
+  background-color: var(--table-row-selected);
 }
 
-.yasgui-table-plugin[data-theme='dark'] .tabulator-col {
-  background-color: #2a2a2a;
-  border-right-color: #404040;
-  color: #ffffff;
-}
-
-.yasgui-table-plugin[data-theme='dark'] .tabulator-row {
-  background-color: #1e1e1e;
-  border-bottom-color: #333333;
-  color: #e0e0e0;
-}
-
-.yasgui-table-plugin[data-theme='dark'] .tabulator-row:hover {
-  background-color: #2a2a2a;
-}
-
-.yasgui-table-plugin[data-theme='dark'] .tabulator-row.tabulator-selected {
-  background-color: #1a3a52;
-}
-
-.yasgui-table-plugin[data-theme='dark'] .tabulator-cell {
-  border-right-color: #333333;
-  color: #e0e0e0;
+.yasgui-table-plugin .tabulator-cell {
+  border-right-color: var(--table-border-light);
+  color: var(--table-text);
 }
 
 /* Row number column */
 .yasgui-table-plugin .tabulator-col[tabulator-field='_rowNum'] {
-  background: var(--table-rownumber-background, #f9f9f9);
+  background: var(--table-rownumber-background);
   text-align: center;
   font-weight: 500;
-  color: var(--table-rownumber-text, #666);
+  color: var(--table-rownumber-text);
 }
 
 /* Loading state */
 .yasgui-table-plugin .tabulator-loader {
-  background: var(--table-background, #ffffff);
+  background: var(--table-background);
 }
 
 /* Empty table */
 .yasgui-table-plugin .tabulator-placeholder {
   text-align: center;
   padding: 40px;
-  color: var(--table-text-muted, #999);
+  color: var(--table-text-muted);
 }
 
 /* Cell formatters */
 .table-uri-link {
-  color: var(--table-uri-color, #0066cc);
+  color: var(--table-uri-color);
   text-decoration: none;
 }
 
 .table-uri-link:hover {
   text-decoration: underline;
-  color: var(--table-link-hover, #1565c0);
+  color: var(--table-link-hover);
 }
 
 .table-literal {
@@ -154,37 +135,37 @@
 }
 
 .table-literal-value {
-  color: var(--table-literal-color, #000);
+  color: var(--table-literal-color);
 }
 
 .table-literal-lang {
-  color: var(--table-datatype-color, #666);
+  color: var(--table-datatype-color);
   font-size: 0.9em;
   font-style: italic;
 }
 
 .table-literal-datatype {
-  color: var(--table-datatype-color, #666);
+  color: var(--table-datatype-color);
   font-size: 0.85em;
   font-family: monospace;
 }
 
 .table-bnode {
-  color: var(--table-bnode-color, #999);
+  color: var(--table-bnode-color);
   font-family: monospace;
 }
 
 /* Search highlight */
 mark {
-  background: var(--table-search-highlight, #ffeb3b);
-  color: var(--table-search-highlight-text, #000);
+  background: var(--table-search-highlight);
+  color: var(--table-search-highlight-text);
   padding: 0 2px;
 }
 
 /* Cell selection */
 .table-cell-selected {
-  background: var(--table-row-selected, #e3f2fd) !important;
-  outline: 2px solid var(--table-primary, #1976d2);
+  background: var(--table-row-selected) !important;
+  outline: 2px solid var(--table-primary);
   outline-offset: -2px;
 }
 

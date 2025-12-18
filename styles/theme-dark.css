@@ -38,5 +38,6 @@
   /* Controls */
   --table-control-background: #2a2a2a;
   --table-control-border: #404040;
-  --table-control-hover: #353535;
+  --table-control-hover: #363636;
+  --table-text-secondary: #aaaaaa;
 }
