@@ -116,6 +116,7 @@
         <option value="datatypes">Datatypes Test (10 rows)</option>
         <option value="large">Large Dataset (1000 rows)</option>
         <option value="unicode">Unicode & Special Chars</option>
+        <option value="ontology">Ontology/RDF Types (10 rows)</option>
       </select>
     </label>
     
@@ -245,6 +246,119 @@
             { language: { type: 'literal', value: 'Greek', 'xml:lang': 'en' }, text: { type: 'literal', value: 'Γεια σου κόσμε', 'xml:lang': 'el' }, special: { type: 'literal', value: 'http://example.org/path?query=value&foo=bar' } }
           ]
         }
+      },
+      
+      ontology: {
+        head: {
+          vars: [
+            "sub",
+            "obj"
+          ]
+        },
+        results: {
+          bindings: [
+            {
+              sub: {
+                type: "uri",
+                value: "http://www.w3.org/2000/01/rdf-schema#Resource"
+              },
+              obj: {
+                type: "uri",
+                value: "http://www.w3.org/2002/07/owl#Class"
+              }
+            },
+            {
+              sub: {
+                type: "uri",
+                value: "http://www.opengis.net/ont/geosparql#asWKT"
+              },
+              obj: {
+                type: "uri",
+                value: "http://www.w3.org/2002/07/owl#DatatypeProperty"
+              }
+            },
+            {
+              sub: {
+                type: "uri",
+                value: "http://www.w3.org/2003/01/geo/wgs84_pos#lat"
+              },
+              obj: {
+                type: "uri",
+                value: "http://www.w3.org/2002/07/owl#AnnotationProperty"
+              }
+            },
+            {
+              sub: {
+                type: "uri",
+                value: "http://www.w3.org/2003/01/geo/wgs84_pos#long"
+              },
+              obj: {
+                type: "uri",
+                value: "http://www.w3.org/2002/07/owl#AnnotationProperty"
+              }
+            },
+            {
+              sub: {
+                type: "uri",
+                value: "http://data.europa.eu/949/contactLineSystemType"
+              },
+              obj: {
+                type: "uri",
+                value: "http://www.w3.org/2002/07/owl#ObjectProperty"
+              }
+            },
+            {
+              sub: {
+                type: "uri",
+                value: "http://data.europa.eu/949/functionalInfrastructure/contactLineSystems/10101_ATBh%20S11_1_ATBh%20S12_Overhead%20contact%20line%20%28OCL%29"
+              },
+              obj: {
+                type: "uri",
+                value: "http://data.europa.eu/949/ContactLineSystem"
+              }
+            },
+            {
+              sub: {
+                type: "uri",
+                value: "http://data.europa.eu/949/concepts/contact-line-systems/rinf/10"
+              },
+              obj: {
+                type: "uri",
+                value: "http://www.w3.org/2004/02/skos/core#Concept"
+              }
+            },
+            {
+              sub: {
+                type: "uri",
+                value: "http://data.europa.eu/949/currentLimitationRequired"
+              },
+              obj: {
+                type: "uri",
+                value: "http://www.w3.org/2002/07/owl#DatatypeProperty"
+              }
+            },
+            {
+              sub: {
+                type: "uri",
+                value: "http://data.europa.eu/949/energySupplySystem"
+              },
+              obj: {
+                type: "uri",
+                value: "http://www.w3.org/2002/07/owl#ObjectProperty"
+              }
+            },
+            {
+              sub: {
+                type: "uri",
+                value: "http://data.europa.eu/949/concepts/energy-supply-systems/rinf/AC20"
+              },
+              obj: {
+                type: "uri",
+                value: "http://www.w3.org/2004/02/skos/core#Concept"
+              }
+            }
+          ]
+        }
       }
     };
 
@@ -268,6 +382,11 @@
         'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
         'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
         'xsd': 'http://www.w3.org/2001/XMLSchema#',
+        'owl': 'http://www.w3.org/2002/07/owl#',
+        'skos': 'http://www.w3.org/2004/02/skos/core#',
+        'geo': 'http://www.w3.org/2003/01/geo/wgs84_pos#',
+        'geosparql': 'http://www.opengis.net/ont/geosparql#',
+        'era': 'http://data.europa.eu/949/',
         'ex': 'http://example.org/'
       })
     };

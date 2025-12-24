@@ -298,11 +298,11 @@ export class TableRenderer {
    */
   updatePrefixes(prefixMap: Record<string, string>): void {
     this.prefixResolver = new PrefixResolver(prefixMap);
-    // Update URI formatter with new prefix resolver
-    const displayConfig = this.config.displayConfig || {};
+    // Update URI formatter with new prefix resolver while preserving current display mode
+    const currentDisplayMode = this.uriFormatter.getDisplayMode();
     this.uriFormatter = new UriFormatter(
       this.prefixResolver,
-      displayConfig.uriDisplayMode || 'full'
+      currentDisplayMode
     );
   }
 

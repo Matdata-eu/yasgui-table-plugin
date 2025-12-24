@@ -27,6 +27,7 @@ export class UriFormatter {
     }
 
     const uri = binding.value;
+    // Only abbreviate when displayMode is 'abbreviated'
     const displayText =
       this.displayMode === 'abbreviated' ? this.prefixResolver.abbreviate(uri) : uri;
 
@@ -52,5 +53,12 @@ export class UriFormatter {
    */
   setDisplayMode(mode: 'full' | 'abbreviated'): void {
     this.displayMode = mode;
+  }
+
+  /**
+   * Get current display mode
+   */
+  getDisplayMode(): 'full' | 'abbreviated' {
+    return this.displayMode;
   }
 }
