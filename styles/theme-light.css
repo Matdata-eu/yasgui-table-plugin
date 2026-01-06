@@ -1,44 +1,45 @@
 /**
  * Light Theme Variables
+ * Uses YASGUI CSS custom properties with fallback colors
  */
 
 :root,
 .yasgui-table-plugin[data-theme='light'] {
   /* Background colors */
-  --table-background: #ffffff;
-  --table-header-background: #f5f5f5;
-  --table-row-hover: #f9f9f9;
-  --table-row-selected: #e3f2fd;
-  --table-rownumber-background: #fafafa;
+  --table-background: var(--yasgui-bg-primary, #ffffff);
+  --table-header-background: var(--yasgui-bg-secondary, #f5f5f5);
+  --table-row-hover: var(--yasgui-bg-secondary, #f9f9f9);
+  --table-row-selected: var(--yasgui-bg-tertiary, #e3f2fd);
+  --table-rownumber-background: var(--yasgui-bg-secondary, #fafafa);
 
   /* Text colors */
-  --table-text: #000000;
-  --table-header-text: #333333;
-  --table-text-muted: #999999;
-  --table-rownumber-text: #666666;
+  --table-text: var(--yasgui-text-primary, #000000);
+  --table-header-text: var(--yasgui-text-primary, #333333);
+  --table-text-muted: var(--yasgui-text-secondary, #999999);
+  --table-rownumber-text: var(--yasgui-text-secondary, #666666);
 
   /* Border colors */
-  --table-border: #dddddd;
-  --table-border-light: #eeeeee;
+  --table-border: var(--yasgui-border-color, #dddddd);
+  --table-border-light: var(--yasgui-input-border, #eeeeee);
 
   /* Interactive colors */
-  --table-primary: #1976d2;
-  --table-link: #1976d2;
-  --table-link-hover: #1565c0;
+  --table-primary: var(--yasgui-accent-color, #1976d2);
+  --table-link: var(--yasgui-accent-color, #1976d2);
+  --table-link-hover: var(--yasgui-link-hover, #1565c0);
 
   /* URI and literal styling */
-  --table-uri-color: #0066cc;
-  --table-literal-color: #000000;
-  --table-datatype-color: #666666;
-  --table-bnode-color: #999999;
+  --table-uri-color: var(--yasgui-accent-color, #0066cc);
+  --table-literal-color: var(--yasgui-text-primary, #000000);
+  --table-datatype-color: var(--yasgui-text-secondary, #666666);
+  --table-bnode-color: var(--yasgui-text-secondary, #999999);
 
   /* Search highlight */
   --table-search-highlight: #ffeb3b;
   --table-search-highlight-text: #000000;
 
   /* Controls */
-  --table-control-background: #f5f5f5;
-  --table-control-border: #dddddd;
-  --table-control-hover: #e8e8e8;
-  --table-text-secondary: #666666;
+  --table-control-background: var(--yasgui-bg-secondary, #f5f5f5);
+  --table-control-border: var(--yasgui-border-color, #dddddd);
+  --table-control-hover: var(--yasgui-button-hover, #e8e8e8);
+  --table-text-secondary: var(--yasgui-text-secondary, #666666);
 }
