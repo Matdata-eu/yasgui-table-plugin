@@ -18,6 +18,9 @@ High-performance YASGUI plugin for rendering SPARQL SELECT results in an interac
 - 🔔 **Notifications** - Visual feedback for copy operations
 - ♿ **Accessible** - WCAG AA compliant with keyboard navigation
 - 🎯 **SPARQL-Aware** - Proper rendering of URIs, literals, datatypes, and blank nodes with prefix support from YASR
+- 🧠 **Smart Formatters** - Auto-format cells by XSD datatype (e.g. `xsd:boolean` → ✔/✘) and variable name suffix conventions (e.g. `*stars`, `*percent`, `*image`, `*color`, `*description`)
+- 🔗 **URI Link Prefix** - Toolbar control to set a custom URL prefix for all URI links (e.g. point to a faceted browser); overrides `uriHrefAdapter` when set by the user
+- ❓ **Quick Reference** - Toolbar help icon opens an in-place quick reference card listing all features and keyboard shortcuts
 
 ## Installation
 
@@ -62,9 +65,17 @@ const yasgui = new Yasgui(document.getElementById('yasgui'), {
         displayConfig: {
           uriDisplayMode: 'abbreviated',  // 'full' or 'abbreviated'
           showDatatypes: true,            // Show datatype annotations
-          ellipsisMode: true              // Truncate long cell content
+          ellipsisMode: true,             // Truncate long cell content
+          smartFormatters: true,          // Auto-format by XSD datatype and variable name suffix (default: true)
+          uriLinkPrefix: '',              // URL prefix prepended to every URI link (e.g. 'https://browser.example.org/?uri=')
         },
-        persistenceEnabled: true          // Save user preferences
+        persistenceEnabled: true,         // Save user preferences
+
+        // Developer adapter: transform a URI into a custom href (overridden by user-set uriLinkPrefix)
+        uriHrefAdapter: (uri) => `https://browser.example.org/?uri=${encodeURIComponent(uri)}`,
+
+        // Developer adapter: transform an entire binding set before rendering
+        bindingSetAdapter: (bindingSet) => bindingSet,
       }
     }
   }
@@ -98,10 +109,15 @@ tablePlugin.on('copy', (data) => {
   console.log(`Copied as ${data.format}`);
 });
 
+// Listen for URI link prefix changes
+tablePlugin.on('linkPrefixChange', (data) => {
+  console.log(`Link prefix set to: ${data.prefix}`);
+});
+
 // Available events:
 // - ready, search, columnSort, columnResize, cellDoubleClick
 // - selectionChange, selectionCleared, clipboardCopy
-// - copy, layoutChange, error, destroy
+// - copy, layoutChange, linkPrefixChange, error, destroy
 ```
 
 ## Public Methods
