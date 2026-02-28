@@ -215,6 +215,32 @@ describe('TableRenderer Integration', () => {
       // Verify callback is set up
       expect(onSortChange).toBeDefined();
     });
+
+    it('should register onCellDblClick on initial render', () => {
+      const onCellDblClick = jest.fn();
+      const renderer = new TableRenderer(config, undefined, undefined, onCellDblClick);
+      renderer.render(container, sampleResults);
+
+      // The Tabulator mock's `on` method should have been called with 'cellDblClick'
+      const { TabulatorFull } = jest.requireMock('tabulator-tables');
+      const instance = TabulatorFull.mock.results[TabulatorFull.mock.results.length - 1].value;
+      const registeredEvents = (instance.on as jest.Mock).mock.calls.map((c: unknown[]) => c[0]);
+      expect(registeredEvents).toContain('cellDblClick');
+    });
+
+    it('should re-register onCellDblClick after setLayout', () => {
+      const onCellDblClick = jest.fn();
+      const renderer = new TableRenderer(config, undefined, undefined, onCellDblClick);
+      renderer.render(container, sampleResults);
+
+      renderer.setLayout('fitColumns');
+
+      // After setLayout, a new Tabulator is created; its `on` should also include 'cellDblClick'
+      const { TabulatorFull } = jest.requireMock('tabulator-tables');
+      const instance = TabulatorFull.mock.results[TabulatorFull.mock.results.length - 1].value;
+      const registeredEvents = (instance.on as jest.Mock).mock.calls.map((c: unknown[]) => c[0]);
+      expect(registeredEvents).toContain('cellDblClick');
+    });
   });
 
   describe('prefix resolution', () => {
