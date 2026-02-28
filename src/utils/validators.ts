@@ -49,6 +49,15 @@ export function validateConfig(config: Partial<TabulatorPluginConfig>): Tabulato
     validated.prefixMap = config.prefixMap;
   }
 
+  // Pass through adapter functions
+  if (typeof config.uriHrefAdapter === 'function') {
+    validated.uriHrefAdapter = config.uriHrefAdapter;
+  }
+
+  if (typeof config.bindingSetAdapter === 'function') {
+    validated.bindingSetAdapter = config.bindingSetAdapter;
+  }
+
   // Pass through Tabulator options (assume valid)
   if (config.tabulatorOptions && typeof config.tabulatorOptions === 'object') {
     validated.tabulatorOptions = config.tabulatorOptions;

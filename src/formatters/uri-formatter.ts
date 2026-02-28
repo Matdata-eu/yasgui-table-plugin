@@ -10,10 +10,16 @@ import { CellComponent } from '../types/tabulator';
 export class UriFormatter {
   private prefixResolver: PrefixResolver;
   private displayMode: 'full' | 'abbreviated';
+  private uriHrefAdapter?: (uri: string) => string;
 
-  constructor(prefixResolver: PrefixResolver, displayMode: 'full' | 'abbreviated' = 'full') {
+  constructor(
+    prefixResolver: PrefixResolver,
+    displayMode: 'full' | 'abbreviated' = 'full',
+    uriHrefAdapter?: (uri: string) => string
+  ) {
     this.prefixResolver = prefixResolver;
     this.displayMode = displayMode;
+    this.uriHrefAdapter = uriHrefAdapter;
   }
 
   /**
@@ -31,9 +37,12 @@ export class UriFormatter {
     const displayText =
       this.displayMode === 'abbreviated' ? this.prefixResolver.abbreviate(uri) : uri;
 
+    // Apply uriHrefAdapter if provided, otherwise use the raw URI as href
+    const href = this.uriHrefAdapter ? this.uriHrefAdapter(uri) : uri;
+
     // Create link element
     const link = document.createElement('a');
-    link.href = uri;
+    link.href = href;
     link.textContent = displayText;
     link.className = 'table-uri-link';
     link.target = '_blank';
@@ -60,5 +69,12 @@ export class UriFormatter {
    */
   getDisplayMode(): 'full' | 'abbreviated' {
     return this.displayMode;
+  }
+
+  /**
+   * Update URI href adapter
+   */
+  setUriHrefAdapter(adapter: ((uri: string) => string) | undefined): void {
+    this.uriHrefAdapter = adapter;
   }
 }

@@ -44,7 +44,8 @@ export class TableRenderer {
     const displayConfig = config.displayConfig || {};
     this.uriFormatter = new UriFormatter(
       this.prefixResolver,
-      displayConfig.uriDisplayMode || 'full'
+      displayConfig.uriDisplayMode || 'full',
+      config.uriHrefAdapter
     );
     this.literalFormatter = new LiteralFormatter(displayConfig.showDatatypes || false);
     this.bnodeFormatter = new BnodeFormatter();
@@ -56,7 +57,17 @@ export class TableRenderer {
    */
   render(container: HTMLElement, results: SparqlResults): Tabulator {
     // Parse results
-    const tableData = parseResults(results);
+    let tableData = parseResults(results);
+
+    // Apply bindingSetAdapter if provided
+    if (this.config.bindingSetAdapter) {
+      const adapter = this.config.bindingSetAdapter;
+      tableData = tableData.map((row) => {
+        const { _id, _rowNum, ...bindingSet } = row;
+        const adapted = adapter(bindingSet as any);
+        return { _id, _rowNum, ...adapted };
+      });
+    }
 
     // Generate columns
     const columns = this.generateColumns(results.head.vars);
@@ -291,6 +302,11 @@ export class TableRenderer {
     if (displayConfig.ellipsisMode !== undefined) {
       this.ellipsisFormatter.setEnabled(displayConfig.ellipsisMode);
     }
+
+    // Update uriHrefAdapter on the URI formatter
+    this.uriFormatter.setUriHrefAdapter(config.uriHrefAdapter);
+    // Also update config reference for bindingSetAdapter
+    this.config = config;
   }
 
   /**
@@ -298,11 +314,12 @@ export class TableRenderer {
    */
   updatePrefixes(prefixMap: Record<string, string>): void {
     this.prefixResolver = new PrefixResolver(prefixMap);
-    // Update URI formatter with new prefix resolver while preserving current display mode
+    // Update URI formatter with new prefix resolver while preserving current display mode and adapter
     const currentDisplayMode = this.uriFormatter.getDisplayMode();
     this.uriFormatter = new UriFormatter(
       this.prefixResolver,
-      currentDisplayMode
+      currentDisplayMode,
+      this.config.uriHrefAdapter
     );
   }
 
