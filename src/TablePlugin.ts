@@ -263,9 +263,11 @@ class TablePlugin {
         uriDisplayMode: displayConfig.uriDisplayMode || 'full',
         showDatatypes: displayConfig.showDatatypes || false,
         ellipsisMode: displayConfig.ellipsisMode || false,
+        smartFormatters: displayConfig.smartFormatters ?? true,
         onUriDisplayChange: (mode) => this.handleUriDisplayChange(mode),
         onShowDatatypesChange: (show) => this.handleShowDatatypesChange(show),
         onEllipsisModeChange: (enabled) => this.handleEllipsisModeChange(enabled),
+        onSmartFormattersChange: (enabled) => this.handleSmartFormattersChange(enabled),
       });
 
       // Create fit controls
@@ -345,6 +347,7 @@ class TablePlugin {
             uriDisplayMode: this.config.displayConfig.uriDisplayMode,
             showDatatypes: this.config.displayConfig.showDatatypes || false,
             ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+            smartFormatters: this.config.displayConfig.smartFormatters ?? true,
             lastSearch: this.config.displayConfig.lastSearch,
             uriLinkPrefix: this.config.displayConfig.uriLinkPrefix,
           });
@@ -477,6 +480,7 @@ class TablePlugin {
           uriDisplayMode: dc.uriDisplayMode,
           showDatatypes: dc.showDatatypes || false,
           ellipsisMode: dc.ellipsisMode || false,
+          smartFormatters: dc.smartFormatters ?? true,
           columnWidths: dc.columnWidths,
           sortState: dc.sortState,
           lastSearch: dc.lastSearch,
@@ -561,6 +565,7 @@ class TablePlugin {
         uriDisplayMode: dc.uriDisplayMode || 'full',
         showDatatypes: dc.showDatatypes || false,
         ellipsisMode: dc.ellipsisMode || false,
+        smartFormatters: dc.smartFormatters ?? true,
         columnWidths: widths,
         sortState: dc.sortState,
         lastSearch: dc.lastSearch,
@@ -589,6 +594,7 @@ class TablePlugin {
         uriDisplayMode: dc.uriDisplayMode || 'full',
         showDatatypes: dc.showDatatypes || false,
         ellipsisMode: dc.ellipsisMode || false,
+        smartFormatters: dc.smartFormatters ?? true,
         columnWidths: dc.columnWidths,
         sortState: { column, dir },
         lastSearch: dc.lastSearch,
@@ -637,6 +643,18 @@ class TablePlugin {
   }
 
   /**
+   * Handle smart formatters change
+   */
+  private handleSmartFormattersChange(enabled: boolean): void {
+    this.updateConfig({
+      displayConfig: {
+        ...this.config.displayConfig,
+        smartFormatters: enabled,
+      },
+    });
+  }
+
+  /**
    * Handle link prefix change from the UI control.
    * When the user sets a prefix, it overrides any developer-supplied uriHrefAdapter.
    * When cleared, the developer-supplied adapter (if any) is restored.
@@ -668,6 +686,7 @@ class TablePlugin {
         uriDisplayMode: dc.uriDisplayMode || 'full',
         showDatatypes: dc.showDatatypes || false,
         ellipsisMode: dc.ellipsisMode || false,
+        smartFormatters: dc.smartFormatters ?? true,
         columnWidths: dc.columnWidths,
         sortState: dc.sortState,
         lastSearch: dc.lastSearch,
@@ -931,6 +950,7 @@ class TablePlugin {
         uriDisplayMode: this.config.displayConfig.uriDisplayMode,
         showDatatypes: this.config.displayConfig.showDatatypes || false,
         ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+        smartFormatters: this.config.displayConfig.smartFormatters ?? true,
         lastSearch: searchTerm,
       });
     }

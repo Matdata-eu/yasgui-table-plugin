@@ -10,9 +10,11 @@ export interface DisplayControlsConfig {
   uriDisplayMode: 'full' | 'abbreviated';
   showDatatypes: boolean;
   ellipsisMode: boolean;
+  smartFormatters: boolean;
   onUriDisplayChange: (mode: 'full' | 'abbreviated') => void;
   onShowDatatypesChange: (show: boolean) => void;
   onEllipsisModeChange: (enabled: boolean) => void;
+  onSmartFormattersChange: (enabled: boolean) => void;
 }
 
 export class DisplayControls {
@@ -22,6 +24,7 @@ export class DisplayControls {
   private uriToggle: HTMLButtonElement;
   private datatypeToggle: HTMLButtonElement;
   private ellipsisToggle: HTMLButtonElement;
+  private smartFormattersToggle: HTMLButtonElement;
   private config: DisplayControlsConfig;
   private isOpen = false;
 
@@ -31,6 +34,8 @@ export class DisplayControls {
     this.uriToggle = this.createUriToggle();
     this.datatypeToggle = this.createDatatypeToggle();
     this.ellipsisToggle = this.createEllipsisToggle();
+    this.smartFormattersToggle = this.createSmartFormattersToggle();
+
     this.panel = this.createPanel();
     this.triggerButton = this.createTriggerButton();
 
@@ -67,6 +72,7 @@ export class DisplayControls {
     panel.appendChild(this.uriToggle);
     panel.appendChild(this.datatypeToggle);
     panel.appendChild(this.ellipsisToggle);
+    panel.appendChild(this.smartFormattersToggle);
     return panel;
   }
 
@@ -115,6 +121,21 @@ export class DisplayControls {
     return button;
   }
 
+  private createSmartFormattersToggle(): HTMLButtonElement {
+    const button = document.createElement('button');
+    button.className = 'table-toggle-button table-dropdown-item';
+    button.setAttribute('aria-label', 'Toggle smart formatters');
+    button.setAttribute('title', 'Apply formatters by XSD datatype and variable name convention');
+    this.updateSmartFormattersToggleText(button, this.config.smartFormatters);
+    button.addEventListener('click', () => {
+      const newEnabled = !this.config.smartFormatters;
+      this.config.smartFormatters = newEnabled;
+      this.updateSmartFormattersToggleText(button, newEnabled);
+      this.config.onSmartFormattersChange(newEnabled);
+    });
+    return button;
+  }
+
   private updateUriToggleText(button: HTMLButtonElement, mode: 'full' | 'abbreviated'): void {
     button.textContent = mode === 'full' ? 'URI: Full' : 'URI: Short';
     button.classList.toggle('active', mode === 'abbreviated');
@@ -128,6 +149,15 @@ export class DisplayControls {
   private updateEllipsisToggleText(button: HTMLButtonElement, enabled: boolean): void {
     button.textContent = enabled ? 'Ellipsis: On' : 'Ellipsis: Off';
     button.classList.toggle('active', enabled);
+  }
+
+  private updateSmartFormattersToggleText(button: HTMLButtonElement, enabled: boolean): void {
+    button.textContent = enabled ? 'Smart: On' : 'Smart: Off';
+    if (enabled) {
+      button.classList.add('active');
+    } else {
+      button.classList.remove('active');
+    }
   }
 
   toggle(): void {
@@ -162,6 +192,17 @@ export class DisplayControls {
     this.updateEllipsisToggleText(this.ellipsisToggle, enabled);
   }
 
+  /**
+   * Update the smart formatters setting programmatically
+   */
+  setSmartFormatters(enabled: boolean): void {
+    this.config.smartFormatters = enabled;
+    this.updateSmartFormattersToggleText(this.smartFormattersToggle, enabled);
+  }
+
+  /**
+   * Get the DOM element for rendering
+   */
   getElement(): HTMLElement {
     return this.container;
   }

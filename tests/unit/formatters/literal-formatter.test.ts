@@ -35,12 +35,13 @@ describe('LiteralFormatter', () => {
       });
       expect((formatter.format(intCell) as HTMLElement).textContent).toContain('xsd:integer');
       
+      // xsd:boolean is rendered as tick/cross, not with datatype annotation
       const boolCell = createMockCell({
         type: 'literal',
         value: 'true',
         datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
       });
-      expect((formatter.format(boolCell) as HTMLElement).textContent).toContain('xsd:boolean');
+      expect((formatter.format(boolCell) as HTMLElement).textContent).toBe('✔');
     });
   });
 
@@ -129,6 +130,55 @@ describe('LiteralFormatter', () => {
       const result = formatter.format(cell) as HTMLElement;
       
       expect(result.textContent).toBe('<>&"\'');
+    });
+  });
+
+  describe('xsd:boolean formatting', () => {
+    it('should render "true" as a tick', () => {
+      const formatter = new LiteralFormatter(false);
+      const cell = createMockCell({
+        type: 'literal',
+        value: 'true',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+      });
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.textContent).toBe('✔');
+      expect(result.classList.contains('table-tick')).toBe(true);
+      expect(result.classList.contains('table-tick-cross')).toBe(true);
+    });
+
+    it('should render "false" as a cross', () => {
+      const formatter = new LiteralFormatter(false);
+      const cell = createMockCell({
+        type: 'literal',
+        value: 'false',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+      });
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.textContent).toBe('✘');
+      expect(result.classList.contains('table-cross')).toBe(true);
+    });
+
+    it('should render "1" as a tick', () => {
+      const formatter = new LiteralFormatter(true);
+      const cell = createMockCell({
+        type: 'literal',
+        value: '1',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+      });
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.textContent).toBe('✔');
+    });
+
+    it('should include the raw value as a tooltip', () => {
+      const formatter = new LiteralFormatter(false);
+      const cell = createMockCell({
+        type: 'literal',
+        value: 'true',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+      });
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.title).toBe('true');
     });
   });
 

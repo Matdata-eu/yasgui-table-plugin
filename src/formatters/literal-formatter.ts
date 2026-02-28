@@ -14,6 +14,18 @@ export class LiteralFormatter {
   }
 
   /**
+   * Format xsd:boolean literal as a tick or cross icon
+   */
+  formatBoolean(value: string): HTMLElement {
+    const isTrue = value === 'true' || value === '1';
+    const span = document.createElement('span');
+    span.className = isTrue ? 'table-tick-cross table-tick' : 'table-tick-cross table-cross';
+    span.textContent = isTrue ? '✔' : '✘';
+    span.title = value;
+    return span;
+  }
+
+  /**
    * Format literal binding for display
    */
   format(cell: CellComponent): string | HTMLElement {
@@ -21,6 +33,11 @@ export class LiteralFormatter {
 
     if (!binding || binding.type !== 'literal') {
       return '';
+    }
+
+    // XSD boolean → tick/cross (always active as a default formatter by datatype)
+    if (binding.datatype === 'http://www.w3.org/2001/XMLSchema#boolean') {
+      return this.formatBoolean(binding.value);
     }
 
     const container = document.createElement('span');

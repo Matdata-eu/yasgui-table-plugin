@@ -19,6 +19,7 @@ describe('storage utilities', () => {
         uriDisplayMode: 'abbreviated',
         showDatatypes: true,
         ellipsisMode: false,
+        smartFormatters: true,
       };
 
       saveDisplayConfig(mockKey, config);
@@ -33,6 +34,7 @@ describe('storage utilities', () => {
         uriDisplayMode: 'full',
         showDatatypes: false,
         ellipsisMode: true,
+        smartFormatters: true,
       };
 
       // Mock localStorage.setItem to throw
@@ -52,12 +54,14 @@ describe('storage utilities', () => {
         uriDisplayMode: 'full',
         showDatatypes: true,
         ellipsisMode: false,
+        smartFormatters: true,
       };
 
       const config2: DisplayConfiguration = {
         uriDisplayMode: 'abbreviated',
         showDatatypes: false,
         ellipsisMode: true,
+        smartFormatters: false,
       };
 
       saveDisplayConfig(mockKey, config1);
@@ -74,6 +78,7 @@ describe('storage utilities', () => {
         uriDisplayMode: 'abbreviated',
         showDatatypes: true,
         ellipsisMode: false,
+        smartFormatters: true,
       };
 
       localStorage.setItem(mockKey, JSON.stringify(config));
@@ -112,6 +117,7 @@ describe('storage utilities', () => {
         uriDisplayMode: 'full',
         showDatatypes: false,
         ellipsisMode: true,
+        smartFormatters: true,
         columnWidths: { col1: 200, col2: 300 },
         sortState: { column: 'col1', dir: 'asc' },
         lastSearch: 'test query',
