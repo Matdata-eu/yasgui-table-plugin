@@ -29,16 +29,19 @@ export class TableRenderer {
   private currentLayout: 'fitData' | 'fitColumns' = 'fitData';
   private onWidthChange?: (widths: ColumnWidthMap) => void;
   private onSortChange?: (column: string, dir: 'asc' | 'desc') => void;
+  private onCellDblClick?: (cell: { getValue: () => unknown }) => void;
 
   constructor(
     config: TabulatorPluginConfig,
     onWidthChange?: (widths: ColumnWidthMap) => void,
-    onSortChange?: (column: string, dir: 'asc' | 'desc') => void
+    onSortChange?: (column: string, dir: 'asc' | 'desc') => void,
+    onCellDblClick?: (cell: { getValue: () => unknown }) => void
   ) {
     this.config = config;
     this.prefixResolver = new PrefixResolver(config.prefixMap);
     this.onWidthChange = onWidthChange;
     this.onSortChange = onSortChange;
+    this.onCellDblClick = onCellDblClick;
 
     // Initialize formatters
     const displayConfig = config.displayConfig || {};
@@ -118,7 +121,21 @@ export class TableRenderer {
       });
     }
 
+    // Setup cell double-click handler
+    this.registerCellDblClick();
+
     return this.table;
+  }
+
+  /**
+   * Register the cell double-click handler on the current table instance
+   */
+  private registerCellDblClick(): void {
+    if (this.table && this.onCellDblClick) {
+      this.table.on('cellDblClick', (_e: unknown, cell: { getValue: () => unknown }) => {
+        this.onCellDblClick!(cell);
+      });
+    }
   }
 
   /**
@@ -468,6 +485,9 @@ export class TableRenderer {
         }
       });
     }
+
+    // Re-setup cell double-click handler
+    this.registerCellDblClick();
     
     // Re-apply search filter if one was active
     if (this.currentSearchTerm) {
