@@ -36,12 +36,6 @@ export class DisplayControls {
     this.ellipsisToggle = this.createEllipsisToggle();
     this.smartFormattersToggle = this.createSmartFormattersToggle();
 
-    // Build DOM structure
-    this.container.appendChild(this.createLabel('Display:'));
-    this.container.appendChild(this.uriToggle);
-    this.container.appendChild(this.datatypeToggle);
-    this.container.appendChild(this.ellipsisToggle);
-    this.container.appendChild(this.smartFormattersToggle);
     this.panel = this.createPanel();
     this.triggerButton = this.createTriggerButton();
 
@@ -78,6 +72,7 @@ export class DisplayControls {
     panel.appendChild(this.uriToggle);
     panel.appendChild(this.datatypeToggle);
     panel.appendChild(this.ellipsisToggle);
+    panel.appendChild(this.smartFormattersToggle);
     return panel;
   }
 
@@ -128,10 +123,16 @@ export class DisplayControls {
 
   private createSmartFormattersToggle(): HTMLButtonElement {
     const button = document.createElement('button');
-    button.className = 'table-toggle-button';
+    button.className = 'table-toggle-button table-dropdown-item';
     button.setAttribute('aria-label', 'Toggle smart formatters');
     button.setAttribute('title', 'Apply formatters by XSD datatype and variable name convention');
     this.updateSmartFormattersToggleText(button, this.config.smartFormatters);
+    button.addEventListener('click', () => {
+      const newEnabled = !this.config.smartFormatters;
+      this.config.smartFormatters = newEnabled;
+      this.updateSmartFormattersToggleText(button, newEnabled);
+      this.config.onSmartFormattersChange(newEnabled);
+    });
     return button;
   }
 
@@ -159,34 +160,6 @@ export class DisplayControls {
     }
   }
 
-  private attachEventListeners(): void {
-    this.uriToggle.addEventListener('click', () => {
-      const newMode = this.config.uriDisplayMode === 'full' ? 'abbreviated' : 'full';
-      this.config.uriDisplayMode = newMode;
-      this.updateUriToggleText(this.uriToggle, newMode);
-      this.config.onUriDisplayChange(newMode);
-    });
-
-    this.datatypeToggle.addEventListener('click', () => {
-      const newShow = !this.config.showDatatypes;
-      this.config.showDatatypes = newShow;
-      this.updateDatatypeToggleText(this.datatypeToggle, newShow);
-      this.config.onShowDatatypesChange(newShow);
-    });
-
-    this.ellipsisToggle.addEventListener('click', () => {
-      const newEnabled = !this.config.ellipsisMode;
-      this.config.ellipsisMode = newEnabled;
-      this.updateEllipsisToggleText(this.ellipsisToggle, newEnabled);
-      this.config.onEllipsisModeChange(newEnabled);
-    });
-
-    this.smartFormattersToggle.addEventListener('click', () => {
-      const newEnabled = !this.config.smartFormatters;
-      this.config.smartFormatters = newEnabled;
-      this.updateSmartFormattersToggleText(this.smartFormattersToggle, newEnabled);
-      this.config.onSmartFormattersChange(newEnabled);
-    });
   toggle(): void {
     this.isOpen ? this.close() : this.open();
   }
