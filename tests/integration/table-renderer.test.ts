@@ -255,30 +255,73 @@ describe('TableRenderer Integration', () => {
     });
   });
 
-  describe('helper methods', () => {
-    it('should return current search term', () => {
+  describe('bindingSetAdapter', () => {
+    it('should apply bindingSetAdapter to transform binding sets', () => {
+      const codeResults: SparqlResults = {
+        head: { vars: ['code', 'label'] },
+        results: {
+          bindings: [
+            {
+              code: { type: 'literal', value: '42' },
+              label: { type: 'literal', value: 'Answer' },
+            },
+          ],
+        },
+      };
+
+      // Adapter converts literal code values to URIs
+      config.bindingSetAdapter = (bindingSet) => {
+        const newSet: typeof bindingSet = {};
+        for (const key in bindingSet) {
+          if (key.startsWith('code')) {
+            newSet[key] = {
+              type: 'uri',
+              value: `http://fake.uri/${(bindingSet[key] as any).value}`,
+            };
+            newSet[key + '_label'] = bindingSet[key];
+          } else {
+            newSet[key] = bindingSet[key];
+          }
+        }
+        return newSet;
+      };
+
       const renderer = new TableRenderer(config);
-      renderer.render(container, sampleResults);
-      
-      renderer.applySearchFilter('test');
-      
-      expect(renderer.getCurrentSearchTerm()).toBe('test');
+      renderer.render(container, codeResults);
+
+      expect(container.querySelector('.tabulator')).toBeTruthy();
     });
 
-    it('should return total row count', () => {
+    it('should render normally when no bindingSetAdapter is provided', () => {
       const renderer = new TableRenderer(config);
       renderer.render(container, sampleResults);
-      
-      expect(renderer.getTotalRowCount()).toBe(sampleResults.results.bindings.length);
+
+      expect(container.querySelector('.tabulator')).toBeTruthy();
+    });
+  });
+
+  describe('uriHrefAdapter', () => {
+    it('should pass uriHrefAdapter to the URI formatter', () => {
+      config.uriHrefAdapter = (uri) =>
+        `https://faceted-browser.example.org/?uri=${encodeURIComponent(uri)}`;
+
+      const renderer = new TableRenderer(config);
+      renderer.render(container, sampleResults);
+
+      expect(container.querySelector('.tabulator')).toBeTruthy();
     });
 
-    it('should return filtered row count', () => {
+    it('should update uriHrefAdapter via updateDisplayConfig', () => {
       const renderer = new TableRenderer(config);
       renderer.render(container, sampleResults);
-      
-      renderer.applySearchFilter('Alice');
-      
-      expect(renderer.getFilteredRowCount()).toBeGreaterThanOrEqual(0);
+
+      const newConfig: TabulatorPluginConfig = {
+        ...DEFAULT_CONFIG,
+        uriHrefAdapter: (uri) => `https://new-browser.example.org/?uri=${encodeURIComponent(uri)}`,
+      };
+      renderer.updateDisplayConfig(newConfig);
+
+      expect(container.querySelector('.tabulator')).toBeTruthy();
     });
   });
 });

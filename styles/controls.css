@@ -410,3 +410,80 @@
   background: var(--table-link-hover);
   border-color: var(--table-link-hover);
 }
+
+/* Link Prefix Control */
+.table-link-prefix-control {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 12px;
+  border-left: 1px solid var(--table-control-border);
+  position: relative;
+}
+
+.table-link-prefix-panel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+.table-link-prefix-panel-label {
+  font-size: 13px;
+  color: var(--table-text-secondary);
+  white-space: nowrap;
+}
+
+.table-link-prefix-input {
+  padding: 5px 10px;
+  border: 1px solid var(--table-control-border);
+  border-radius: 4px;
+  background: var(--table-background);
+  color: var(--table-text);
+  font-size: 13px;
+  font-family: inherit;
+  min-width: 240px;
+  transition: border-color 0.2s ease;
+}
+
+.table-link-prefix-input:focus {
+  outline: none;
+  border-color: var(--table-primary);
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.table-link-prefix-input::placeholder {
+  color: var(--table-text-muted);
+}
+
+.table-link-prefix-button {
+  padding: 5px 10px;
+  border: 1px solid var(--table-control-border);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.table-link-prefix-button-apply {
+  background: var(--table-primary);
+  color: #ffffff;
+  border-color: var(--table-primary);
+}
+
+.table-link-prefix-button-apply:hover {
+  background: var(--table-link-hover);
+  border-color: var(--table-link-hover);
+}
+
+.table-link-prefix-button-clear {
+  background: var(--table-background);
+  color: var(--table-text);
+}
+
+.table-link-prefix-button-clear:hover {
+  background: var(--table-control-hover);
+  border-color: var(--table-primary);
+}

@@ -101,4 +101,79 @@ describe('UriFormatter', () => {
       expect(result.getAttribute('target')).toBe('_blank');
     });
   });
+
+  describe('uriHrefAdapter', () => {
+    it('should use uriHrefAdapter to transform the link href', () => {
+      const prefixResolver = new PrefixResolver();
+      const adapter = (uri: string) => `https://faceted-browser.example.org/?uri=${encodeURIComponent(uri)}`;
+      const formatter = new UriFormatter(prefixResolver, 'full', adapter);
+      const cell = createMockCell({ type: 'uri', value: 'http://example.org/resource' });
+
+      const result = formatter.format(cell) as HTMLElement;
+
+      expect(result.tagName).toBe('A');
+      expect(result.getAttribute('href')).toBe(
+        'https://faceted-browser.example.org/?uri=http%3A%2F%2Fexample.org%2Fresource'
+      );
+      // Display text should still show the original URI
+      expect(result.textContent).toBe('http://example.org/resource');
+    });
+
+    it('should display abbreviated text while using adapted href', () => {
+      const prefixResolver = new PrefixResolver();
+      const adapter = (uri: string) => `https://faceted-browser.example.org/?uri=${encodeURIComponent(uri)}`;
+      const formatter = new UriFormatter(prefixResolver, 'abbreviated', adapter);
+      const cell = createMockCell({ type: 'uri', value: 'http://xmlns.com/foaf/0.1/Person' });
+
+      const result = formatter.format(cell) as HTMLElement;
+
+      expect(result.tagName).toBe('A');
+      expect(result.getAttribute('href')).toBe(
+        'https://faceted-browser.example.org/?uri=http%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2FPerson'
+      );
+      // Display text should be abbreviated
+      expect(result.textContent).toBe('foaf:Person');
+    });
+
+    it('should update uriHrefAdapter via setUriHrefAdapter', () => {
+      const prefixResolver = new PrefixResolver();
+      const formatter = new UriFormatter(prefixResolver, 'full');
+      const cell = createMockCell({ type: 'uri', value: 'http://example.org/resource' });
+
+      // Without adapter, href equals the URI
+      const result1 = formatter.format(cell) as HTMLElement;
+      expect(result1.getAttribute('href')).toBe('http://example.org/resource');
+
+      // Set adapter
+      formatter.setUriHrefAdapter((uri) => `https://faceted.example.org/?resource=${encodeURIComponent(uri)}`);
+      const result2 = formatter.format(cell) as HTMLElement;
+      expect(result2.getAttribute('href')).toBe(
+        'https://faceted.example.org/?resource=http%3A%2F%2Fexample.org%2Fresource'
+      );
+
+      // Remove adapter
+      formatter.setUriHrefAdapter(undefined);
+      const result3 = formatter.format(cell) as HTMLElement;
+      expect(result3.getAttribute('href')).toBe('http://example.org/resource');
+    });
+
+    it('should apply DBPedia to Wikipedia style adapter', () => {
+      const prefixResolver = new PrefixResolver();
+      const adapter = (uri: string) => {
+        if (uri.startsWith('http://fr.dbpedia.org/resource/')) {
+          return 'http://fr.wikipedia.org/wiki/' + uri.substring('http://fr.dbpedia.org/resource/'.length);
+        }
+        return uri;
+      };
+      const formatter = new UriFormatter(prefixResolver, 'full', adapter);
+
+      const dbpediaCell = createMockCell({ type: 'uri', value: 'http://fr.dbpedia.org/resource/Paris' });
+      const dbpediaResult = formatter.format(dbpediaCell) as HTMLElement;
+      expect(dbpediaResult.getAttribute('href')).toBe('http://fr.wikipedia.org/wiki/Paris');
+
+      const otherCell = createMockCell({ type: 'uri', value: 'http://example.org/other' });
+      const otherResult = formatter.format(otherCell) as HTMLElement;
+      expect(otherResult.getAttribute('href')).toBe('http://example.org/other');
+    });
+  });
 });
