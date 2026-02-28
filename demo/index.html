@@ -156,7 +156,7 @@
         script.src = './dist/yasgui-table-plugin.min.js';
         document.head.appendChild(script);
       });
-      TablePlugin = window.YasguiTablePlugin?.TablePlugin;
+      TablePlugin = window.TablePlugin?.default;
       console.log('✅ Loaded from bundle (production mode)');
     }
 
@@ -425,7 +425,6 @@
       
       console.log(`📊 Loaded dataset: ${dataset} (${mockData[dataset].results.bindings.length} rows)`);
     });
-  </script>
   </script>
 </body>
 </html>
