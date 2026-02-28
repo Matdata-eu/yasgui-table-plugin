@@ -310,6 +310,15 @@ export class TableRenderer {
   }
 
   /**
+   * Force Tabulator to re-render all cells (re-runs formatters).
+   * Call this after updating a formatter option that should be reflected
+   * in an already-rendered table, e.g. changing the URI href adapter.
+   */
+  redrawTable(): void {
+    this.table?.redraw(true);
+  }
+
+  /**
    * Update prefix resolver with new prefixes from YASR
    */
   updatePrefixes(prefixMap: Record<string, string>): void {

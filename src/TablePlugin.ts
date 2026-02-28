@@ -550,11 +550,15 @@ class TablePlugin {
 
     // Persist if enabled
     if (this.config.persistenceEnabled && this.config.displayConfig.uriDisplayMode) {
+      const dc = this.config.displayConfig;
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
-        uriDisplayMode: this.config.displayConfig.uriDisplayMode,
-        showDatatypes: this.config.displayConfig.showDatatypes || false,
-        ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+        uriDisplayMode: dc.uriDisplayMode || 'full',
+        showDatatypes: dc.showDatatypes || false,
+        ellipsisMode: dc.ellipsisMode || false,
         columnWidths: widths,
+        sortState: dc.sortState,
+        lastSearch: dc.lastSearch,
+        uriLinkPrefix: dc.uriLinkPrefix,
       });
     }
 
@@ -574,11 +578,15 @@ class TablePlugin {
 
     // Persist if enabled
     if (this.config.persistenceEnabled && this.config.displayConfig.uriDisplayMode) {
+      const dc = this.config.displayConfig;
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
-        uriDisplayMode: this.config.displayConfig.uriDisplayMode,
-        showDatatypes: this.config.displayConfig.showDatatypes || false,
-        ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+        uriDisplayMode: dc.uriDisplayMode || 'full',
+        showDatatypes: dc.showDatatypes || false,
+        ellipsisMode: dc.ellipsisMode || false,
+        columnWidths: dc.columnWidths,
         sortState: { column, dir },
+        lastSearch: dc.lastSearch,
+        uriLinkPrefix: dc.uriLinkPrefix,
       });
     }
 
@@ -649,18 +657,22 @@ class TablePlugin {
 
     // Persist the prefix (independent of uriDisplayMode being set)
     if (this.config.persistenceEnabled) {
+      const dc = this.config.displayConfig;
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
-        uriDisplayMode: this.config.displayConfig.uriDisplayMode || 'full',
-        showDatatypes: this.config.displayConfig.showDatatypes || false,
-        ellipsisMode: this.config.displayConfig.ellipsisMode || false,
-        lastSearch: this.config.displayConfig.lastSearch,
+        uriDisplayMode: dc.uriDisplayMode || 'full',
+        showDatatypes: dc.showDatatypes || false,
+        ellipsisMode: dc.ellipsisMode || false,
+        columnWidths: dc.columnWidths,
+        sortState: dc.sortState,
+        lastSearch: dc.lastSearch,
         uriLinkPrefix: prefix ? prefix : undefined,
       });
     }
 
-    // Update renderer without triggering a full re-draw
+    // Update formatter and force Tabulator to re-render existing cells
     if (this.renderer) {
       this.renderer.updateDisplayConfig(this.config);
+      this.renderer.redrawTable();
     }
 
     this.emit('linkPrefixChange', { prefix });
