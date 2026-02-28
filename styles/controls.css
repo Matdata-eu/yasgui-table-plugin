@@ -162,22 +162,83 @@
 .table-controls-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   background: var(--table-control-background);
   border-bottom: 1px solid var(--table-control-border);
 }
 
 .table-controls-toolbar .table-search-control {
-  border-bottom: none;
   flex: 1;
+  border-bottom: none;
+}
+
+/* ── Dropdown groups ───────────────────────────────────────────────────── */
+
+.table-dropdown-group {
+  position: relative;
+}
+
+/* Chevron-down icon (Font Awesome free) inside trigger buttons */
+.table-dropdown-caret {
+  width: 10px;
+  height: 10px;
+  margin-left: 5px;
+  vertical-align: middle;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Floating panel that appears below the trigger */
+.table-dropdown-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 200;
+  min-width: 140px;
+  padding: 4px 0;
+  background: var(--table-background);
+  border: 1px solid var(--table-control-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  flex-direction: column;
+  gap: 0;
+}
+
+.table-dropdown-panel.open {
+  display: flex;
+}
+
+/* Items inside the dropdown panel */
+.table-dropdown-item {
+  width: 100%;
+  border: none !important;
+  border-radius: 0 !important;
+  text-align: left;
+  padding: 7px 14px !important;
+  font-size: 13px;
+  background: transparent !important;
+  color: var(--table-text) !important;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.table-dropdown-item:hover {
+  background: var(--table-control-hover) !important;
+}
+
+.table-dropdown-item.active {
+  color: var(--table-primary) !important;
+  font-weight: 600;
+  background: transparent !important;
+}
+
+.table-dropdown-item.active:hover {
+  background: var(--table-control-hover) !important;
 }
 
 /* Display controls */
 .table-display-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  padding: 6px 6px;
 }
 
 .table-control-label {
@@ -336,79 +397,12 @@
 
 /* Fit Controls */
 .table-fit-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-left: 1px solid var(--table-control-border);
-}
-
-.table-fit-button {
-  padding: 6px 12px;
-  border: 1px solid var(--table-control-border);
-  border-radius: 4px;
-  background: var(--table-background);
-  color: var(--table-text);
-  font-size: 13px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.table-fit-button:hover {
-  background: var(--table-control-hover);
-  border-color: var(--table-primary);
-}
-
-.table-fit-button:active {
-  transform: translateY(1px);
+  padding: 6px 6px;
 }
 
 /* Export Controls */
 .table-export-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-left: 1px solid var(--table-control-border);
-}
-
-.table-export-label {
-  font-size: 13px;
-  color: var(--table-text-secondary);
-  margin-right: 4px;
-}
-
-.table-export-button {
-  padding: 6px 12px;
-  border: 1px solid var(--table-control-border);
-  border-radius: 4px;
-  background: var(--table-background);
-  color: var(--table-text);
-  font-size: 13px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.table-export-button:hover {
-  background: var(--table-control-hover);
-  border-color: var(--table-primary);
-}
-
-.table-export-button:active {
-  transform: translateY(1px);
-}
-
-.table-export-download {
-  background: var(--table-primary);
-  color: #ffffff;
-  border-color: var(--table-primary);
-}
-
-.table-export-download:hover {
-  background: var(--table-link-hover);
-  border-color: var(--table-link-hover);
+  padding: 6px 6px;
 }
 
 /* Help Reference Control */
