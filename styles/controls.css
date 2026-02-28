@@ -411,6 +411,59 @@
   border-color: var(--table-link-hover);
 }
 
+/* Help Reference Control */
+.table-help-reference-control {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-left: 1px solid var(--table-control-border);
+}
+
+.table-help-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.table-help-button svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Help modal content overrides */
+.table-help-modal {
+  max-width: 560px;
+}
+
+.table-help-modal-content {
+  font-family: inherit;
+  white-space: normal;
+}
+
+.table-help-section {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--table-border);
+}
+
+.table-help-section:last-child {
+  border-bottom: none;
+}
+
+.table-help-section-title {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--table-text);
+}
+
+.table-help-section-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--table-text-muted);
+}
+
 /* Link Prefix Control */
 .table-link-prefix-control {
   display: flex;

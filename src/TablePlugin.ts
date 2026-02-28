@@ -15,6 +15,7 @@ import { FitControls } from './controls/fit-controls.js';
 import { ContentModal } from './controls/content-modal.js';
 import { ExportControls } from './controls/export-controls.js';
 import { LinkPrefixControl } from './controls/link-prefix-control.js';
+import { HelpReferenceControl } from './controls/help-reference-control.js';
 import { CellSelection } from './features/cell-selection.js';
 import { ClipboardManager } from './features/clipboard.js';
 import { loadDisplayConfig, saveDisplayConfig } from './utils/storage.js';
@@ -50,6 +51,7 @@ class TablePlugin {
   private contentModal: ContentModal | null = null;
   private exportControls: ExportControls | null = null;
   private linkPrefixControl: LinkPrefixControl | null = null;
+  private helpReferenceControl: HelpReferenceControl | null = null;
   private cellSelection: CellSelection | null = null;
   private clipboardManager: ClipboardManager | null = null;
   private eventHandlers: Map<string, EventHandler[]> = new Map();
@@ -278,6 +280,9 @@ class TablePlugin {
         onPrefixChange: (prefix) => this.handleLinkPrefixChange(prefix),
       });
 
+      // Create help reference control
+      this.helpReferenceControl = new HelpReferenceControl();
+
       // Add controls toolbar to container
       const toolbar = document.createElement('div');
       toolbar.className = 'table-controls-toolbar';
@@ -286,6 +291,7 @@ class TablePlugin {
       toolbar.appendChild(this.fitControls.getElement());
       toolbar.appendChild(this.exportControls.getElement());
       toolbar.appendChild(this.linkPrefixControl.getElement());
+      toolbar.appendChild(this.helpReferenceControl.getElement());
       container.appendChild(toolbar);
 
       // Create table container (separate from search control)
@@ -428,6 +434,10 @@ class TablePlugin {
     if (this.linkPrefixControl) {
       this.linkPrefixControl.destroy();
       this.linkPrefixControl = null;
+    }
+    if (this.helpReferenceControl) {
+      this.helpReferenceControl.destroy();
+      this.helpReferenceControl = null;
     }
     if (this.contentModal) {
       this.contentModal.close();
