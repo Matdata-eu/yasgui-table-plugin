@@ -91,7 +91,18 @@ class TablePlugin {
     this.renderer = new TableRenderer(
       this.config,
       (widths) => this.handleColumnWidthChange(widths),
-      (column, dir) => this.handleSortChange(column, dir)
+      (column, dir) => this.handleSortChange(column, dir),
+      (cell) => {
+        const value = cell.getValue();
+        let content = '';
+        if (value && typeof value === 'object' && 'value' in value) {
+          content = (value as { value: string }).value || '';
+        } else {
+          content = String(value || '');
+        }
+        this.contentModal?.show(content, 'Cell Content');
+        this.emit('cellDoubleClick', { content });
+      }
     );
   }
 
@@ -310,21 +321,6 @@ class TablePlugin {
         this.cellSelection = new CellSelection(this.table, (range) => {
           this.emit('selectionChange', { range });
         });
-
-        // Add cell double-click handler for content modal
-        if (this.table && this.contentModal) {
-          this.table.on('cellDblClick', (_e: any, cell: { getValue: () => unknown }) => {
-            const value = cell.getValue();
-            let content = '';
-            if (value && typeof value === 'object' && 'value' in value) {
-              content = (value as { value: string }).value || '';
-            } else {
-              content = String(value || '');
-            }
-            this.contentModal?.show(content, 'Cell Content');
-            this.emit('cellDoubleClick', { content });
-          });
-        }
 
         // Add keyboard handler for Ctrl+C / Cmd+C
         this.attachKeyboardHandlers();
