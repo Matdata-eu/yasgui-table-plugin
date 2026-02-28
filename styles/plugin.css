@@ -178,3 +178,84 @@ mark {
   white-space: nowrap;
   cursor: help;
 }
+
+/* Smart formatter: tick/cross (xsd:boolean) */
+.table-tick-cross {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.table-tick {
+  color: #4caf50;
+}
+
+.table-cross {
+  color: #f44336;
+}
+
+/* Smart formatter: star rating */
+.table-stars {
+  color: #f5a623;
+  font-size: 1.1em;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* Smart formatter: progress bar */
+.table-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.table-progress-bar {
+  height: 8px;
+  background: var(--table-primary, #1976d2);
+  border-radius: 4px;
+  min-width: 0;
+}
+
+.table-progress-label {
+  font-size: 12px;
+  color: var(--table-text-secondary);
+  white-space: nowrap;
+  min-width: 30px;
+}
+
+/* Smart formatter: image */
+.table-image {
+  max-height: 48px;
+  max-width: 100%;
+  object-fit: contain;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+
+/* Smart formatter: colour swatch */
+.table-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-color-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--table-border, #ddd);
+  flex-shrink: 0;
+}
+
+.table-color-label {
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* Smart formatter: description (multiline) */
+.table-description {
+  white-space: pre-wrap;
+  word-break: break-word;
+  display: block;
+}

@@ -324,4 +324,51 @@ describe('TableRenderer Integration', () => {
       expect(container.querySelector('.tabulator')).toBeTruthy();
     });
   });
+
+  describe('smart formatters', () => {
+    it('should use star formatter for variable names ending in "stars"', () => {
+      const smartResults: SparqlResults = {
+        head: { vars: ['reviewStars'] },
+        results: {
+          bindings: [
+            { reviewStars: { type: 'literal', value: '4', datatype: 'http://www.w3.org/2001/XMLSchema#integer' } },
+          ],
+        },
+      };
+      config.displayConfig = { ...(config.displayConfig || {}), smartFormatters: true };
+      const renderer = new TableRenderer(config);
+      renderer.render(container, smartResults);
+      expect(container.querySelector('.tabulator')).toBeTruthy();
+    });
+
+    it('should use progress formatter for variable names ending in "percent"', () => {
+      const smartResults: SparqlResults = {
+        head: { vars: ['completionPercent'] },
+        results: {
+          bindings: [
+            { completionPercent: { type: 'literal', value: '75' } },
+          ],
+        },
+      };
+      config.displayConfig = { ...(config.displayConfig || {}), smartFormatters: true };
+      const renderer = new TableRenderer(config);
+      renderer.render(container, smartResults);
+      expect(container.querySelector('.tabulator')).toBeTruthy();
+    });
+
+    it('should fall back to default formatter when smartFormatters is disabled', () => {
+      const smartResults: SparqlResults = {
+        head: { vars: ['reviewStars'] },
+        results: {
+          bindings: [
+            { reviewStars: { type: 'literal', value: '3' } },
+          ],
+        },
+      };
+      config.displayConfig = { ...(config.displayConfig || {}), smartFormatters: false };
+      const renderer = new TableRenderer(config);
+      renderer.render(container, smartResults);
+      expect(container.querySelector('.tabulator')).toBeTruthy();
+    });
+  });
 });

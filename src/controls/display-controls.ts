@@ -7,9 +7,11 @@ export interface DisplayControlsConfig {
   uriDisplayMode: 'full' | 'abbreviated';
   showDatatypes: boolean;
   ellipsisMode: boolean;
+  smartFormatters: boolean;
   onUriDisplayChange: (mode: 'full' | 'abbreviated') => void;
   onShowDatatypesChange: (show: boolean) => void;
   onEllipsisModeChange: (enabled: boolean) => void;
+  onSmartFormattersChange: (enabled: boolean) => void;
 }
 
 /**
@@ -20,6 +22,7 @@ export class DisplayControls {
   private uriToggle: HTMLButtonElement;
   private datatypeToggle: HTMLButtonElement;
   private ellipsisToggle: HTMLButtonElement;
+  private smartFormattersToggle: HTMLButtonElement;
   private config: DisplayControlsConfig;
 
   constructor(config: DisplayControlsConfig) {
@@ -28,12 +31,14 @@ export class DisplayControls {
     this.uriToggle = this.createUriToggle();
     this.datatypeToggle = this.createDatatypeToggle();
     this.ellipsisToggle = this.createEllipsisToggle();
+    this.smartFormattersToggle = this.createSmartFormattersToggle();
 
     // Build DOM structure
     this.container.appendChild(this.createLabel('Display:'));
     this.container.appendChild(this.uriToggle);
     this.container.appendChild(this.datatypeToggle);
     this.container.appendChild(this.ellipsisToggle);
+    this.container.appendChild(this.smartFormattersToggle);
 
     this.attachEventListeners();
   }
@@ -78,6 +83,15 @@ export class DisplayControls {
     return button;
   }
 
+  private createSmartFormattersToggle(): HTMLButtonElement {
+    const button = document.createElement('button');
+    button.className = 'table-toggle-button';
+    button.setAttribute('aria-label', 'Toggle smart formatters');
+    button.setAttribute('title', 'Apply formatters by XSD datatype and variable name convention');
+    this.updateSmartFormattersToggleText(button, this.config.smartFormatters);
+    return button;
+  }
+
   private updateUriToggleText(button: HTMLButtonElement, mode: 'full' | 'abbreviated'): void {
     button.textContent = mode === 'full' ? 'URI: Full' : 'URI: Short';
     if (mode === 'abbreviated') {
@@ -98,6 +112,15 @@ export class DisplayControls {
 
   private updateEllipsisToggleText(button: HTMLButtonElement, enabled: boolean): void {
     button.textContent = enabled ? 'Ellipsis: On' : 'Ellipsis: Off';
+    if (enabled) {
+      button.classList.add('active');
+    } else {
+      button.classList.remove('active');
+    }
+  }
+
+  private updateSmartFormattersToggleText(button: HTMLButtonElement, enabled: boolean): void {
+    button.textContent = enabled ? 'Smart: On' : 'Smart: Off';
     if (enabled) {
       button.classList.add('active');
     } else {
@@ -126,6 +149,13 @@ export class DisplayControls {
       this.updateEllipsisToggleText(this.ellipsisToggle, newEnabled);
       this.config.onEllipsisModeChange(newEnabled);
     });
+
+    this.smartFormattersToggle.addEventListener('click', () => {
+      const newEnabled = !this.config.smartFormatters;
+      this.config.smartFormatters = newEnabled;
+      this.updateSmartFormattersToggleText(this.smartFormattersToggle, newEnabled);
+      this.config.onSmartFormattersChange(newEnabled);
+    });
   }
 
   /**
@@ -150,6 +180,14 @@ export class DisplayControls {
   setEllipsisMode(enabled: boolean): void {
     this.config.ellipsisMode = enabled;
     this.updateEllipsisToggleText(this.ellipsisToggle, enabled);
+  }
+
+  /**
+   * Update the smart formatters setting programmatically
+   */
+  setSmartFormatters(enabled: boolean): void {
+    this.config.smartFormatters = enabled;
+    this.updateSmartFormattersToggleText(this.smartFormattersToggle, enabled);
   }
 
   /**

@@ -114,6 +114,7 @@
       <select id="dataset-selector">
         <option value="people">Sample People (20 rows)</option>
         <option value="datatypes">Datatypes Test (10 rows)</option>
+        <option value="smartFormatters">Smart Formatters Test</option>
         <option value="large">Large Dataset (1000 rows)</option>
         <option value="unicode">Unicode & Special Chars</option>
         <option value="ontology">Ontology/RDF Types (10 rows)</option>
@@ -248,6 +249,50 @@
         }
       },
       
+      smartFormatters: {
+        head: { vars: ['product', 'reviewStars', 'completionPercent', 'thumbnailImage', 'backgroundColor', 'description', 'available'] },
+        results: {
+          bindings: [
+            {
+              product: { type: 'uri', value: 'http://example.org/product/1' },
+              reviewStars: { type: 'literal', value: '4', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              completionPercent: { type: 'literal', value: '75', datatype: 'http://www.w3.org/2001/XMLSchema#decimal' },
+              thumbnailImage: { type: 'literal', value: 'https://via.placeholder.com/48' },
+              backgroundColor: { type: 'literal', value: '#4a90d9' },
+              description: { type: 'literal', value: 'A high-quality product with excellent reviews.\nSuitable for all ages.' },
+              available: { type: 'literal', value: 'true', datatype: 'http://www.w3.org/2001/XMLSchema#boolean' }
+            },
+            {
+              product: { type: 'uri', value: 'http://example.org/product/2' },
+              reviewStars: { type: 'literal', value: '2', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              completionPercent: { type: 'literal', value: '30', datatype: 'http://www.w3.org/2001/XMLSchema#decimal' },
+              thumbnailImage: { type: 'literal', value: 'https://via.placeholder.com/48/ff0000' },
+              backgroundColor: { type: 'literal', value: 'rgb(255, 87, 34)' },
+              description: { type: 'literal', value: 'Average product. Could be improved.' },
+              available: { type: 'literal', value: 'false', datatype: 'http://www.w3.org/2001/XMLSchema#boolean' }
+            },
+            {
+              product: { type: 'uri', value: 'http://example.org/product/3' },
+              reviewStars: { type: 'literal', value: '5', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              completionPercent: { type: 'literal', value: '100', datatype: 'http://www.w3.org/2001/XMLSchema#decimal' },
+              thumbnailImage: { type: 'literal', value: 'https://via.placeholder.com/48/00ff00' },
+              backgroundColor: { type: 'literal', value: 'green' },
+              description: { type: 'literal', value: 'Best in class. Highly recommended!' },
+              available: { type: 'literal', value: 'true', datatype: 'http://www.w3.org/2001/XMLSchema#boolean' }
+            },
+            {
+              product: { type: 'uri', value: 'http://example.org/product/4' },
+              reviewStars: { type: 'literal', value: '0', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              completionPercent: { type: 'literal', value: '0', datatype: 'http://www.w3.org/2001/XMLSchema#decimal' },
+              thumbnailImage: { type: 'literal', value: 'https://via.placeholder.com/48/888888' },
+              backgroundColor: { type: 'literal', value: '#888' },
+              description: { type: 'literal', value: 'Not yet reviewed.' },
+              available: { type: 'literal', value: 'false', datatype: 'http://www.w3.org/2001/XMLSchema#boolean' }
+            }
+          ]
+        }
+      },
+
       ontology: {
         head: {
           vars: [

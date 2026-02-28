@@ -126,6 +126,7 @@ export class TableRenderer {
    */
   private generateColumns(vars: string[]): ColumnDefinition[] {
     const columns: ColumnDefinition[] = [];
+    const smartFormatters = this.config.displayConfig?.smartFormatters ?? true;
 
     // Row number column (frozen)
     columns.push({
@@ -141,18 +142,135 @@ export class TableRenderer {
 
     // Data columns
     for (const varName of vars) {
+      const smartFormatter = smartFormatters ? this.getSmartFormatter(varName) : null;
       columns.push({
         title: varName,
         field: varName,
         headerSort: true,
         resizable: true,
         sorter: this.getColumnSorter(),
-        formatter: (cell: never) => this.formatCell(cell),
+        formatter: smartFormatter
+          ? (cell: never) => smartFormatter(cell)
+          : (cell: never) => this.formatCell(cell),
         minWidth: 50,
       });
     }
 
     return columns;
+  }
+
+  /**
+   * Detect a smart formatter function for a variable name based on naming conventions.
+   * Returns null if no convention matches.
+   */
+  private getSmartFormatter(varName: string): ((cell: unknown) => string | HTMLElement) | null {
+    const lower = varName.toLowerCase();
+    if (lower.endsWith('stars')) return (cell) => this.formatStars(cell);
+    if (lower.endsWith('percent')) return (cell) => this.formatProgress(cell);
+    if (lower.endsWith('image')) return (cell) => this.formatImage(cell);
+    if (lower.endsWith('color') || lower.endsWith('colour')) return (cell) => this.formatColor(cell);
+    if (lower.endsWith('description')) return (cell) => this.formatDescription(cell);
+    return null;
+  }
+
+  /**
+   * Render a star rating (0–5) from a numeric literal binding.
+   */
+  private formatStars(cell: unknown): string | HTMLElement {
+    const binding = (cell as { getValue: () => unknown }).getValue() as
+      | { type: string; value: string }
+      | undefined;
+    if (!binding || binding.type !== 'literal') return this.formatCell(cell);
+    const num = parseFloat(binding.value);
+    if (isNaN(num)) return this.formatCell(cell);
+    const total = 5;
+    const filled = Math.max(0, Math.min(total, Math.round(num)));
+    const span = document.createElement('span');
+    span.className = 'table-stars';
+    span.title = String(binding.value);
+    span.textContent = '★'.repeat(filled) + '☆'.repeat(total - filled);
+    return span;
+  }
+
+  /**
+   * Render a progress bar from a numeric literal binding (0–100).
+   */
+  private formatProgress(cell: unknown): string | HTMLElement {
+    const binding = (cell as { getValue: () => unknown }).getValue() as
+      | { type: string; value: string }
+      | undefined;
+    if (!binding || binding.type !== 'literal') return this.formatCell(cell);
+    const num = parseFloat(binding.value);
+    if (isNaN(num)) return this.formatCell(cell);
+    const pct = Math.max(0, Math.min(100, num));
+    const container = document.createElement('div');
+    container.className = 'table-progress';
+    container.title = `${binding.value}%`;
+    const bar = document.createElement('div');
+    bar.className = 'table-progress-bar';
+    bar.style.width = `${pct}%`;
+    container.appendChild(bar);
+    const label = document.createElement('span');
+    label.className = 'table-progress-label';
+    label.textContent = `${Math.round(pct)}%`;
+    container.appendChild(label);
+    return container;
+  }
+
+  /**
+   * Render an image from a URI or literal binding containing a URL.
+   */
+  private formatImage(cell: unknown): string | HTMLElement {
+    const binding = (cell as { getValue: () => unknown }).getValue() as
+      | { type: string; value: string }
+      | undefined;
+    if (!binding) return '';
+    const src = binding.value;
+    if (!src) return '';
+    const img = document.createElement('img');
+    img.className = 'table-image';
+    img.src = src;
+    img.alt = src;
+    img.title = src;
+    return img;
+  }
+
+  /**
+   * Render a colour swatch from a literal binding containing a CSS colour.
+   */
+  private formatColor(cell: unknown): string | HTMLElement {
+    const binding = (cell as { getValue: () => unknown }).getValue() as
+      | { type: string; value: string }
+      | undefined;
+    if (!binding || !binding.value) return this.formatCell(cell);
+    const color = binding.value;
+    const container = document.createElement('span');
+    container.className = 'table-color';
+    container.title = color;
+    const swatch = document.createElement('span');
+    swatch.className = 'table-color-swatch';
+    swatch.style.backgroundColor = color;
+    container.appendChild(swatch);
+    const label = document.createElement('span');
+    label.className = 'table-color-label';
+    label.textContent = color;
+    container.appendChild(label);
+    return container;
+  }
+
+  /**
+   * Render a description / long text as a wrapping text block.
+   */
+  private formatDescription(cell: unknown): string | HTMLElement {
+    const binding = (cell as { getValue: () => unknown }).getValue() as
+      | { type: string; value: string }
+      | undefined;
+    if (!binding || binding.type !== 'literal') return this.formatCell(cell);
+    const span = document.createElement('span');
+    span.className = 'table-description';
+    span.textContent = binding.value;
+    span.title = binding.value;
+    return span;
   }
 
   /**

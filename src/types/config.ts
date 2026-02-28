@@ -18,6 +18,7 @@ export interface DisplayConfiguration {
   uriDisplayMode: UriDisplayMode;
   showDatatypes: boolean;
   ellipsisMode: EllipsisMode;
+  smartFormatters: boolean; // Apply formatters by XSD datatype and variable name convention
   columnWidths?: ColumnWidthMap;
   sortState?: SortState;
   lastSearch?: string;
@@ -66,6 +67,7 @@ export const DEFAULT_CONFIG: Required<Omit<TabulatorPluginConfig, 'customTheme' 
     uriDisplayMode: 'full',
     showDatatypes: false,
     ellipsisMode: false,
+    smartFormatters: true,
   },
   tabulatorOptions: {},
   persistenceKey: 'yasgui-table-default',
