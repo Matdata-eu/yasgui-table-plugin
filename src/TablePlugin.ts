@@ -14,6 +14,7 @@ import { DisplayControls } from './controls/display-controls.js';
 import { FitControls } from './controls/fit-controls.js';
 import { ContentModal } from './controls/content-modal.js';
 import { ExportControls } from './controls/export-controls.js';
+import { LinkPrefixControl } from './controls/link-prefix-control.js';
 import { CellSelection } from './features/cell-selection.js';
 import { ClipboardManager } from './features/clipboard.js';
 import { loadDisplayConfig, saveDisplayConfig } from './utils/storage.js';
@@ -48,6 +49,7 @@ class TablePlugin {
   private fitControls: FitControls | null = null;
   private contentModal: ContentModal | null = null;
   private exportControls: ExportControls | null = null;
+  private linkPrefixControl: LinkPrefixControl | null = null;
   private cellSelection: CellSelection | null = null;
   private clipboardManager: ClipboardManager | null = null;
   private eventHandlers: Map<string, EventHandler[]> = new Map();
@@ -65,12 +67,22 @@ class TablePlugin {
     const validated = validateConfig(pluginConfig || {});
     this.config = { ...DEFAULT_CONFIG, ...validated };
 
+    // Stash the developer-supplied adapter so it can be restored when the user
+    // clears their own prefix override.
+    (this.config as any)._developerUriHrefAdapter = this.config.uriHrefAdapter;
+
     // Load persisted display config
     if (this.config.persistenceEnabled) {
       const stored = loadDisplayConfig(this.config.persistenceKey || 'yasgui-table-default');
       if (stored) {
         this.config.displayConfig = { ...this.config.displayConfig, ...stored };
       }
+    }
+
+    // Build uriHrefAdapter from persisted uriLinkPrefix if no developer adapter is set
+    if (!this.config.uriHrefAdapter && this.config.displayConfig?.uriLinkPrefix) {
+      const prefix = this.config.displayConfig.uriLinkPrefix;
+      this.config.uriHrefAdapter = (uri: string) => prefix + uri;
     }
 
     // Initialize renderer with callbacks
@@ -259,6 +271,13 @@ class TablePlugin {
         onTsvCopy: () => this.handleTsvExport(),
       });
 
+      // Create link prefix control
+      const currentPrefix = displayConfig.uriLinkPrefix || '';
+      this.linkPrefixControl = new LinkPrefixControl({
+        prefix: currentPrefix,
+        onPrefixChange: (prefix) => this.handleLinkPrefixChange(prefix),
+      });
+
       // Add controls toolbar to container
       const toolbar = document.createElement('div');
       toolbar.className = 'table-controls-toolbar';
@@ -266,6 +285,7 @@ class TablePlugin {
       toolbar.appendChild(this.displayControls.getElement());
       toolbar.appendChild(this.fitControls.getElement());
       toolbar.appendChild(this.exportControls.getElement());
+      toolbar.appendChild(this.linkPrefixControl.getElement());
       container.appendChild(toolbar);
 
       // Create table container (separate from search control)
@@ -324,6 +344,7 @@ class TablePlugin {
             showDatatypes: this.config.displayConfig.showDatatypes || false,
             ellipsisMode: this.config.displayConfig.ellipsisMode || false,
             lastSearch: this.config.displayConfig.lastSearch,
+            uriLinkPrefix: this.config.displayConfig.uriLinkPrefix,
           });
         }
       }
@@ -404,6 +425,10 @@ class TablePlugin {
       this.exportControls.destroy();
       this.exportControls = null;
     }
+    if (this.linkPrefixControl) {
+      this.linkPrefixControl.destroy();
+      this.linkPrefixControl = null;
+    }
     if (this.contentModal) {
       this.contentModal.close();
       this.contentModal = null;
@@ -449,6 +474,7 @@ class TablePlugin {
           columnWidths: dc.columnWidths,
           sortState: dc.sortState,
           lastSearch: dc.lastSearch,
+          uriLinkPrefix: dc.uriLinkPrefix,
         });
       }
     }
@@ -594,6 +620,50 @@ class TablePlugin {
         ellipsisMode: enabled,
       },
     });
+  }
+
+  /**
+   * Handle link prefix change from the UI control.
+   * When the user sets a prefix, it overrides any developer-supplied uriHrefAdapter.
+   * When cleared, the developer-supplied adapter (if any) is restored.
+   */
+  private handleLinkPrefixChange(prefix: string): void {
+    // Build the adapter from the prefix (empty prefix removes user adapter)
+    const newAdapter = prefix ? (uri: string) => prefix + uri : undefined;
+
+    if (!this.config.displayConfig) {
+      this.config.displayConfig = {};
+    }
+    this.config.displayConfig.uriLinkPrefix = prefix ? prefix : undefined;
+
+    // Store the current developer-provided adapter so we can restore it when
+    // the user clears their prefix. We keep a separate reference on the config
+    // only for this purpose.
+    const cfg = this.config as any;
+    if (prefix) {
+      this.config.uriHrefAdapter = newAdapter;
+    } else {
+      // Restore developer adapter (may be undefined)
+      this.config.uriHrefAdapter = cfg._developerUriHrefAdapter;
+    }
+
+    // Persist the prefix (independent of uriDisplayMode being set)
+    if (this.config.persistenceEnabled) {
+      saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
+        uriDisplayMode: this.config.displayConfig.uriDisplayMode || 'full',
+        showDatatypes: this.config.displayConfig.showDatatypes || false,
+        ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+        lastSearch: this.config.displayConfig.lastSearch,
+        uriLinkPrefix: prefix ? prefix : undefined,
+      });
+    }
+
+    // Update renderer without triggering a full re-draw
+    if (this.renderer) {
+      this.renderer.updateDisplayConfig(this.config);
+    }
+
+    this.emit('linkPrefixChange', { prefix });
   }
 
   /**

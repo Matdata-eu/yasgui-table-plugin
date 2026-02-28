@@ -114,6 +114,11 @@ function validateDisplayConfig(
     validated.lastSearch = config.lastSearch;
   }
 
+  // Validate uriLinkPrefix
+  if (config.uriLinkPrefix !== undefined && typeof config.uriLinkPrefix === 'string') {
+    validated.uriLinkPrefix = config.uriLinkPrefix;
+  }
+
   return validated;
 }
 

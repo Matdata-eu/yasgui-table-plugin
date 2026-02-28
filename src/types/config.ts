@@ -21,6 +21,7 @@ export interface DisplayConfiguration {
   columnWidths?: ColumnWidthMap;
   sortState?: SortState;
   lastSearch?: string;
+  uriLinkPrefix?: string; // User-configurable prefix URL for URI links (e.g. faceted browser)
 }
 
 export interface PrefixMap {
