@@ -262,7 +262,7 @@ class TablePlugin {
       this.displayControls = new DisplayControls({
         uriDisplayMode: displayConfig.uriDisplayMode || 'full',
         showDatatypes: displayConfig.showDatatypes || false,
-        ellipsisMode: displayConfig.ellipsisMode || false,
+        ellipsisMode: displayConfig.ellipsisMode ?? true,
         smartFormatters: displayConfig.smartFormatters ?? true,
         onUriDisplayChange: (mode) => this.handleUriDisplayChange(mode),
         onShowDatatypesChange: (show) => this.handleShowDatatypesChange(show),
@@ -346,7 +346,7 @@ class TablePlugin {
           saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
             uriDisplayMode: this.config.displayConfig.uriDisplayMode,
             showDatatypes: this.config.displayConfig.showDatatypes || false,
-            ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+            ellipsisMode: this.config.displayConfig.ellipsisMode ?? true,
             smartFormatters: this.config.displayConfig.smartFormatters ?? true,
             lastSearch: this.config.displayConfig.lastSearch,
             uriLinkPrefix: this.config.displayConfig.uriLinkPrefix,
@@ -479,7 +479,7 @@ class TablePlugin {
         saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
           uriDisplayMode: dc.uriDisplayMode,
           showDatatypes: dc.showDatatypes || false,
-          ellipsisMode: dc.ellipsisMode || false,
+          ellipsisMode: dc.ellipsisMode ?? true,
           smartFormatters: dc.smartFormatters ?? true,
           columnWidths: dc.columnWidths,
           sortState: dc.sortState,
@@ -564,7 +564,7 @@ class TablePlugin {
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
         uriDisplayMode: dc.uriDisplayMode || 'full',
         showDatatypes: dc.showDatatypes || false,
-        ellipsisMode: dc.ellipsisMode || false,
+        ellipsisMode: dc.ellipsisMode ?? true,
         smartFormatters: dc.smartFormatters ?? true,
         columnWidths: widths,
         sortState: dc.sortState,
@@ -593,7 +593,7 @@ class TablePlugin {
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
         uriDisplayMode: dc.uriDisplayMode || 'full',
         showDatatypes: dc.showDatatypes || false,
-        ellipsisMode: dc.ellipsisMode || false,
+        ellipsisMode: dc.ellipsisMode ?? true,
         smartFormatters: dc.smartFormatters ?? true,
         columnWidths: dc.columnWidths,
         sortState: { column, dir },
@@ -685,7 +685,7 @@ class TablePlugin {
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
         uriDisplayMode: dc.uriDisplayMode || 'full',
         showDatatypes: dc.showDatatypes || false,
-        ellipsisMode: dc.ellipsisMode || false,
+        ellipsisMode: dc.ellipsisMode ?? true,
         smartFormatters: dc.smartFormatters ?? true,
         columnWidths: dc.columnWidths,
         sortState: dc.sortState,
@@ -949,7 +949,7 @@ class TablePlugin {
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
         uriDisplayMode: this.config.displayConfig.uriDisplayMode,
         showDatatypes: this.config.displayConfig.showDatatypes || false,
-        ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+        ellipsisMode: this.config.displayConfig.ellipsisMode ?? true,
         smartFormatters: this.config.displayConfig.smartFormatters ?? true,
         lastSearch: searchTerm,
       });

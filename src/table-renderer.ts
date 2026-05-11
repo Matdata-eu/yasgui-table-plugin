@@ -52,7 +52,7 @@ export class TableRenderer {
     );
     this.literalFormatter = new LiteralFormatter(displayConfig.showDatatypes || false);
     this.bnodeFormatter = new BnodeFormatter();
-    this.ellipsisFormatter = new EllipsisFormatter(displayConfig.ellipsisMode || false);
+    this.ellipsisFormatter = new EllipsisFormatter(displayConfig.ellipsisMode ?? true);
   }
 
   /**

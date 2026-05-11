@@ -66,7 +66,7 @@ export const DEFAULT_CONFIG: Required<Omit<TabulatorPluginConfig, 'customTheme' 
   displayConfig: {
     uriDisplayMode: 'full',
     showDatatypes: false,
-    ellipsisMode: false,
+    ellipsisMode: true,
     smartFormatters: true,
   },
   tabulatorOptions: {},

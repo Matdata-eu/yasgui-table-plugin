@@ -60,9 +60,9 @@ const yasgui = new Yasgui(document.getElementById('yasgui'), {
     pluginsOptions: {
       table: {
         displayConfig: {
-          uriDisplayMode: 'abbreviated',  // 'full' or 'abbreviated'
+          uriDisplayMode: 'full',         // 'full' or 'abbreviated'
           showDatatypes: true,            // Show datatype annotations
-          ellipsisMode: true              // Truncate long cell content
+          ellipsisMode: true              // Truncate long cell content (default: on)
         },
         persistenceEnabled: true          // Save user preferences
       }

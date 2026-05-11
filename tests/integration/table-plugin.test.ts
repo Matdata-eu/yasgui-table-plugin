@@ -146,6 +146,8 @@ describe('TablePlugin Integration', () => {
       const config = plugin.getConfig();
       
       expect(config.displayConfig.showDatatypes).toBe(false);
+      expect(config.displayConfig.uriDisplayMode).toBe('full');
+      expect(config.displayConfig.ellipsisMode).toBe(true);
     });
   });
 
