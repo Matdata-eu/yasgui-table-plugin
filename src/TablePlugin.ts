@@ -59,7 +59,7 @@ class TablePlugin {
 
   constructor(yasr) {
     this.yasr = yasr;
-    this.helpReference = 'https://yasgui-doc.matdata.eu/docs/user-guide#table-plugin';
+    this.helpReference = 'https://matgui-doc.matdata.eu/docs/user-guide#table-plugin';
     
     // Get plugin config from yasr.config if available
     const pluginConfig = (yasr.config as any)?.pluginsOptions?.['Table'] as TabulatorPluginConfig | undefined;
