@@ -8,7 +8,7 @@ import { SparqlResults, SparqlBinding } from './types/sparql.js';
 import { TabulatorPluginConfig, ColumnWidthMap } from './types/config.js';
 import { parseResults } from './parsers/bindings-parser.js';
 import { PrefixResolver } from './parsers/prefix-resolver.js';
-import { UriFormatter } from './formatters/uri-formatter.js';
+import { UriFormatter, UriFormatterCallbacks } from './formatters/uri-formatter.js';
 import { LiteralFormatter } from './formatters/literal-formatter.js';
 import { BnodeFormatter } from './formatters/bnode-formatter.js';
 import { EllipsisFormatter } from './formatters/ellipsis-formatter.js';
@@ -30,25 +30,29 @@ export class TableRenderer {
   private onWidthChange?: (widths: ColumnWidthMap) => void;
   private onSortChange?: (column: string, dir: 'asc' | 'desc') => void;
   private onCellDblClick?: (cell: { getValue: () => unknown }) => void;
+  private uriFormatterCallbacks: UriFormatterCallbacks = {};
 
   constructor(
     config: TabulatorPluginConfig,
     onWidthChange?: (widths: ColumnWidthMap) => void,
     onSortChange?: (column: string, dir: 'asc' | 'desc') => void,
-    onCellDblClick?: (cell: { getValue: () => unknown }) => void
+    onCellDblClick?: (cell: { getValue: () => unknown }) => void,
+    uriFormatterCallbacks?: UriFormatterCallbacks
   ) {
     this.config = config;
     this.prefixResolver = new PrefixResolver(config.prefixMap);
     this.onWidthChange = onWidthChange;
     this.onSortChange = onSortChange;
     this.onCellDblClick = onCellDblClick;
+    this.uriFormatterCallbacks = uriFormatterCallbacks || {};
 
     // Initialize formatters
     const displayConfig = config.displayConfig || {};
     this.uriFormatter = new UriFormatter(
       this.prefixResolver,
       displayConfig.uriDisplayMode || 'full',
-      config.uriHrefAdapter
+      config.uriHrefAdapter,
+      this.uriFormatterCallbacks
     );
     this.literalFormatter = new LiteralFormatter(
       displayConfig.showDatatypes || false,
@@ -446,6 +450,8 @@ export class TableRenderer {
 
     // Update uriHrefAdapter on the URI formatter
     this.uriFormatter.setUriHrefAdapter(config.uriHrefAdapter);
+    // Preserve URI interaction callbacks when redrawing with new config
+    this.uriFormatter.setCallbacks(this.uriFormatterCallbacks);
     // Also update config reference for bindingSetAdapter
     this.config = config;
   }
@@ -464,12 +470,13 @@ export class TableRenderer {
    */
   updatePrefixes(prefixMap: Record<string, string>): void {
     this.prefixResolver = new PrefixResolver(prefixMap);
-    // Update URI formatter with new prefix resolver while preserving current display mode and adapter
+    // Update URI formatter with new prefix resolver while preserving current display mode, adapter and callbacks
     const currentDisplayMode = this.uriFormatter.getDisplayMode();
     this.uriFormatter = new UriFormatter(
       this.prefixResolver,
       currentDisplayMode,
-      this.config.uriHrefAdapter
+      this.config.uriHrefAdapter,
+      this.uriFormatterCallbacks
     );
   }
 

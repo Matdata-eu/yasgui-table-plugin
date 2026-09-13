@@ -448,6 +448,40 @@
       }
     };
 
+    // Mock DESCRIBE responses for a few URIs
+    const mockDescribeData = {
+      'http://example.org/person/1': `<http://example.org/person/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> .
+<http://example.org/person/1> <http://xmlns.com/foaf/0.1/name> "Alice"@en .
+<http://example.org/person/1> <http://xmlns.com/foaf/0.1/age> "30"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://example.org/person/1> <http://xmlns.com/foaf/0.1/knows> <http://example.org/person/2> .`,
+      'http://example.org/person/2': `<http://example.org/person/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> .
+<http://example.org/person/2> <http://xmlns.com/foaf/0.1/name> "Bob"@en .
+<http://example.org/person/2> <http://xmlns.com/foaf/0.1/knows> <http://example.org/person/1> .`,
+      'http://example.org/product/1': `<http://example.org/product/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://example.org/product/1> <http://schema.org/name> "Premium Widget" .
+<http://example.org/product/1> <http://schema.org/brand> <http://example.org/brand/acme> .`
+    };
+
+    // Mock background query execution
+    const mockExecuteQuery = async (query, _options) => {
+      console.log(`🔍 Mock background query: ${query}`);
+      // Simulate network latency
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      const match = query.match(/DESCRIBE\s+<([^>]+)>/i);
+      const uri = match ? match[1] : '';
+      const data = mockDescribeData[uri];
+      if (data) {
+        return {
+          text: async () => data,
+          data: data
+        };
+      }
+      return {
+        text: async () => '',
+        data: ''
+      };
+    };
+
     // Mock YASR-like interface
     const mockYasr = {
       config: {
@@ -464,6 +498,7 @@
       },
       results: mockData.people,
       resultsEl: document.getElementById('demo-container'),
+      executeQuery: mockExecuteQuery,
       getPrefixes: () => ({
         'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
         'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',

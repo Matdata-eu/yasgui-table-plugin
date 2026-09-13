@@ -16,8 +16,12 @@ export type {
   TabulatorPluginConfig,
   DisplayConfiguration,
   UriDisplayMode,
+  Yasr,
+  PluginQueryOptions,
 } from './types/config';
 
 export type { SparqlResults, SparqlBinding, ResultRow } from './types/sparql';
 
 export type { TableRow, TableColumn, SelectionRange } from './types/table';
+
+export type { DescribeTriple, DescribeParseResult } from './parsers/describe-parser';

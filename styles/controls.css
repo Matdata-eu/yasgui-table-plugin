@@ -449,6 +449,194 @@
   border-left: 1px solid var(--table-control-border);
 }
 
+/* URI Context Menu */
+.table-uri-context-menu {
+  background: var(--table-background);
+  border: 1px solid var(--table-control-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  padding: 4px 0;
+}
+
+.table-uri-context-menu-item {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--table-text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 16px;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.table-uri-context-menu-item:hover:not(:disabled) {
+  background: var(--table-control-hover);
+}
+
+.table-uri-context-menu-item:disabled {
+  color: var(--table-text-muted);
+  cursor: not-allowed;
+}
+
+/* DESCRIBE Modal */
+.describe-modal {
+  min-width: 500px;
+  width: 80vw;
+  max-width: 900px;
+}
+
+.describe-modal-header .table-modal-title {
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.describe-modal-content {
+  padding: 0;
+  font-family: inherit;
+  white-space: normal;
+  min-height: 200px;
+}
+
+.describe-modal-footer {
+  justify-content: space-between;
+}
+
+.describe-modal-loading {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+  min-height: 200px;
+  padding: 20px;
+}
+
+.describe-modal-spinner {
+  animation: describe-modal-spin 1s linear infinite;
+  border: 3px solid var(--table-border);
+  border-top-color: var(--table-primary);
+  border-radius: 50%;
+  height: 32px;
+  width: 32px;
+}
+
+@keyframes describe-modal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.describe-modal-error {
+  color: #d32f2f;
+  padding: 20px;
+}
+
+.describe-modal-results {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.describe-modal-tabs {
+  border-bottom: 1px solid var(--table-border);
+  display: flex;
+  gap: 4px;
+  padding: 8px 16px 0;
+}
+
+.describe-modal-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--table-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 12px;
+}
+
+.describe-modal-tab:hover {
+  color: var(--table-text);
+}
+
+.describe-modal-tab.active {
+  border-bottom-color: var(--table-primary);
+  color: var(--table-primary);
+  font-weight: 600;
+}
+
+.describe-modal-tab-content {
+  flex: 1;
+  overflow: auto;
+  padding: 12px 16px;
+}
+
+.describe-modal-empty {
+  color: var(--table-text-muted);
+  font-style: italic;
+  margin: 0;
+  padding: 20px 0;
+}
+
+.describe-modal-table-wrapper {
+  overflow: auto;
+}
+
+.describe-modal-table {
+  border-collapse: collapse;
+  font-size: 13px;
+  width: 100%;
+}
+
+.describe-modal-table th,
+.describe-modal-table td {
+  border: 1px solid var(--table-border);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.describe-modal-table th {
+  background: var(--table-header-background);
+  color: var(--table-text);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.describe-modal-table td {
+  color: var(--table-text);
+  font-family: monospace;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.describe-modal-raw {
+  background: var(--table-control-background);
+  border: 1px solid var(--table-border);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.describe-modal-raw pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--table-text);
+  max-height: 50vh;
+  overflow: auto;
+}
+
 .table-help-button {
   display: inline-flex;
   align-items: center;

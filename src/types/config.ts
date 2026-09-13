@@ -34,6 +34,42 @@ export type BindingSet = {
   [varName: string]: { type: string; value: string; datatype?: string; 'xml:lang'?: string } | undefined;
 };
 
+/**
+ * Options passed to yasr.executeQuery() for background queries.
+ */
+export interface PluginQueryOptions {
+  acceptHeader?: string;
+  /** Optional AbortSignal used to cancel in-flight query requests */
+  signal?: AbortSignal;
+}
+
+/**
+ * Binding shape returned by DESCRIBE/CONSTRUCT SPARQL JSON results.
+ */
+export interface YasrBinding {
+  subject?: { value: string; type: string };
+  predicate?: { value: string; type: string };
+  object?: { value: string; type: string; datatype?: string; 'xml:lang'?: string };
+}
+
+/**
+ * YASR results wrapper exposing RDF triple bindings.
+ */
+export interface YasrResults {
+  getBindings(): YasrBinding[];
+}
+
+/**
+ * Minimal YASR instance interface consumed by the table plugin.
+ */
+export interface Yasr {
+  results: any;
+  resultsEl: HTMLElement;
+  config?: any;
+  getPrefixes?(): Record<string, string>;
+  executeQuery?(query: string, options?: PluginQueryOptions): Promise<any>;
+}
+
 export interface TabulatorPluginConfig {
   // Display configuration
   displayConfig?: Partial<DisplayConfiguration>;

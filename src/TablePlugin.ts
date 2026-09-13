@@ -4,7 +4,7 @@
  */
 
 import '../styles/index.css';
-import { TabulatorPluginConfig, DEFAULT_CONFIG } from './types/config.js';
+import { TabulatorPluginConfig, DEFAULT_CONFIG, Yasr } from './types/config.js';
 import { SparqlResults } from './types/sparql.js';
 import { SelectionRange } from './types/table.js';
 import { Tabulator } from './types/tabulator.js';
@@ -13,6 +13,7 @@ import { SearchControl } from './controls/search-control.js';
 import { DisplayControls } from './controls/display-controls.js';
 import { FitControls } from './controls/fit-controls.js';
 import { ContentModal } from './controls/content-modal.js';
+import { DescribeModal } from './controls/describe-modal.js';
 import { ExportControls } from './controls/export-controls.js';
 import { LinkPrefixControl } from './controls/link-prefix-control.js';
 import { HelpReferenceControl } from './controls/help-reference-control.js';
@@ -21,6 +22,7 @@ import { ClipboardManager } from './features/clipboard.js';
 import { loadDisplayConfig, saveDisplayConfig } from './utils/storage.js';
 import { validateConfig } from './utils/validators.js';
 import { getCurrentTheme, watchThemeChanges } from './utils/theme.js';
+import { parseDescribeResponse } from './parsers/describe-parser.js';
 
 type EventHandler = (...args: unknown[]) => void;
 
@@ -37,7 +39,7 @@ interface DownloadInfo {
 
 class TablePlugin {
   public helpReference?: string;
-  private yasr: any;
+  private yasr: Yasr;
   
   private iconSvg: string = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v4h4V5H5zm6 0v4h4V5h-4zm6 0v4h4V5h-4zM5 11v4h4v-4H5zm6 0v4h4v-4h-4zm6 0v4h4v-4h-4zM5 17v2h4v-2H5zm6 0v2h4v-2h-4zm6 0v2h4v-2h-4z"/></svg>';
 
@@ -49,7 +51,10 @@ class TablePlugin {
   private displayControls: DisplayControls | null = null;
   private fitControls: FitControls | null = null;
   private contentModal: ContentModal | null = null;
+  private describeModal: DescribeModal | null = null;
   private exportControls: ExportControls | null = null;
+  private describeAbortController: AbortController | null = null;
+  private uriContextMenu: HTMLElement | null = null;
   private linkPrefixControl: LinkPrefixControl | null = null;
   private helpReferenceControl: HelpReferenceControl | null = null;
   private cellSelection: CellSelection | null = null;
@@ -57,7 +62,7 @@ class TablePlugin {
   private eventHandlers: Map<string, EventHandler[]> = new Map();
   private themeObserverCleanup: (() => void) | null = null;
 
-  constructor(yasr) {
+  constructor(yasr: Yasr) {
     this.yasr = yasr;
     this.helpReference = 'https://yasgui-doc.matdata.eu/docs/user-guide#table-plugin';
     
@@ -110,6 +115,10 @@ class TablePlugin {
         }
         this.contentModal?.show(content, 'Cell Content');
         this.emit('cellDoubleClick', { content });
+      },
+      {
+        onUriCtrlClick: (uri) => this.handleUriCtrlClick(uri),
+        onUriContextMenu: (uri, x, y) => this.handleUriContextMenu(uri, x, y),
       }
     );
   }
@@ -289,6 +298,9 @@ class TablePlugin {
       // Create content modal
       this.contentModal = new ContentModal();
 
+      // Create DESCRIBE results modal
+      this.describeModal = new DescribeModal();
+
       // Create export controls
       this.exportControls = new ExportControls({
         onMarkdownCopy: () => this.handleMarkdownExport(),
@@ -453,6 +465,15 @@ class TablePlugin {
       this.contentModal.close();
       this.contentModal = null;
     }
+    if (this.describeModal) {
+      this.describeModal.close();
+      this.describeModal = null;
+    }
+    if (this.describeAbortController) {
+      this.describeAbortController.abort();
+      this.describeAbortController = null;
+    }
+    this.removeUriContextMenu();
     this.eventHandlers.clear();
     this.container = null;
   }
@@ -1008,6 +1029,181 @@ class TablePlugin {
 
     // Emit event
     this.emit('search', { searchTerm, filteredCount, totalCount });
+  }
+
+  /**
+   * Handle Ctrl+click (or Cmd+click) on a URI link: run a background DESCRIBE
+   * query and show the result in a modal.
+   */
+  private handleUriCtrlClick(uri: string): void {
+    this.runDescribeQuery(uri);
+  }
+
+  /**
+   * Handle right-click on a URI link: show a context menu with URI actions.
+   */
+  private handleUriContextMenu(uri: string, x: number, y: number): void {
+    this.removeUriContextMenu();
+
+    const menu = document.createElement('div');
+    menu.className = 'table-uri-context-menu';
+    menu.style.position = 'fixed';
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+    menu.style.zIndex = '10001';
+
+    const addItem = (label: string, onClick: () => void, disabled = false) => {
+      const item = document.createElement('button');
+      item.className = 'table-uri-context-menu-item';
+      item.textContent = label;
+      item.disabled = disabled;
+      item.addEventListener('click', () => {
+        this.removeUriContextMenu();
+        if (!disabled) {
+          onClick();
+        }
+      });
+      menu.appendChild(item);
+    };
+
+    const href = this.config.uriHrefAdapter ? this.config.uriHrefAdapter(uri) : uri;
+    addItem('Open link', () => {
+      window.open(href, '_blank', 'noopener,noreferrer');
+    });
+
+    addItem('Describe resource (background)', () => {
+      this.runDescribeQuery(uri);
+    });
+
+    const hasYasqe = this.hasYasqeInterface();
+    addItem(
+      'Describe resource (new query)',
+      () => {
+        this.runDescribeAsMainQuery(uri);
+      },
+      !hasYasqe
+    );
+
+    document.body.appendChild(menu);
+    this.uriContextMenu = menu;
+
+    // Close menu on click outside
+    const closeOnClickOutside = (e: MouseEvent) => {
+      if (!menu.contains(e.target as Node)) {
+        this.removeUriContextMenu();
+      }
+    };
+
+    // Use setTimeout so the current click that opened the menu doesn't close it
+    setTimeout(() => {
+      document.addEventListener('click', closeOnClickOutside, { once: true });
+    }, 0);
+  }
+
+  /**
+   * Remove the URI context menu from the DOM.
+   */
+  private removeUriContextMenu(): void {
+    if (this.uriContextMenu) {
+      this.uriContextMenu.remove();
+      this.uriContextMenu = null;
+    }
+  }
+
+  /**
+   * Check whether the YASQE interface required to run a non-background query
+   * is available on the YASR instance.
+   */
+  private hasYasqeInterface(): boolean {
+    const yasqe = (this.yasr as any).yasqe;
+    return !!(
+      yasqe &&
+      typeof yasqe.setValue === 'function' &&
+      (typeof yasqe.query === 'function' || typeof yasqe.requestQuery === 'function')
+    );
+  }
+
+  /**
+   * Run a non-background DESCRIBE query by replacing the YASQE editor value
+   * and triggering a query. Only runs when the YASQE interface is available.
+   */
+  private runDescribeAsMainQuery(uri: string): void {
+    if (!this.hasYasqeInterface()) {
+      this.showNotification('YASQE interface not available', 'error');
+      return;
+    }
+
+    const yasqe = (this.yasr as any).yasqe;
+    const query = `DESCRIBE <${uri}>`;
+    yasqe.setValue(query);
+
+    if (typeof yasqe.query === 'function') {
+      yasqe.query();
+    } else if (typeof yasqe.requestQuery === 'function') {
+      yasqe.requestQuery();
+    } else {
+      this.showNotification('Unable to trigger query', 'error');
+    }
+  }
+
+  /**
+   * Run a background DESCRIBE query for the given URI and display the result
+   * in the describe modal.
+   */
+  private async runDescribeQuery(uri: string): Promise<void> {
+    if (!this.yasr.executeQuery) {
+      this.showNotification('Background query execution is not available', 'error');
+      return;
+    }
+
+    // Abort any previous describe query
+    if (this.describeAbortController) {
+      this.describeAbortController.abort();
+    }
+    const controller = new AbortController();
+    this.describeAbortController = controller;
+
+    this.describeModal?.showLoading(uri);
+
+    try {
+      const response = await this.yasr.executeQuery(`DESCRIBE <${uri}>`, {
+        acceptHeader: 'text/turtle',
+        signal: controller.signal,
+      });
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      const result = await parseDescribeResponse(response);
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      this.describeModal?.showResults(uri, result);
+      this.emit('describeQuery', { uri, success: true, triples: result.triples.length });
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        return;
+      }
+      console.error('yasgui-table-plugin: DESCRIBE query failed', uri, error);
+      let raw = '';
+      try {
+        raw = typeof (error as any)?.response?.text === 'function'
+          ? await (error as any).response.text()
+          : '';
+      } catch {
+        raw = '';
+      }
+      this.describeModal?.showError(uri, error, raw);
+      this.showNotification('DESCRIBE query failed', 'error');
+      this.emit('describeQuery', { uri, success: false, error: error?.message || String(error) });
+    } finally {
+      if (this.describeAbortController === controller) {
+        this.describeAbortController = null;
+      }
+    }
   }
 }
 

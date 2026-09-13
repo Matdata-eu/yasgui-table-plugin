@@ -176,4 +176,75 @@ describe('UriFormatter', () => {
       expect(otherResult.getAttribute('href')).toBe('http://example.org/other');
     });
   });
+
+  describe('Ctrl+click callback', () => {
+    it('should call onUriCtrlClick when Ctrl+clicking a link', () => {
+      const prefixResolver = new PrefixResolver();
+      const onUriCtrlClick = jest.fn();
+      const formatter = new UriFormatter(prefixResolver, 'full', undefined, { onUriCtrlClick });
+      const cell = createMockCell({ type: 'uri', value: 'http://example.org/resource' });
+
+      const result = formatter.format(cell) as HTMLElement;
+      const event = new MouseEvent('click', { ctrlKey: true, bubbles: true });
+      result.dispatchEvent(event);
+
+      expect(onUriCtrlClick).toHaveBeenCalledWith('http://example.org/resource');
+    });
+
+    it('should call onUriCtrlClick when Cmd+clicking a link on macOS', () => {
+      const prefixResolver = new PrefixResolver();
+      const onUriCtrlClick = jest.fn();
+      const formatter = new UriFormatter(prefixResolver, 'full', undefined, { onUriCtrlClick });
+      const cell = createMockCell({ type: 'uri', value: 'http://example.org/resource' });
+
+      const result = formatter.format(cell) as HTMLElement;
+      const event = new MouseEvent('click', { metaKey: true, bubbles: true });
+      result.dispatchEvent(event);
+
+      expect(onUriCtrlClick).toHaveBeenCalledWith('http://example.org/resource');
+    });
+
+    it('should not call onUriCtrlClick on a normal left click', () => {
+      const prefixResolver = new PrefixResolver();
+      const onUriCtrlClick = jest.fn();
+      const formatter = new UriFormatter(prefixResolver, 'full', undefined, { onUriCtrlClick });
+      const cell = createMockCell({ type: 'uri', value: 'http://example.org/resource' });
+
+      const result = formatter.format(cell) as HTMLElement;
+      const event = new MouseEvent('click', { bubbles: true });
+      result.dispatchEvent(event);
+
+      expect(onUriCtrlClick).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('context menu callback', () => {
+    it('should call onUriContextMenu on right-click', () => {
+      const prefixResolver = new PrefixResolver();
+      const onUriContextMenu = jest.fn();
+      const formatter = new UriFormatter(prefixResolver, 'full', undefined, { onUriContextMenu });
+      const cell = createMockCell({ type: 'uri', value: 'http://example.org/resource' });
+
+      const result = formatter.format(cell) as HTMLElement;
+      const event = new MouseEvent('contextmenu', { clientX: 100, clientY: 200, bubbles: true });
+      result.dispatchEvent(event);
+
+      expect(onUriContextMenu).toHaveBeenCalledWith('http://example.org/resource', 100, 200);
+    });
+  });
+
+  describe('setCallbacks', () => {
+    it('should update callbacks after construction', () => {
+      const prefixResolver = new PrefixResolver();
+      const formatter = new UriFormatter(prefixResolver, 'full');
+      const onUriCtrlClick = jest.fn();
+      formatter.setCallbacks({ onUriCtrlClick });
+
+      const cell = createMockCell({ type: 'uri', value: 'http://example.org/resource' });
+      const result = formatter.format(cell) as HTMLElement;
+      result.dispatchEvent(new MouseEvent('click', { ctrlKey: true, bubbles: true }));
+
+      expect(onUriCtrlClick).toHaveBeenCalledWith('http://example.org/resource');
+    });
+  });
 });
