@@ -6,7 +6,7 @@
   "main": "dist/yasgui-table-plugin.cjs.js",
   "module": "dist/yasgui-table-plugin.esm.js",
   "unpkg": "dist/yasgui-table-plugin.min.js",
-  "types": "dist/index.d.ts",  
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
@@ -25,7 +25,15 @@
     "type": "git",
     "url": "git+https://github.com/Matdata-eu/yasgui-table-plugin.git"
   },
-  "keywords": ["yasgui", "yasr", "sparql", "table", "plugin", "semantic-web", "rdf" ],
+  "keywords": [
+    "yasgui",
+    "yasr",
+    "sparql",
+    "table",
+    "plugin",
+    "semantic-web",
+    "rdf"
+  ],
   "author": "Matdata",
   "license": "Apache-2.0",
   "bugs": {
@@ -36,6 +44,7 @@
     "access": "public"
   },
   "dependencies": {
+    "n3": "^2.7.12",
     "tabulator-tables": "^6.3.1"
   },
   "devDependencies": {

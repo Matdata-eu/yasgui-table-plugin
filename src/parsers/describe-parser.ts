@@ -8,6 +8,7 @@
  */
 
 import { YasrBinding } from '../types/config';
+import { Parser } from 'n3';
 
 export interface DescribeTriple {
   subject: string;
@@ -56,7 +57,8 @@ async function extractRawText(response: unknown): Promise<string> {
  *
  * Order of parsing:
  * 1. SPARQL JSON results with subject/predicate/object bindings.
- * 2. N-Triples (a strict subset of Turtle).
+ * 2. Turtle/N-Triples via N3 (handles @prefix, multi-line statements, numbers,
+ *    booleans, lists, etc.).
  * 3. Fall back to returning the raw text with no parsed triples.
  */
 export async function parseDescribeResponse(response: unknown): Promise<DescribeParseResult> {
@@ -72,10 +74,10 @@ export async function parseDescribeResponse(response: unknown): Promise<Describe
     return { triples: jsonTriples, raw };
   }
 
-  // Try N-Triples
-  const ntTriples = parseNTriples(raw);
-  if (ntTriples.length > 0) {
-    return { triples: ntTriples, raw };
+  // Try Turtle/N-Triples with N3 parser
+  const n3Triples = parseWithN3(raw);
+  if (n3Triples.length > 0) {
+    return { triples: n3Triples, raw };
   }
 
   return { triples: [], raw };
@@ -128,127 +130,43 @@ function tryParseSparqlJson(raw: string): DescribeTriple[] {
 }
 
 /**
- * Parse N-Triples text into triples.
- *
- * Supports:
- * - URI subjects/predicates: <http://...>
- * - URI objects: <http://...>
- * - Literal objects: "value" or "value"@lang or "value"^^<datatype>
- * - Blank node subjects/objects: _:name
- *
- * Lines starting with # are treated as comments and ignored.
+ * Parse Turtle/N-Triples using the N3 library.
  */
-function parseNTriples(raw: string): DescribeTriple[] {
-  const triples: DescribeTriple[] = [];
-  const lines = raw.split(/\r?\n/);
+function parseWithN3(raw: string): DescribeTriple[] {
+  try {
+    const parser = new Parser();
+    const quads = parser.parse(raw);
+    const triples: DescribeTriple[] = [];
 
-  // Regex for an N-Triples statement.
-  // Group 1: subject (URI or blank node)
-  // Group 2: predicate (URI)
-  // Group 3: object (URI, blank node, or literal with optional @lang/^^datatype)
-  const statementRegex = /^\s*(<[^>]+>|_:[^\s]+)\s+(<[^>]+>)\s+(<[^>]+>|_:[^\s]+|"(?:[^"\\]|\\.)*"(?:@[^\s]+|\^\^<[^>]+>)?)\s*\.\s*(?:#.*)?$/;
+    for (const quad of quads) {
+      const subject = quad.subject.termType === 'BlankNode'
+        ? quad.subject.value
+        : quad.subject.value;
+      const predicate = quad.predicate.value;
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) {
-      continue;
+      let object: DescribeTriple['object'];
+
+      if (quad.object.termType === 'Literal') {
+        object = {
+          value: quad.object.value,
+          type: 'literal',
+          datatype: quad.object.datatype?.value,
+          lang: quad.object.language || undefined,
+        };
+      } else if (quad.object.termType === 'BlankNode') {
+        object = { value: quad.object.value, type: 'bnode' };
+      } else {
+        object = { value: quad.object.value, type: 'uri' };
+      }
+
+      triples.push({ subject, predicate, object });
     }
 
-    const match = statementRegex.exec(trimmed);
-    if (!match) {
-      continue;
-    }
-
-    const subjectRaw = match[1];
-    const predicateRaw = match[2];
-    const objectRaw = match[3];
-
-    const subject = parseSubjectOrPredicate(subjectRaw);
-    const predicate = parseSubjectOrPredicate(predicateRaw);
-    const object = parseObject(objectRaw);
-
-    if (!subject || !predicate || !object) {
-      continue;
-    }
-
-    triples.push({ subject, predicate, object });
+    return triples;
+  } catch (error) {
+    console.warn('yasgui-table-plugin: failed to parse DESCRIBE response with N3', error);
+    return [];
   }
-
-  return triples;
-}
-
-function parseSubjectOrPredicate(token: string): string | null {
-  if (token.startsWith('<') && token.endsWith('>')) {
-    return token.slice(1, -1);
-  }
-  if (token.startsWith('_:')) {
-    return token;
-  }
-  return null;
-}
-
-function parseObject(token: string): DescribeTriple['object'] | null {
-  if (token.startsWith('<') && token.endsWith('>')) {
-    return { value: token.slice(1, -1), type: 'uri' };
-  }
-
-  if (token.startsWith('_:')) {
-    return { value: token, type: 'bnode' };
-  }
-
-  if (token.startsWith('"')) {
-    return parseLiteral(token);
-  }
-
-  return null;
-}
-
-/**
- * Parse a literal token of the forms:
- *   "value"
- *   "value"@lang
- *   "value"^^<datatype>
- */
-function parseLiteral(token: string): DescribeTriple['object'] | null {
-  // Find the closing unescaped quote
-  let valueEnd = -1;
-  for (let i = 1; i < token.length; i++) {
-    if (token[i] === '"' && token[i - 1] !== '\\') {
-      valueEnd = i;
-      break;
-    }
-  }
-
-  if (valueEnd === -1) {
-    return null;
-  }
-
-  let value = token.slice(1, valueEnd);
-  // Unescape N-Triples escape sequences
-  value = unescapeLiteral(value);
-
-  const suffix = token.slice(valueEnd + 1);
-  let lang: string | undefined;
-  let datatype: string | undefined;
-
-  if (suffix.startsWith('@')) {
-    lang = suffix.slice(1);
-  } else if (suffix.startsWith('^^<') && suffix.endsWith('>')) {
-    datatype = suffix.slice(3, -1);
-  }
-
-  return { value, type: 'literal', lang, datatype };
-}
-
-function unescapeLiteral(value: string): string {
-  return value
-    .replace(/\\t/g, '\t')
-    .replace(/\\n/g, '\n')
-    .replace(/\\r/g, '\r')
-    .replace(/\\"/g, '"')
-    .replace(/\\\\/g, '\\')
-    .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-    .replace(/\\U([0-9a-fA-F]{8})/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)));
 }
 
 /**

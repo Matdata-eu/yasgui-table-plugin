@@ -1111,15 +1111,39 @@ class TablePlugin {
   }
 
   /**
+   * Resolve the YASQE instance associated with this YASR.
+   * YASR may hold a direct `yasqe` reference, or it may be wrapped inside a
+   * YASGUI tab (`tab.yasqe`). Returns `null` if none is found.
+   */
+  private getYasqeInstance(): any | null {
+    const yasr = this.yasr as any;
+    if (yasr.yasqe) {
+      return yasr.yasqe;
+    }
+
+    // yasgui/yasr integration: try to walk up to the tab's YASQE
+    if (yasr.yasgui && yasr.yasgui.tab) {
+      return yasr.yasgui.tab.yasqe || null;
+    }
+
+    // Some YASGUI versions expose the tab directly on yasr
+    if (yasr.tab && yasr.tab.yasqe) {
+      return yasr.tab.yasqe;
+    }
+
+    return null;
+  }
+
+  /**
    * Check whether the YASQE interface required to run a non-background query
-   * is available on the YASR instance.
+   * is available.
    */
   private hasYasqeInterface(): boolean {
-    const yasqe = (this.yasr as any).yasqe;
+    const yasqe = this.getYasqeInstance();
     return !!(
       yasqe &&
       typeof yasqe.setValue === 'function' &&
-      (typeof yasqe.query === 'function' || typeof yasqe.requestQuery === 'function')
+      (typeof yasqe.query === 'function' || typeof yasqe.queryWasRequested === 'function')
     );
   }
 
@@ -1128,19 +1152,19 @@ class TablePlugin {
    * and triggering a query. Only runs when the YASQE interface is available.
    */
   private runDescribeAsMainQuery(uri: string): void {
-    if (!this.hasYasqeInterface()) {
+    const yasqe = this.getYasqeInstance();
+    if (!yasqe || typeof yasqe.setValue !== 'function') {
       this.showNotification('YASQE interface not available', 'error');
       return;
     }
 
-    const yasqe = (this.yasr as any).yasqe;
     const query = `DESCRIBE <${uri}>`;
     yasqe.setValue(query);
 
     if (typeof yasqe.query === 'function') {
       yasqe.query();
-    } else if (typeof yasqe.requestQuery === 'function') {
-      yasqe.requestQuery();
+    } else if (typeof yasqe.queryWasRequested === 'function') {
+      yasqe.queryWasRequested();
     } else {
       this.showNotification('Unable to trigger query', 'error');
     }

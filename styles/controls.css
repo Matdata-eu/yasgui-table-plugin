@@ -471,16 +471,29 @@
   font-size: 13px;
   padding: 8px 16px;
   text-align: left;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 
 .table-uri-context-menu-item:hover:not(:disabled) {
-  background: var(--table-control-hover);
+  background: var(--table-primary);
+  color: #ffffff;
 }
 
 .table-uri-context-menu-item:disabled {
   color: var(--table-text-muted);
   cursor: not-allowed;
+  opacity: 0.55;
+  font-style: italic;
+}
+
+/* Disabled icon/label marker for context menu items */
+.table-uri-context-menu-item:disabled::before {
+  content: '⊘ ';
+}
+
+/* Ensure context menu blends in dark mode */
+.yasgui-table-plugin[data-theme='dark'] .table-uri-context-menu {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
 /* DESCRIBE Modal */

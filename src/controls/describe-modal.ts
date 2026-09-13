@@ -118,6 +118,7 @@ export class DescribeModal {
     copyButton.addEventListener('click', () => {
       const rawText = payload.state === 'results' ? payload.result.raw : payload.state === 'error' ? payload.raw : '';
       this.copyToClipboard(rawText);
+      this.close();
     });
 
     const closeFooterButton = document.createElement('button');
