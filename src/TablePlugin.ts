@@ -65,9 +65,17 @@ class TablePlugin {
     const pluginConfig = (yasr.config as any)?.pluginsOptions?.['Table'] as TabulatorPluginConfig | undefined;
     this.config = { ...DEFAULT_CONFIG, ...pluginConfig };
 
-    // Validate and merge config
+    // Validate and merge config (deep-merge displayConfig so partial user config
+    // does not wipe defaults such as decimalPlaces).
     const validated = validateConfig(pluginConfig || {});
-    this.config = { ...DEFAULT_CONFIG, ...validated };
+    this.config = {
+      ...DEFAULT_CONFIG,
+      ...validated,
+      displayConfig: {
+        ...DEFAULT_CONFIG.displayConfig,
+        ...(validated.displayConfig || {}),
+      },
+    };
 
     // Stash the developer-supplied adapter so it can be restored when the user
     // clears their own prefix override.
@@ -261,13 +269,15 @@ class TablePlugin {
       const displayConfig = this.config.displayConfig || {};
       this.displayControls = new DisplayControls({
         uriDisplayMode: displayConfig.uriDisplayMode || 'full',
-        showDatatypes: displayConfig.showDatatypes || false,
-        ellipsisMode: displayConfig.ellipsisMode || false,
+        showDatatypes: displayConfig.showDatatypes ?? false,
+        ellipsisMode: displayConfig.ellipsisMode ?? true,
         smartFormatters: displayConfig.smartFormatters ?? true,
+        decimalPlaces: displayConfig.decimalPlaces,
         onUriDisplayChange: (mode) => this.handleUriDisplayChange(mode),
         onShowDatatypesChange: (show) => this.handleShowDatatypesChange(show),
         onEllipsisModeChange: (enabled) => this.handleEllipsisModeChange(enabled),
         onSmartFormattersChange: (enabled) => this.handleSmartFormattersChange(enabled),
+        onDecimalPlacesChange: (places) => this.handleDecimalPlacesChange(places),
       });
 
       // Create fit controls
@@ -345,9 +355,10 @@ class TablePlugin {
         ) {
           saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
             uriDisplayMode: this.config.displayConfig.uriDisplayMode,
-            showDatatypes: this.config.displayConfig.showDatatypes || false,
-            ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+            showDatatypes: this.config.displayConfig.showDatatypes ?? false,
+            ellipsisMode: this.config.displayConfig.ellipsisMode ?? true,
             smartFormatters: this.config.displayConfig.smartFormatters ?? true,
+            decimalPlaces: this.config.displayConfig.decimalPlaces,
             lastSearch: this.config.displayConfig.lastSearch,
             uriLinkPrefix: this.config.displayConfig.uriLinkPrefix,
           });
@@ -478,9 +489,10 @@ class TablePlugin {
       if (dc.uriDisplayMode) {
         saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
           uriDisplayMode: dc.uriDisplayMode,
-          showDatatypes: dc.showDatatypes || false,
-          ellipsisMode: dc.ellipsisMode || false,
+          showDatatypes: dc.showDatatypes ?? false,
+          ellipsisMode: dc.ellipsisMode ?? true,
           smartFormatters: dc.smartFormatters ?? true,
+          decimalPlaces: dc.decimalPlaces,
           columnWidths: dc.columnWidths,
           sortState: dc.sortState,
           lastSearch: dc.lastSearch,
@@ -563,8 +575,9 @@ class TablePlugin {
       const dc = this.config.displayConfig;
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
         uriDisplayMode: dc.uriDisplayMode || 'full',
-        showDatatypes: dc.showDatatypes || false,
-        ellipsisMode: dc.ellipsisMode || false,
+        showDatatypes: dc.showDatatypes ?? false,
+        ellipsisMode: dc.ellipsisMode ?? true,
+        decimalPlaces: dc.decimalPlaces,
         smartFormatters: dc.smartFormatters ?? true,
         columnWidths: widths,
         sortState: dc.sortState,
@@ -592,8 +605,9 @@ class TablePlugin {
       const dc = this.config.displayConfig;
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
         uriDisplayMode: dc.uriDisplayMode || 'full',
-        showDatatypes: dc.showDatatypes || false,
-        ellipsisMode: dc.ellipsisMode || false,
+        showDatatypes: dc.showDatatypes ?? false,
+        ellipsisMode: dc.ellipsisMode ?? true,
+        decimalPlaces: dc.decimalPlaces,
         smartFormatters: dc.smartFormatters ?? true,
         columnWidths: dc.columnWidths,
         sortState: { column, dir },
@@ -655,6 +669,42 @@ class TablePlugin {
   }
 
   /**
+   * Handle decimal places change (undefined = raw value).
+   * Uses the lightweight renderer redraw path (like link prefix) so the
+   * Display dropdown stays open while the table cells update.
+   */
+  private handleDecimalPlacesChange(places: number | undefined): void {
+    if (!this.config.displayConfig) {
+      this.config.displayConfig = {};
+    }
+    this.config.displayConfig.decimalPlaces = places;
+
+    // Persist the updated display config
+    if (this.config.persistenceEnabled) {
+      const dc = this.config.displayConfig;
+      saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
+        uriDisplayMode: dc.uriDisplayMode || 'full',
+        showDatatypes: dc.showDatatypes ?? false,
+        ellipsisMode: dc.ellipsisMode ?? true,
+        smartFormatters: dc.smartFormatters ?? true,
+        decimalPlaces: dc.decimalPlaces,
+        columnWidths: dc.columnWidths,
+        sortState: dc.sortState,
+        lastSearch: dc.lastSearch,
+        uriLinkPrefix: dc.uriLinkPrefix,
+      });
+    }
+
+    // Update formatter and force Tabulator to re-render existing cells
+    if (this.renderer) {
+      this.renderer.updateDisplayConfig(this.config);
+      this.renderer.redrawTable();
+    }
+
+    this.emit('decimalPlacesChange', { decimalPlaces: places });
+  }
+
+  /**
    * Handle link prefix change from the UI control.
    * When the user sets a prefix, it overrides any developer-supplied uriHrefAdapter.
    * When cleared, the developer-supplied adapter (if any) is restored.
@@ -684,9 +734,10 @@ class TablePlugin {
       const dc = this.config.displayConfig;
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
         uriDisplayMode: dc.uriDisplayMode || 'full',
-        showDatatypes: dc.showDatatypes || false,
-        ellipsisMode: dc.ellipsisMode || false,
+        showDatatypes: dc.showDatatypes ?? false,
+        ellipsisMode: dc.ellipsisMode ?? true,
         smartFormatters: dc.smartFormatters ?? true,
+        decimalPlaces: dc.decimalPlaces,
         columnWidths: dc.columnWidths,
         sortState: dc.sortState,
         lastSearch: dc.lastSearch,
@@ -948,8 +999,8 @@ class TablePlugin {
     if (this.config.persistenceEnabled && this.config.displayConfig.uriDisplayMode) {
       saveDisplayConfig(this.config.persistenceKey || 'yasgui-table-default', {
         uriDisplayMode: this.config.displayConfig.uriDisplayMode,
-        showDatatypes: this.config.displayConfig.showDatatypes || false,
-        ellipsisMode: this.config.displayConfig.ellipsisMode || false,
+        showDatatypes: this.config.displayConfig.showDatatypes ?? false,
+        ellipsisMode: this.config.displayConfig.ellipsisMode ?? true,
         smartFormatters: this.config.displayConfig.smartFormatters ?? true,
         lastSearch: searchTerm,
       });

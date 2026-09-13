@@ -65,9 +65,8 @@ const yasgui = new Yasgui(document.getElementById('yasgui'), {
         displayConfig: {
           uriDisplayMode: 'abbreviated',  // 'full' or 'abbreviated'
           showDatatypes: true,            // Show datatype annotations
-          ellipsisMode: true,             // Truncate long cell content
-          smartFormatters: true,          // Auto-format by XSD datatype and variable name suffix (default: true)
-          uriLinkPrefix: '',              // URL prefix prepended to every URI link (e.g. 'https://browser.example.org/?uri=')
+          ellipsisMode: true,             // Truncate long cell content (default: on)
+          decimalPlaces: 2                // Fixed fraction digits for xsd:float/double/decimal (omit for raw values)
         },
         persistenceEnabled: true,         // Save user preferences
 

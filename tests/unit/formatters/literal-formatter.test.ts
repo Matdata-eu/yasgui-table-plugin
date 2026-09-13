@@ -198,4 +198,123 @@ describe('LiteralFormatter', () => {
       expect(result.textContent).toContain('xsd:integer');
     });
   });
+
+  describe('decimalPlaces fraction-digit formatting', () => {
+    const XSD = 'http://www.w3.org/2001/XMLSchema#';
+
+    it('should round xsd:double to the configured number of digits', () => {
+      const formatter = new LiteralFormatter(false, 2);
+      const cell = createMockCell({
+        type: 'literal',
+        value: '3.14159265',
+        datatype: `${XSD}double`,
+      });
+
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.querySelector('.table-literal-value')!.textContent).toBe('3.14');
+    });
+
+    it('should pad xsd:decimal with trailing zeros', () => {
+      const formatter = new LiteralFormatter(false, 3);
+      const cell = createMockCell({
+        type: 'literal',
+        value: '5',
+        datatype: `${XSD}decimal`,
+      });
+
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.querySelector('.table-literal-value')!.textContent).toBe('5.000');
+    });
+
+    it('should round xsd:float to zero fraction digits', () => {
+      const formatter = new LiteralFormatter(false, 0);
+      const cell = createMockCell({
+        type: 'literal',
+        value: '2.718',
+        datatype: `${XSD}float`,
+      });
+
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.querySelector('.table-literal-value')!.textContent).toBe('3');
+    });
+
+    it('should leave other datatypes (e.g. xsd:integer) untouched', () => {
+      const formatter = new LiteralFormatter(false, 2);
+      const cell = createMockCell({
+        type: 'literal',
+        value: '42',
+        datatype: `${XSD}integer`,
+      });
+
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.querySelector('.table-literal-value')!.textContent).toBe('42');
+    });
+
+    it('should leave plain (untyped) literals untouched', () => {
+      const formatter = new LiteralFormatter(false, 2);
+      const cell = createMockCell({
+        type: 'literal',
+        value: '1.23456',
+      });
+
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.querySelector('.table-literal-value')!.textContent).toBe('1.23456');
+    });
+
+    it('should leave non-numeric typed values untouched', () => {
+      const formatter = new LiteralFormatter(false, 2);
+      const cell = createMockCell({
+        type: 'literal',
+        value: 'NaN-value',
+        datatype: `${XSD}double`,
+      });
+
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.querySelector('.table-literal-value')!.textContent).toBe('NaN-value');
+    });
+
+    it('should show raw values when decimalPlaces is undefined', () => {
+      const formatter = new LiteralFormatter(false);
+      const cell = createMockCell({
+        type: 'literal',
+        value: '0.123456789',
+        datatype: `${XSD}decimal`,
+      });
+
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.querySelector('.table-literal-value')!.textContent).toBe('0.123456789');
+    });
+
+    it('should be updatable via setDecimalPlaces', () => {
+      const formatter = new LiteralFormatter(false, 2);
+      const cell = createMockCell({
+        type: 'literal',
+        value: '1.23456',
+        datatype: `${XSD}double`,
+      });
+
+      formatter.setDecimalPlaces(4);
+      expect(
+        (formatter.format(cell) as HTMLElement).querySelector('.table-literal-value')!.textContent
+      ).toBe('1.2346');
+
+      formatter.setDecimalPlaces(undefined);
+      expect(
+        (formatter.format(cell) as HTMLElement).querySelector('.table-literal-value')!.textContent
+      ).toBe('1.23456');
+    });
+
+    it('should still show the datatype annotation alongside the rounded value', () => {
+      const formatter = new LiteralFormatter(true, 1);
+      const cell = createMockCell({
+        type: 'literal',
+        value: '9.876',
+        datatype: `${XSD}decimal`,
+      });
+
+      const result = formatter.format(cell) as HTMLElement;
+      expect(result.textContent).toContain('9.9');
+      expect(result.textContent).toContain('xsd:decimal');
+    });
+  });
 });

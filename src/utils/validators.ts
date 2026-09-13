@@ -6,6 +6,8 @@ import { TabulatorPluginConfig, DisplayConfiguration, ColumnWidthMap } from '../
 
 export const MIN_COLUMN_WIDTH = 50;
 export const MAX_COLUMN_WIDTH = 1000;
+export const MIN_DECIMAL_PLACES = 0;
+export const MAX_DECIMAL_PLACES = 15;
 
 /**
  * Validates plugin configuration and returns sanitized config
@@ -88,6 +90,18 @@ function validateDisplayConfig(
 
   if (config.ellipsisMode !== undefined) {
     validated.ellipsisMode = Boolean(config.ellipsisMode);
+  }
+
+  if (config.smartFormatters !== undefined) {
+    validated.smartFormatters = Boolean(config.smartFormatters);
+  }
+
+  // Validate decimal places (integer 0-15; undefined/null = raw value)
+  if (config.decimalPlaces !== undefined && config.decimalPlaces !== null) {
+    const places = Number(config.decimalPlaces);
+    if (Number.isFinite(places)) {
+      validated.decimalPlaces = Math.min(MAX_DECIMAL_PLACES, Math.max(MIN_DECIMAL_PLACES, Math.round(places)));
+    }
   }
 
   // Validate column widths

@@ -19,6 +19,7 @@ export interface DisplayConfiguration {
   showDatatypes: boolean;
   ellipsisMode: EllipsisMode;
   smartFormatters: boolean; // Apply formatters by XSD datatype and variable name convention
+  decimalPlaces?: number; // Fixed fraction digits for xsd:float/xsd:double/xsd:decimal literals (0-15); undefined = raw value
   columnWidths?: ColumnWidthMap;
   sortState?: SortState;
   lastSearch?: string;
@@ -66,7 +67,8 @@ export const DEFAULT_CONFIG: Required<Omit<TabulatorPluginConfig, 'customTheme' 
   displayConfig: {
     uriDisplayMode: 'full',
     showDatatypes: false,
-    ellipsisMode: false,
+    ellipsisMode: true,
+    decimalPlaces: 2,
     smartFormatters: true,
   },
   tabulatorOptions: {},

@@ -11,10 +11,12 @@ export interface DisplayControlsConfig {
   showDatatypes: boolean;
   ellipsisMode: boolean;
   smartFormatters: boolean;
+  decimalPlaces?: number;
   onUriDisplayChange: (mode: 'full' | 'abbreviated') => void;
   onShowDatatypesChange: (show: boolean) => void;
   onEllipsisModeChange: (enabled: boolean) => void;
   onSmartFormattersChange: (enabled: boolean) => void;
+  onDecimalPlacesChange: (places: number | undefined) => void;
 }
 
 export class DisplayControls {
@@ -25,6 +27,8 @@ export class DisplayControls {
   private datatypeToggle: HTMLButtonElement;
   private ellipsisToggle: HTMLButtonElement;
   private smartFormattersToggle: HTMLButtonElement;
+  private decimalPlacesRow: HTMLElement;
+  private decimalPlacesInput: HTMLInputElement;
   private config: DisplayControlsConfig;
   private isOpen = false;
 
@@ -35,6 +39,8 @@ export class DisplayControls {
     this.datatypeToggle = this.createDatatypeToggle();
     this.ellipsisToggle = this.createEllipsisToggle();
     this.smartFormattersToggle = this.createSmartFormattersToggle();
+    this.decimalPlacesInput = this.createDecimalPlacesInput();
+    this.decimalPlacesRow = this.createDecimalPlacesRow();
 
     this.panel = this.createPanel();
     this.triggerButton = this.createTriggerButton();
@@ -73,7 +79,59 @@ export class DisplayControls {
     panel.appendChild(this.datatypeToggle);
     panel.appendChild(this.ellipsisToggle);
     panel.appendChild(this.smartFormattersToggle);
+    panel.appendChild(this.decimalPlacesRow);
     return panel;
+  }
+
+  private createDecimalPlacesInput(): HTMLInputElement {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'table-decimal-places-input';
+    input.min = '0';
+    input.max = '15';
+    input.step = '1';
+    input.placeholder = 'Raw';
+    input.setAttribute('aria-label', 'Number of fraction digits for decimal values');
+    input.value = this.config.decimalPlaces !== undefined ? String(this.config.decimalPlaces) : '';
+    input.addEventListener('change', () => this.applyDecimalPlaces());
+    input.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        this.applyDecimalPlaces();
+      }
+      e.stopPropagation();
+    });
+    return input;
+  }
+
+  private createDecimalPlacesRow(): HTMLElement {
+    const row = document.createElement('div');
+    row.className = 'table-dropdown-item table-decimal-places-control';
+    row.setAttribute('title', 'Fixed number of fraction digits for xsd:float, xsd:double and xsd:decimal values (empty = raw)');
+    // Keep the dropdown open while interacting with the input
+    row.addEventListener('click', (e) => e.stopPropagation());
+
+    const label = document.createElement('span');
+    label.className = 'table-decimal-places-label';
+    label.textContent = 'Decimals:';
+
+    row.appendChild(label);
+    row.appendChild(this.decimalPlacesInput);
+    return row;
+  }
+
+  private applyDecimalPlaces(): void {
+    const raw = this.decimalPlacesInput.value.trim();
+    let places: number | undefined;
+    if (raw !== '') {
+      const parsed = Number(raw);
+      if (Number.isFinite(parsed)) {
+        places = Math.min(15, Math.max(0, Math.round(parsed)));
+      }
+    }
+    this.config.decimalPlaces = places;
+    // Reflect clamped/cleared value back in the input
+    this.decimalPlacesInput.value = places !== undefined ? String(places) : '';
+    this.config.onDecimalPlacesChange(places);
   }
 
   private createUriToggle(): HTMLButtonElement {
@@ -198,6 +256,14 @@ export class DisplayControls {
   setSmartFormatters(enabled: boolean): void {
     this.config.smartFormatters = enabled;
     this.updateSmartFormattersToggleText(this.smartFormattersToggle, enabled);
+  }
+
+  /**
+   * Update the decimal places setting programmatically (undefined = raw)
+   */
+  setDecimalPlaces(places: number | undefined): void {
+    this.config.decimalPlaces = places;
+    this.decimalPlacesInput.value = places !== undefined ? String(places) : '';
   }
 
   /**

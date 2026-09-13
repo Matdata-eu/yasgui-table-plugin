@@ -114,6 +114,7 @@
       <select id="dataset-selector">
         <option value="people">Sample People (20 rows)</option>
         <option value="datatypes">Datatypes Test (10 rows)</option>
+        <option value="decimals">Decimal Places Test</option>
         <option value="smartFormatters">Smart Formatters Test</option>
         <option value="large">Large Dataset (1000 rows)</option>
         <option value="unicode">Unicode & Special Chars</option>
@@ -249,6 +250,46 @@
         }
       },
       
+      decimals: {
+        head: { vars: ['measurement', 'floatVal', 'doubleVal', 'decimalVal', 'integerVal', 'plainVal'] },
+        results: {
+          bindings: [
+            {
+              measurement: { type: 'literal', value: 'Pi approximation' },
+              floatVal: { type: 'literal', value: '3.1415927410125732', datatype: 'http://www.w3.org/2001/XMLSchema#float' },
+              doubleVal: { type: 'literal', value: '3.141592653589793', datatype: 'http://www.w3.org/2001/XMLSchema#double' },
+              decimalVal: { type: 'literal', value: '3.14159265358979323846', datatype: 'http://www.w3.org/2001/XMLSchema#decimal' },
+              integerVal: { type: 'literal', value: '3', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              plainVal: { type: 'literal', value: '3.14159265358979323846' }
+            },
+            {
+              measurement: { type: 'literal', value: 'Small ratio' },
+              floatVal: { type: 'literal', value: '0.123456789', datatype: 'http://www.w3.org/2001/XMLSchema#float' },
+              doubleVal: { type: 'literal', value: '0.123456789012345', datatype: 'http://www.w3.org/2001/XMLSchema#double' },
+              decimalVal: { type: 'literal', value: '0.12345678901234567890', datatype: 'http://www.w3.org/2001/XMLSchema#decimal' },
+              integerVal: { type: 'literal', value: '0', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              plainVal: { type: 'literal', value: '0.12345678901234567890' }
+            },
+            {
+              measurement: { type: 'literal', value: 'Whole number' },
+              floatVal: { type: 'literal', value: '5', datatype: 'http://www.w3.org/2001/XMLSchema#float' },
+              doubleVal: { type: 'literal', value: '5', datatype: 'http://www.w3.org/2001/XMLSchema#double' },
+              decimalVal: { type: 'literal', value: '5', datatype: 'http://www.w3.org/2001/XMLSchema#decimal' },
+              integerVal: { type: 'literal', value: '5', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              plainVal: { type: 'literal', value: '5' }
+            },
+            {
+              measurement: { type: 'literal', value: 'Negative value' },
+              floatVal: { type: 'literal', value: '-2.718281828', datatype: 'http://www.w3.org/2001/XMLSchema#float' },
+              doubleVal: { type: 'literal', value: '-2.718281828459045', datatype: 'http://www.w3.org/2001/XMLSchema#double' },
+              decimalVal: { type: 'literal', value: '-2.71828182845904523536', datatype: 'http://www.w3.org/2001/XMLSchema#decimal' },
+              integerVal: { type: 'literal', value: '-2', datatype: 'http://www.w3.org/2001/XMLSchema#integer' },
+              plainVal: { type: 'literal', value: '-2.71828182845904523536' }
+            }
+          ]
+        }
+      },
+
       smartFormatters: {
         head: { vars: ['product', 'reviewStars', 'completionPercent', 'thumbnailImage', 'backgroundColor', 'description', 'available'] },
         results: {

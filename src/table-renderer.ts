@@ -50,7 +50,10 @@ export class TableRenderer {
       displayConfig.uriDisplayMode || 'full',
       config.uriHrefAdapter
     );
-    this.literalFormatter = new LiteralFormatter(displayConfig.showDatatypes || false);
+    this.literalFormatter = new LiteralFormatter(
+      displayConfig.showDatatypes || false,
+      displayConfig.decimalPlaces
+    );
     this.bnodeFormatter = new BnodeFormatter();
     this.ellipsisFormatter = new EllipsisFormatter(displayConfig.ellipsisMode || false);
   }
@@ -437,6 +440,9 @@ export class TableRenderer {
     if (displayConfig.ellipsisMode !== undefined) {
       this.ellipsisFormatter.setEnabled(displayConfig.ellipsisMode);
     }
+
+    // Always sync decimal places (undefined restores raw values)
+    this.literalFormatter.setDecimalPlaces(displayConfig.decimalPlaces);
 
     // Update uriHrefAdapter on the URI formatter
     this.uriFormatter.setUriHrefAdapter(config.uriHrefAdapter);

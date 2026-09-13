@@ -236,6 +236,42 @@
   background: var(--table-control-hover) !important;
 }
 
+/* Decimal places row inside the Display dropdown */
+.table-decimal-places-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: default;
+}
+
+.table-decimal-places-control:hover {
+  background: transparent !important;
+}
+
+.table-decimal-places-label {
+  font-size: 13px;
+  color: var(--table-text);
+  white-space: nowrap;
+}
+
+.table-decimal-places-input {
+  width: 56px;
+  padding: 3px 6px;
+  border: 1px solid var(--table-control-border);
+  border-radius: 4px;
+  background: var(--table-background);
+  color: var(--table-text);
+  font-size: 13px;
+  font-family: inherit;
+  text-align: right;
+}
+
+.table-decimal-places-input:focus {
+  outline: none;
+  border-color: var(--table-primary);
+}
+
 /* Display controls */
 .table-display-controls {
   padding: 6px 6px;

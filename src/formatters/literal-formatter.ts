@@ -6,11 +6,20 @@
 import { SparqlBinding } from '../types/sparql';
 import { CellComponent } from '../types/tabulator';
 
+/** XSD datatypes that support fraction-digit formatting */
+const DECIMAL_DATATYPES = new Set([
+  'http://www.w3.org/2001/XMLSchema#float',
+  'http://www.w3.org/2001/XMLSchema#double',
+  'http://www.w3.org/2001/XMLSchema#decimal',
+]);
+
 export class LiteralFormatter {
   private showDatatypes: boolean;
+  private decimalPlaces?: number;
 
-  constructor(showDatatypes = false) {
+  constructor(showDatatypes = false, decimalPlaces?: number) {
     this.showDatatypes = showDatatypes;
+    this.decimalPlaces = decimalPlaces;
   }
 
   /**
@@ -43,10 +52,10 @@ export class LiteralFormatter {
     const container = document.createElement('span');
     container.className = 'table-literal';
 
-    // Main value
+    // Main value (rounded when a fixed number of fraction digits is configured)
     const valueSpan = document.createElement('span');
     valueSpan.className = 'table-literal-value';
-    valueSpan.textContent = binding.value;
+    valueSpan.textContent = this.formatValue(binding);
     container.appendChild(valueSpan);
 
     // Language tag
@@ -69,6 +78,28 @@ export class LiteralFormatter {
     }
 
     return container;
+  }
+
+  /**
+   * Format the raw literal value, applying fraction-digit rounding for
+   * xsd:float, xsd:double and xsd:decimal when decimalPlaces is configured.
+   * Non-numeric values are returned unchanged.
+   */
+  private formatValue(binding: SparqlBinding): string {
+    if (
+      this.decimalPlaces === undefined ||
+      !binding.datatype ||
+      !DECIMAL_DATATYPES.has(binding.datatype)
+    ) {
+      return binding.value;
+    }
+
+    const num = Number(binding.value);
+    if (!Number.isFinite(num)) {
+      return binding.value;
+    }
+
+    return num.toFixed(this.decimalPlaces);
   }
 
   /**
@@ -97,5 +128,12 @@ export class LiteralFormatter {
    */
   setShowDatatypes(show: boolean): void {
     this.showDatatypes = show;
+  }
+
+  /**
+   * Update the fixed number of fraction digits (undefined = raw value)
+   */
+  setDecimalPlaces(places?: number): void {
+    this.decimalPlaces = places;
   }
 }
