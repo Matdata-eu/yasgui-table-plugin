@@ -19,6 +19,8 @@ High-performance YASGUI plugin for rendering SPARQL SELECT results in an interac
 - ♿ **Accessible** - WCAG AA compliant with keyboard navigation
 - 🎯 **SPARQL-Aware** - Proper rendering of URIs, literals, datatypes, and blank nodes with prefix support from YASR
 - 🧠 **Smart Formatters** - Auto-format cells by XSD datatype (e.g. `xsd:boolean` → ✔/✘) and variable name suffix conventions (e.g. `*stars`, `*percent`, `*image`, `*color`, `*description`)
+- **Decimal Places** - Configure a fixed number of fraction digits for `xsd:float`, `xsd:double`, and `xsd:decimal` literals via the Display dropdown or `displayConfig.decimalPlaces` (leave unset for raw values)
+- 🧭 **DESCRIBE Resource** - Ctrl+click (or Cmd+click) any URI, or right-click it and choose **Describe resource**, to run a background `DESCRIBE <uri>` query and view the resulting triples in a modal; optionally open the DESCRIBE as a new main query
 - 🔗 **URI Link Prefix** - Toolbar control to set a custom URL prefix for all URI links (e.g. point to a faceted browser); overrides `uriHrefAdapter` when set by the user
 - ❓ **Quick Reference** - Toolbar help icon opens an in-place quick reference card listing all features and keyboard shortcuts
 
@@ -66,6 +68,7 @@ const yasgui = new Yasgui(document.getElementById('yasgui'), {
           uriDisplayMode: 'abbreviated',  // 'full' or 'abbreviated'
           showDatatypes: true,            // Show datatype annotations
           ellipsisMode: true,             // Truncate long cell content (default: on)
+          smartFormatters: true,          // Apply suffix-based formatters (default: on)
           decimalPlaces: 2                // Fixed fraction digits for xsd:float/double/decimal (omit for raw values)
         },
         persistenceEnabled: true,         // Save user preferences
@@ -113,10 +116,15 @@ tablePlugin.on('linkPrefixChange', (data) => {
   console.log(`Link prefix set to: ${data.prefix}`);
 });
 
+// Listen for DESCRIBE query results
+tablePlugin.on('describeQuery', (data) => {
+  console.log(`DESCRIBE ${data.uri}: ${data.success ? data.triples + ' triples' : 'failed'}`);
+});
+
 // Available events:
 // - ready, search, columnSort, columnResize, cellDoubleClick
 // - selectionChange, selectionCleared, clipboardCopy
-// - copy, layoutChange, linkPrefixChange, error, destroy
+// - copy, layoutChange, linkPrefixChange, describeQuery, error, destroy
 ```
 
 ## Public Methods
