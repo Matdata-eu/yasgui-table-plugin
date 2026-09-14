@@ -284,6 +284,8 @@
 }
 
 .table-toggle-button {
+  appearance: none;
+  -webkit-appearance: none;
   padding: 6px 12px;
   border: 1px solid var(--table-control-border);
   border-radius: 4px;
