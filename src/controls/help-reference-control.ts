@@ -45,6 +45,11 @@ const HELP_SECTIONS: HelpSection[] = [
       'Copy the table data to the clipboard as CSV, TSV, or Markdown by clicking the corresponding button in the Export section.',
   },
   {
+    title: 'Explore a resource',
+    description:
+      'Ctrl+click (Cmd+click on macOS) a URI to show all triples where it is the subject. Ctrl+Shift+click shows all triples where it is the object. The query runs in the background and opens in a popup, using the prefixes from your main query. Right-click a URI for the same options, or to run them as a new main query that replaces the current results.',
+  },
+  {
     title: 'Link prefix',
     description:
       'Set a custom URL prefix to make every URI in the table a clickable link that opens the URI in another application, e.g. a faceted browser.',

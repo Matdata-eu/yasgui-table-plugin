@@ -8,8 +8,11 @@ import { PrefixResolver } from '../parsers/prefix-resolver';
 import { CellComponent } from '../types/tabulator';
 
 export interface UriFormatterCallbacks {
-  /** Called when the user Ctrl+clicks (or Cmd+clicks) a URI link. */
-  onUriCtrlClick?: (uri: string) => void;
+  /**
+   * Called when the user Ctrl+clicks (or Cmd+clicks) a URI link.
+   * `direction` is `'object'` when Shift is held as well, `'subject'` otherwise.
+   */
+  onUriCtrlClick?: (uri: string, direction: 'subject' | 'object') => void;
   /** Called when the user right-clicks a URI link; return true to allow the default browser menu. */
   onUriContextMenu?: (uri: string, x: number, y: number) => void;
 }
@@ -63,11 +66,12 @@ export class UriFormatter {
     link.addEventListener('click', (e) => {
       e.stopPropagation();
 
-      // Ctrl+click (or Cmd+click on macOS) triggers a background DESCRIBE query
+      // Ctrl+click (or Cmd+click on macOS): background query for the triples
+      // where this URI is the subject. Add Shift for triples where it is the object.
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         if (this.callbacks.onUriCtrlClick) {
-          this.callbacks.onUriCtrlClick(uri);
+          this.callbacks.onUriCtrlClick(uri, e.shiftKey ? 'object' : 'subject');
         }
       }
     });

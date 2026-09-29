@@ -4,7 +4,7 @@
  */
 
 import '../styles/index.css';
-import { TabulatorPluginConfig, DEFAULT_CONFIG, Yasr } from './types/config.js';
+import { TabulatorPluginConfig, DEFAULT_CONFIG, Yasr, PrefixMap } from './types/config.js';
 import { SparqlResults } from './types/sparql.js';
 import { SelectionRange } from './types/table.js';
 import { Tabulator } from './types/tabulator.js';
@@ -23,6 +23,7 @@ import { loadDisplayConfig, saveDisplayConfig } from './utils/storage.js';
 import { validateConfig } from './utils/validators.js';
 import { getCurrentTheme, watchThemeChanges } from './utils/theme.js';
 import { parseDescribeResponse } from './parsers/describe-parser.js';
+import { buildResourceQuery, sanitizePrefixes, ResourceDirection } from './parsers/resource-query.js';
 
 type EventHandler = (...args: unknown[]) => void;
 
@@ -117,7 +118,7 @@ class TablePlugin {
         this.emit('cellDoubleClick', { content });
       },
       {
-        onUriCtrlClick: (uri) => this.handleUriCtrlClick(uri),
+        onUriCtrlClick: (uri, direction) => this.handleUriCtrlClick(uri, direction),
         onUriContextMenu: (uri, x, y) => this.handleUriContextMenu(uri, x, y),
       }
     );
@@ -1032,11 +1033,12 @@ class TablePlugin {
   }
 
   /**
-   * Handle Ctrl+click (or Cmd+click) on a URI link: run a background DESCRIBE
-   * query and show the result in a modal.
+   * Handle Ctrl+click (or Cmd+click) on a URI link: run a background query for
+   * the triples where the URI is the subject (or, with Shift held, the object)
+   * and show the result in a modal.
    */
-  private handleUriCtrlClick(uri: string): void {
-    this.runDescribeQuery(uri);
+  private handleUriCtrlClick(uri: string, direction: ResourceDirection = 'subject'): void {
+    this.runResourceQuery(uri, direction);
   }
 
   /**
@@ -1047,16 +1049,34 @@ class TablePlugin {
 
     const menu = document.createElement('div');
     menu.className = 'table-uri-context-menu';
+    menu.setAttribute('role', 'menu');
     menu.style.position = 'fixed';
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
     menu.style.zIndex = '10001';
 
-    const addItem = (label: string, onClick: () => void, disabled = false) => {
+    const addItem = (label: string, onClick: () => void, options: { disabled?: boolean; shortcut?: string; title?: string } = {}) => {
+      const { disabled = false, shortcut, title } = options;
       const item = document.createElement('button');
       item.className = 'table-uri-context-menu-item';
-      item.textContent = label;
+      item.setAttribute('role', 'menuitem');
       item.disabled = disabled;
+      if (title) {
+        item.title = title;
+      }
+
+      const labelEl = document.createElement('span');
+      labelEl.className = 'table-uri-context-menu-label';
+      labelEl.textContent = label;
+      item.appendChild(labelEl);
+
+      if (shortcut) {
+        const shortcutEl = document.createElement('span');
+        shortcutEl.className = 'table-uri-context-menu-shortcut';
+        shortcutEl.textContent = shortcut;
+        item.appendChild(shortcutEl);
+      }
+
       item.addEventListener('click', () => {
         this.removeUriContextMenu();
         if (!disabled) {
@@ -1066,26 +1086,56 @@ class TablePlugin {
       menu.appendChild(item);
     };
 
+    const addSeparator = () => {
+      const sep = document.createElement('div');
+      sep.className = 'table-uri-context-menu-separator';
+      sep.setAttribute('role', 'separator');
+      menu.appendChild(sep);
+    };
+
     const href = this.config.uriHrefAdapter ? this.config.uriHrefAdapter(uri) : uri;
     addItem('Open link', () => {
       window.open(href, '_blank', 'noopener,noreferrer');
     });
 
-    addItem('Describe resource (background)', () => {
-      this.runDescribeQuery(uri);
+    addSeparator();
+
+    const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || '');
+    const mod = isMac ? '⌘' : 'Ctrl';
+
+    addItem('Triples as subject', () => this.runResourceQuery(uri, 'subject'), {
+      shortcut: `${mod}+Click`,
+      title: 'Show all triples where this resource is the subject, without replacing the current results',
+    });
+    addItem('Triples as object', () => this.runResourceQuery(uri, 'object'), {
+      shortcut: `${mod}+Shift+Click`,
+      title: 'Show all triples where this resource is the object, without replacing the current results',
     });
 
+    addSeparator();
+
     const hasYasqe = this.hasYasqeInterface();
-    addItem(
-      'Describe resource (new query)',
-      () => {
-        this.runDescribeAsMainQuery(uri);
-      },
-      !hasYasqe
-    );
+    const noYasqeTitle = 'Not available: the query editor could not be reached from this results view';
+    addItem('Triples as subject (new query)', () => this.runResourceAsMainQuery(uri, 'subject'), {
+      disabled: !hasYasqe,
+      title: hasYasqe ? 'Replace the current query with this query and run it' : noYasqeTitle,
+    });
+    addItem('Triples as object (new query)', () => this.runResourceAsMainQuery(uri, 'object'), {
+      disabled: !hasYasqe,
+      title: hasYasqe ? 'Replace the current query with this query and run it' : noYasqeTitle,
+    });
 
     document.body.appendChild(menu);
     this.uriContextMenu = menu;
+
+    // Keep the menu inside the viewport
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+      menu.style.left = `${Math.max(0, window.innerWidth - rect.width - 4)}px`;
+    }
+    if (rect.bottom > window.innerHeight) {
+      menu.style.top = `${Math.max(0, window.innerHeight - rect.height - 4)}px`;
+    }
 
     // Close menu on click outside
     const closeOnClickOutside = (e: MouseEvent) => {
@@ -1148,17 +1198,38 @@ class TablePlugin {
   }
 
   /**
-   * Run a non-background DESCRIBE query by replacing the YASQE editor value
-   * and triggering a query. Only runs when the YASQE interface is available.
+   * Prefixes declared in the main YASQE query that produced this table.
+   * Falls back to the prefixes YASR knows about when the editor can't be
+   * reached.
    */
-  private runDescribeAsMainQuery(uri: string): void {
+  private getQueryPrefixes(): PrefixMap {
+    try {
+      const yasqe = this.getYasqeInstance();
+      if (yasqe && typeof yasqe.getPrefixesFromQuery === 'function') {
+        return sanitizePrefixes(yasqe.getPrefixesFromQuery());
+      }
+      const yasr = this.yasr as any;
+      if (typeof yasr.getPrefixes === 'function') {
+        return sanitizePrefixes(yasr.getPrefixes());
+      }
+    } catch (error) {
+      console.warn('yasgui-table-plugin: could not read query prefixes', error);
+    }
+    return {};
+  }
+
+  /**
+   * Replace the YASQE editor value with the subject/object triples query for
+   * `uri` and run it as the main query. Only runs when YASQE is available.
+   */
+  private runResourceAsMainQuery(uri: string, direction: ResourceDirection): void {
     const yasqe = this.getYasqeInstance();
     if (!yasqe || typeof yasqe.setValue !== 'function') {
       this.showNotification('YASQE interface not available', 'error');
       return;
     }
 
-    const query = `DESCRIBE <${uri}>`;
+    const query = buildResourceQuery(uri, direction, this.getQueryPrefixes());
     yasqe.setValue(query);
 
     if (typeof yasqe.query === 'function') {
@@ -1171,26 +1242,30 @@ class TablePlugin {
   }
 
   /**
-   * Run a background DESCRIBE query for the given URI and display the result
-   * in the describe modal.
+   * Run a background query for the triples where `uri` is the subject or the
+   * object and display the result in the resource modal.
    */
-  private async runDescribeQuery(uri: string): Promise<void> {
+  private async runResourceQuery(uri: string, direction: ResourceDirection): Promise<void> {
     if (!this.yasr.executeQuery) {
       this.showNotification('Background query execution is not available', 'error');
       return;
     }
 
-    // Abort any previous describe query
+    // Abort any previous resource query
     if (this.describeAbortController) {
       this.describeAbortController.abort();
     }
     const controller = new AbortController();
     this.describeAbortController = controller;
 
-    this.describeModal?.showLoading(uri);
+    const prefixes = this.getQueryPrefixes();
+    const query = buildResourceQuery(uri, direction, prefixes);
+    const view = { direction, prefixes };
+
+    this.describeModal?.showLoading(uri, view);
 
     try {
-      const response = await this.yasr.executeQuery(`DESCRIBE <${uri}>`, {
+      const response = await this.yasr.executeQuery(query, {
         acceptHeader: 'text/turtle',
         signal: controller.signal,
       });
@@ -1205,13 +1280,13 @@ class TablePlugin {
         return;
       }
 
-      this.describeModal?.showResults(uri, result);
-      this.emit('describeQuery', { uri, success: true, triples: result.triples.length });
+      this.describeModal?.showResults(uri, result, view);
+      this.emit('describeQuery', { uri, direction, success: true, triples: result.triples.length });
     } catch (error: any) {
       if (error?.name === 'AbortError') {
         return;
       }
-      console.error('yasgui-table-plugin: DESCRIBE query failed', uri, error);
+      console.error('yasgui-table-plugin: resource query failed', uri, direction, error);
       let raw = '';
       try {
         raw = typeof (error as any)?.response?.text === 'function'
@@ -1220,9 +1295,9 @@ class TablePlugin {
       } catch {
         raw = '';
       }
-      this.describeModal?.showError(uri, error, raw);
-      this.showNotification('DESCRIBE query failed', 'error');
-      this.emit('describeQuery', { uri, success: false, error: error?.message || String(error) });
+      this.describeModal?.showError(uri, error, raw, view);
+      this.showNotification('Query for resource triples failed', 'error');
+      this.emit('describeQuery', { uri, direction, success: false, error: error?.message || String(error) });
     } finally {
       if (this.describeAbortController === controller) {
         this.describeAbortController = null;
