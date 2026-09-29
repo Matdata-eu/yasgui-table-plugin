@@ -480,6 +480,27 @@
   padding: 8px 16px;
   text-align: left;
   transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  white-space: nowrap;
+}
+
+.table-uri-context-menu-shortcut {
+  font-size: 11px;
+  color: var(--table-text-muted);
+}
+
+.table-uri-context-menu-item:hover:not(:disabled) .table-uri-context-menu-shortcut {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.table-uri-context-menu-separator {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--table-control-border);
 }
 
 .table-uri-context-menu-item:hover:not(:disabled) {
@@ -504,7 +525,7 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
-/* DESCRIBE Modal */
+/* Resource triples modal */
 .describe-modal {
   min-width: 500px;
   width: 80vw;

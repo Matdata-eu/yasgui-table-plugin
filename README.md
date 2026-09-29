@@ -20,7 +20,7 @@ High-performance YASGUI plugin for rendering SPARQL SELECT results in an interac
 - 🎯 **SPARQL-Aware** - Proper rendering of URIs, literals, datatypes, and blank nodes with prefix support from YASR
 - 🧠 **Smart Formatters** - Auto-format cells by XSD datatype (e.g. `xsd:boolean` → ✔/✘) and variable name suffix conventions (e.g. `*stars`, `*percent`, `*image`, `*color`, `*description`)
 - **Decimal Places** - Configure a fixed number of fraction digits for `xsd:float`, `xsd:double`, and `xsd:decimal` literals via the Display dropdown or `displayConfig.decimalPlaces` (leave unset for raw values)
-- 🧭 **DESCRIBE Resource** - Ctrl+click (or Cmd+click) any URI, or right-click it and choose **Describe resource**, to run a background `DESCRIBE <uri>` query and view the resulting triples in a modal; optionally open the DESCRIBE as a new main query
+- 🧭 **Explore a Resource** - Ctrl+click (Cmd+click on macOS) any URI to see all triples where it is the **subject**; Ctrl+Shift+click to see all triples where it is the **object**. The query runs in the background with the prefixes declared in your main query and the result opens in a modal. Right-click a URI for the same options, or to run them as a new main query that replaces the current results
 - 🔗 **URI Link Prefix** - Toolbar control to set a custom URL prefix for all URI links (e.g. point to a faceted browser); overrides `uriHrefAdapter` when set by the user
 - ❓ **Quick Reference** - Toolbar help icon opens an in-place quick reference card listing all features and keyboard shortcuts
 
@@ -116,9 +116,9 @@ tablePlugin.on('linkPrefixChange', (data) => {
   console.log(`Link prefix set to: ${data.prefix}`);
 });
 
-// Listen for DESCRIBE query results
+// Listen for resource triple queries (Ctrl+click / Ctrl+Shift+click)
 tablePlugin.on('describeQuery', (data) => {
-  console.log(`DESCRIBE ${data.uri}: ${data.success ? data.triples + ' triples' : 'failed'}`);
+  console.log(`${data.uri} (${data.direction}): ${data.success ? data.triples + ' triples' : 'failed'}`);
 });
 
 // Available events:

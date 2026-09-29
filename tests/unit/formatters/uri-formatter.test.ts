@@ -188,7 +188,7 @@ describe('UriFormatter', () => {
       const event = new MouseEvent('click', { ctrlKey: true, bubbles: true });
       result.dispatchEvent(event);
 
-      expect(onUriCtrlClick).toHaveBeenCalledWith('http://example.org/resource');
+      expect(onUriCtrlClick).toHaveBeenCalledWith('http://example.org/resource', 'subject');
     });
 
     it('should call onUriCtrlClick when Cmd+clicking a link on macOS', () => {
@@ -201,7 +201,19 @@ describe('UriFormatter', () => {
       const event = new MouseEvent('click', { metaKey: true, bubbles: true });
       result.dispatchEvent(event);
 
-      expect(onUriCtrlClick).toHaveBeenCalledWith('http://example.org/resource');
+      expect(onUriCtrlClick).toHaveBeenCalledWith('http://example.org/resource', 'subject');
+    });
+
+    it('should request object triples when Ctrl+Shift+clicking a link', () => {
+      const prefixResolver = new PrefixResolver();
+      const onUriCtrlClick = jest.fn();
+      const formatter = new UriFormatter(prefixResolver, 'full', undefined, { onUriCtrlClick });
+      const cell = createMockCell({ type: 'uri', value: 'http://example.org/resource' });
+
+      const result = formatter.format(cell) as HTMLElement;
+      result.dispatchEvent(new MouseEvent('click', { ctrlKey: true, shiftKey: true, bubbles: true }));
+
+      expect(onUriCtrlClick).toHaveBeenCalledWith('http://example.org/resource', 'object');
     });
 
     it('should not call onUriCtrlClick on a normal left click', () => {
@@ -244,7 +256,7 @@ describe('UriFormatter', () => {
       const result = formatter.format(cell) as HTMLElement;
       result.dispatchEvent(new MouseEvent('click', { ctrlKey: true, bubbles: true }));
 
-      expect(onUriCtrlClick).toHaveBeenCalledWith('http://example.org/resource');
+      expect(onUriCtrlClick).toHaveBeenCalledWith('http://example.org/resource', 'subject');
     });
   });
 });

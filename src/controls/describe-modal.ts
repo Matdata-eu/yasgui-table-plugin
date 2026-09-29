@@ -1,12 +1,24 @@
 /**
- * DESCRIBE results modal
+ * Resource triples modal
  *
- * Displays the result of a background DESCRIBE query in a popup window.
+ * Displays the result of a background query for the triples in which a
+ * resource is the subject (or object) in a popup window. URIs are shown with
+ * the prefixes declared in the main query.
  * Parsed triples are shown in a table; the raw response text is available on a
  * separate tab.
  */
 
 import { DescribeParseResult, DescribeTriple, formatDescribeObject } from '../parsers/describe-parser';
+import { PrefixMap } from '../types/config';
+import { ResourceDirection, directionLabel, toPrefixedName } from '../parsers/resource-query';
+
+/** How the modal should present the query it is showing. */
+export interface DescribeModalView {
+  /** Which triples were requested. Defaults to `'subject'`. */
+  direction?: ResourceDirection;
+  /** Prefixes used to abbreviate URIs in the title and triples table. */
+  prefixes?: PrefixMap;
+}
 
 export type DescribeModalTab = 'triples' | 'raw';
 
@@ -16,18 +28,21 @@ export class DescribeModal {
   private contentArea: HTMLElement | null = null;
   private currentTab: DescribeModalTab = 'triples';
   private escapeHandler: ((e: KeyboardEvent) => void) | null = null;
+  private view: Required<DescribeModalView> = { direction: 'subject', prefixes: {} };
 
   /**
    * Show the modal in a loading state.
    */
-  showLoading(uri: string): void {
+  showLoading(uri: string, view?: DescribeModalView): void {
+    this.setView(view);
     this.render(uri, { state: 'loading' });
   }
 
   /**
    * Show the modal with parsed DESCRIBE results.
    */
-  showResults(uri: string, result: DescribeParseResult): void {
+  showResults(uri: string, result: DescribeParseResult, view?: DescribeModalView): void {
+    this.setView(view);
     this.currentTab = result.triples.length > 0 ? 'triples' : 'raw';
     this.render(uri, { state: 'results', result });
   }
@@ -35,7 +50,8 @@ export class DescribeModal {
   /**
    * Show the modal after a query error.
    */
-  showError(uri: string, error: unknown, raw?: string): void {
+  showError(uri: string, error: unknown, raw?: string, view?: DescribeModalView): void {
+    this.setView(view);
     this.currentTab = 'raw';
     this.render(uri, { state: 'error', error, raw: raw || '' });
   }
@@ -57,6 +73,13 @@ export class DescribeModal {
       this.escapeHandler = null;
     }
     this.contentArea = null;
+  }
+
+  private setView(view?: DescribeModalView): void {
+    this.view = {
+      direction: view?.direction ?? 'subject',
+      prefixes: view?.prefixes ?? {},
+    };
   }
 
   private render(
@@ -84,7 +107,8 @@ export class DescribeModal {
 
     const title = document.createElement('h3');
     title.className = 'table-modal-title';
-    title.textContent = `DESCRIBE: ${this.abbreviateUri(uri)}`;
+    const label = directionLabel(this.view.direction);
+    title.textContent = `Triples ${label}: ${this.shorten(this.displayUri(uri))}`;
     title.title = uri;
 
     const closeButton = document.createElement('button');
@@ -154,7 +178,7 @@ export class DescribeModal {
     spinner.className = 'describe-modal-spinner';
 
     const text = document.createElement('p');
-    text.textContent = 'Running DESCRIBE query…';
+    text.textContent = `Fetching triples ${directionLabel(this.view.direction)}…`;
 
     container.appendChild(spinner);
     container.appendChild(text);
@@ -166,7 +190,7 @@ export class DescribeModal {
     container.className = 'describe-modal-error';
 
     const message = document.createElement('p');
-    message.textContent = `Failed to run DESCRIBE query: ${this.errorMessage(error)}`;
+    message.textContent = `Failed to fetch triples: ${this.errorMessage(error)}`;
 
     container.appendChild(message);
 
@@ -255,21 +279,13 @@ export class DescribeModal {
     for (const triple of triples) {
       const row = document.createElement('tr');
 
-      const subjectCell = document.createElement('td');
-      subjectCell.textContent = triple.subject;
-      subjectCell.title = triple.subject;
-      row.appendChild(subjectCell);
-
-      const predicateCell = document.createElement('td');
-      predicateCell.textContent = triple.predicate;
-      predicateCell.title = triple.predicate;
-      row.appendChild(predicateCell);
-
-      const objectCell = document.createElement('td');
-      const objectText = formatDescribeObject(triple.object);
-      objectCell.textContent = objectText;
-      objectCell.title = objectText;
-      row.appendChild(objectCell);
+      const subjectIsBnode = triple.subject.startsWith('_:') || !/^[a-z][a-z0-9+.-]*:/i.test(triple.subject);
+      row.appendChild(this.createCell(
+        subjectIsBnode ? triple.subject : this.displayUri(triple.subject),
+        triple.subject
+      ));
+      row.appendChild(this.createCell(this.displayUri(triple.predicate), triple.predicate));
+      row.appendChild(this.createCell(this.displayObject(triple.object), this.fullObject(triple.object)));
 
       tbody.appendChild(row);
     }
@@ -297,11 +313,43 @@ export class DescribeModal {
     return wrapper;
   }
 
-  private abbreviateUri(uri: string): string {
-    if (uri.length <= 60) {
-      return uri;
+  private createCell(text: string, title: string): HTMLTableCellElement {
+    const cell = document.createElement('td');
+    cell.textContent = text;
+    cell.title = title;
+    return cell;
+  }
+
+  /** Prefixed name when a query prefix matches, otherwise `<uri>`. */
+  private displayUri(uri: string): string {
+    return toPrefixedName(uri, this.view.prefixes) ?? `<${uri}>`;
+  }
+
+  private displayObject(object: DescribeTriple['object']): string {
+    if (object.type === 'uri') {
+      return this.displayUri(object.value);
     }
-    return uri.slice(0, 30) + '…' + uri.slice(-25);
+    if (object.type === 'bnode') {
+      return object.value;
+    }
+    let formatted = `"${object.value}"`;
+    if (object.lang) {
+      formatted += `@${object.lang}`;
+    } else if (object.datatype) {
+      formatted += `^^${this.displayUri(object.datatype)}`;
+    }
+    return formatted;
+  }
+
+  private fullObject(object: DescribeTriple['object']): string {
+    return object.type === 'uri' ? object.value : formatDescribeObject(object);
+  }
+
+  private shorten(text: string): string {
+    if (text.length <= 60) {
+      return text;
+    }
+    return text.slice(0, 30) + '…' + text.slice(-25);
   }
 
   private errorMessage(error: unknown): string {
