@@ -39,6 +39,9 @@
   /* Controls */
   --table-control-background: var(--yasgui-bg-secondary, #2a2a2a);
   --table-control-border: var(--yasgui-border-color, #404040);
-  --table-control-hover: var(--yasgui-button-hover, #363636);
+  /* Hover background. Note: --yasgui-button-hover is a *text* colour in
+     YASGUI/MatGUI (#000 light / #f0f6fc dark), so it must not be used as a
+     background - it made hovered buttons black in light and white in dark mode. */
+  --table-control-hover: var(--yasgui-bg-tertiary, #363636);
   --table-text-secondary: var(--yasgui-text-secondary, #aaaaaa);
 }
