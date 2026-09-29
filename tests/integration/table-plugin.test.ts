@@ -4,6 +4,7 @@
 
 import TablePlugin from '../../src/TablePlugin';
 import { SparqlResults } from '../../src/types/sparql';
+import { ClipboardManager } from '../../src/features/clipboard';
 
 describe('TablePlugin Integration', () => {
   let mockYasr: any;
@@ -128,6 +129,44 @@ describe('TablePlugin Integration', () => {
       const icon = plugin.getIcon();
       
       expect(icon?.tagName.toLowerCase()).toBe('svg');
+    });
+  });
+
+  describe('Export respects search filter (#18)', () => {
+    const allRows = [
+      { _id: 0, _rowNum: 1, subject: { type: 'uri', value: 'http://ex.org/a' }, predicate: { type: 'uri', value: 'http://ex.org/p' }, object: { type: 'literal', value: 'alpha' } },
+      { _id: 1, _rowNum: 2, subject: { type: 'uri', value: 'http://ex.org/b' }, predicate: { type: 'uri', value: 'http://ex.org/p' }, object: undefined },
+    ];
+
+    function pluginWithTable() {
+      const plugin = new TablePlugin(mockYasr) as any;
+      plugin.table = {
+        // Simulate a search filter that keeps only the second row
+        getData: jest.fn((filter?: string) => (filter === 'active' ? [allRows[1]] : allRows)),
+      };
+      plugin.clipboardManager = new ClipboardManager();
+      return plugin;
+    }
+
+    it('exports only rows that pass the active filter', () => {
+      const plugin = pluginWithTable();
+      const csv = plugin.download('x.csv').getData();
+
+      expect(plugin.table.getData).toHaveBeenCalledWith('active');
+      expect(csv.split('\n')).toEqual([
+        'subject,predicate,object',
+        'http://ex.org/b,http://ex.org/p,',
+      ]);
+    });
+
+    it('keeps columns aligned with the header order', () => {
+      const plugin = pluginWithTable();
+      plugin.table.getData = jest.fn(() => [
+        { _id: 0, _rowNum: 1, object: { value: 'o' }, subject: { value: 's' }, predicate: { value: 'p' } },
+      ]);
+
+      const csv = plugin.download('x.csv').getData();
+      expect(csv.split('\n')[1]).toBe('s,p,o');
     });
   });
 

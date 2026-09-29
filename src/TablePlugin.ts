@@ -411,8 +411,8 @@ class TablePlugin {
     const results = this.getResultsData();
     if (!results || !this.table || !this.clipboardManager) return undefined;
 
-    const data = this.getExportData();
     const headers = results.head?.vars || [];
+    const data = this.getExportData(headers);
     const csv = this.clipboardManager.formatAsCSV(data, headers);
 
     return {
@@ -843,8 +843,8 @@ class TablePlugin {
       return;
     }
 
-    const data = this.getExportData();
     const headers = results.head?.vars || [];
+    const data = this.getExportData(headers);
     const markdown = this.clipboardManager.formatAsMarkdown(data, headers);
 
     this.clipboardManager.copyToClipboard(markdown).then((success) => {
@@ -872,8 +872,8 @@ class TablePlugin {
       return;
     }
 
-    const data = this.getExportData();
     const headers = results.head?.vars || [];
+    const data = this.getExportData(headers);
     const csv = this.clipboardManager.formatAsCSV(data, headers);
 
     this.clipboardManager.copyToClipboard(csv).then((success) => {
@@ -901,8 +901,8 @@ class TablePlugin {
       return;
     }
 
-    const data = this.getExportData();
     const headers = results.head?.vars || [];
+    const data = this.getExportData(headers);
     const tsv = this.clipboardManager.formatAsTSV(data, headers);
 
     this.clipboardManager.copyToClipboard(tsv).then((success) => {
@@ -922,33 +922,38 @@ class TablePlugin {
   }
 
   /**
-   * Get export data respecting search filter
+   * Get export data respecting the active search filter.
+   *
+   * Only rows that are currently visible in the table (i.e. that pass the
+   * search filter) are exported. Columns are emitted in the order of
+   * `headers` (the SPARQL projection) so values always line up with the
+   * header row, even for unbound variables.
    */
-  private getExportData(): string[][] {
+  private getExportData(headers?: string[]): string[][] {
     if (!this.table) {
       return [];
     }
 
-    // Get currently displayed rows (respects search filter)
-    const rows = this.table.getDataFiltered ? this.table.getDataFiltered() : this.table.getData();
-    
-    return rows.map((row: any) => {
-      const data: string[] = [];
-      const rowObj = row as Record<string, unknown>;
-      
-      // Get values for each variable (exclude internal fields like _id, _rowNum)
-      for (const key of Object.keys(rowObj)) {
-        if (!key.startsWith('_')) {
-          const value = rowObj[key];
-          if (value && typeof value === 'object' && 'value' in value) {
-            data.push((value as { value: string }).value || '');
-          } else {
-            data.push(String(value || ''));
-          }
+    // Tabulator 5+/6: getData('active') returns only rows passing the filters.
+    // (getDataFiltered() no longer exists, so relying on it silently exported
+    // every row.)
+    const rows: Record<string, unknown>[] = this.table.getData('active') || [];
+
+    return rows.map((rowObj) => {
+      // Prefer the projection order; fall back to the row's own keys when a
+      // bindingSetAdapter has renamed the fields.
+      const projected = (headers || []).filter((key) => key in rowObj);
+      const keys = projected.length > 0
+        ? projected
+        : Object.keys(rowObj).filter((key) => !key.startsWith('_'));
+
+      return keys.map((key) => {
+        const value = rowObj[key];
+        if (value && typeof value === 'object' && 'value' in value) {
+          return (value as { value: string }).value || '';
         }
-      }
-      
-      return data;
+        return value === undefined || value === null ? '' : String(value);
+      });
     });
   }
 
