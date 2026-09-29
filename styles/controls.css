@@ -211,6 +211,7 @@
 /* Items inside the dropdown panel */
 .table-dropdown-item {
   width: 100%;
+  box-sizing: border-box;
   border: none !important;
   border-radius: 0 !important;
   text-align: left;
@@ -256,7 +257,14 @@
 }
 
 .table-decimal-places-input {
+  /* Fixed, shrink-proof size so host styles (e.g. input { width: 100% })
+     can't push it outside the dropdown panel */
+  box-sizing: border-box;
+  flex: 0 0 56px;
   width: 56px;
+  min-width: 0;
+  max-width: 56px;
+  margin: 0;
   padding: 3px 6px;
   border: 1px solid var(--table-control-border);
   border-radius: 4px;
