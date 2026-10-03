@@ -351,6 +351,45 @@ describe('TableRenderer Integration', () => {
     });
   });
 
+  describe('ellipsis mode with URIs', () => {
+    const makeCell = (binding: unknown) => ({ getValue: () => binding });
+
+    it('should preserve the URI link element (and its handlers) when a long URI is truncated', () => {
+      const onUriContextMenu = jest.fn();
+      const onUriCtrlClick = jest.fn();
+      config.displayConfig = { ...(config.displayConfig || {}), ellipsisMode: true };
+
+      const renderer = new TableRenderer(
+        config,
+        undefined,
+        undefined,
+        undefined,
+        { onUriContextMenu, onUriCtrlClick }
+      );
+      renderer.render(container, sampleResults);
+
+      const longUri =
+        'http://data.europa.eu/949/this-is-a-very-long-uri-that-exceeds-the-default-ellipsis-length';
+      const result = (renderer as unknown as {
+        formatCell: (cell: unknown) => string | HTMLElement;
+      }).formatCell(makeCell({ type: 'uri', value: longUri }));
+
+      // The returned element must still be the anchor link, not a plain span
+      expect(result).toBeInstanceOf(HTMLElement);
+      const el = result as HTMLElement;
+      expect(el.tagName).toBe('A');
+      expect(el.classList.contains('table-uri-link')).toBe(true);
+      // Text is truncated, full URI preserved on hover
+      expect(el.textContent).toContain('...');
+      expect(el.title).toBe(longUri);
+
+      // Right-click should still trigger the context-menu callback
+      const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+      el.dispatchEvent(event);
+      expect(onUriContextMenu).toHaveBeenCalledWith(longUri, expect.any(Number), expect.any(Number));
+    });
+  });
+
   describe('smart formatters', () => {
     it('should use star formatter for variable names ending in "stars"', () => {
       const smartResults: SparqlResults = {

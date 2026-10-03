@@ -336,7 +336,14 @@ export class TableRenderer {
         const textContent = result.textContent || '';
         const formatted = this.ellipsisFormatter.format(textContent);
         if (formatted.isTruncated) {
-          return this.createEllipsisElement(fullText, formatted.display);
+          // Truncate the element's text in place so we preserve the element
+          // itself (e.g. an anchor link) along with its event handlers such
+          // as click and context-menu. Replacing it with a plain span would
+          // break interactions like the right-click URI context menu.
+          result.textContent = formatted.display;
+          result.title = fullText;
+          result.classList.add('table-ellipsis-content');
+          return result;
         }
         // Ensure tooltip is on the element
         if (!result.title) {
