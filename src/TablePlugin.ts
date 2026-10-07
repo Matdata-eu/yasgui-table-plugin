@@ -300,7 +300,9 @@ class TablePlugin {
       this.contentModal = new ContentModal();
 
       // Create DESCRIBE results modal
-      this.describeModal = new DescribeModal();
+      this.describeModal = new DescribeModal({
+        onDescribe: (uri, direction) => this.runResourceQuery(uri, direction, false),
+      });
 
       // Create export controls
       this.exportControls = new ExportControls({
@@ -1248,12 +1250,18 @@ class TablePlugin {
 
   /**
    * Run a background query for the triples where `uri` is the subject or the
-   * object and display the result in the resource modal.
+   * object and display the result in the resource modal. `newHistory` is false
+   * when the modal itself asks for the describe (a Ctrl+click inside it, or
+   * back/forward navigation), so its history is kept.
    */
-  private async runResourceQuery(uri: string, direction: ResourceDirection): Promise<void> {
+  private async runResourceQuery(uri: string, direction: ResourceDirection, newHistory = true): Promise<void> {
     if (!this.yasr.executeQuery) {
       this.showNotification('Background query execution is not available', 'error');
       return;
+    }
+
+    if (newHistory) {
+      this.describeModal?.startHistory(uri, direction);
     }
 
     // Abort any previous resource query

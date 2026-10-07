@@ -6,6 +6,10 @@
  * the prefixes declared in the main query.
  * Parsed triples are shown in a table; the raw response text is available on a
  * separate tab.
+ *
+ * URIs in the triples table can be Ctrl+clicked to describe them in turn. The
+ * modal keeps those hops in a history that its back, forward and back-to-start
+ * buttons (and Alt+←/→) walk through, like a browser.
  */
 
 import { DescribeParseResult, DescribeTriple, formatDescribeObject } from '../parsers/describe-parser';
@@ -22,6 +26,21 @@ export interface DescribeModalView {
 
 export type DescribeModalTab = 'triples' | 'raw';
 
+/** One describe in the modal's navigation history. */
+export interface DescribeHistoryEntry {
+  uri: string;
+  direction: ResourceDirection;
+}
+
+export interface DescribeModalCallbacks {
+  /**
+   * Fetch and show the triples of a URI. Called for Ctrl+clicks inside the
+   * modal and for back/forward navigation; the modal has already updated its
+   * history.
+   */
+  onDescribe?: (uri: string, direction: ResourceDirection) => void;
+}
+
 export class DescribeModal {
   private backdrop: HTMLElement | null = null;
   private modal: HTMLElement | null = null;
@@ -29,6 +48,66 @@ export class DescribeModal {
   private currentTab: DescribeModalTab = 'triples';
   private escapeHandler: ((e: KeyboardEvent) => void) | null = null;
   private view: Required<DescribeModalView> = { direction: 'subject', prefixes: {} };
+  private history: DescribeHistoryEntry[] = [];
+  private historyIndex = -1;
+
+  constructor(private callbacks: DescribeModalCallbacks = {}) {}
+
+  /**
+   * Start a fresh navigation history for a describe launched from outside the
+   * modal (the results table).
+   */
+  startHistory(uri: string, direction: ResourceDirection): void {
+    this.history = [{ uri, direction }];
+    this.historyIndex = 0;
+  }
+
+  /**
+   * Describe a URI reached from inside the modal, adding it to the history.
+   * Entries after the current one (left by going back) are dropped.
+   */
+  navigate(uri: string, direction: ResourceDirection): void {
+    this.history = this.history.slice(0, this.historyIndex + 1);
+    this.history.push({ uri, direction });
+    this.historyIndex = this.history.length - 1;
+    this.callbacks.onDescribe?.(uri, direction);
+  }
+
+  getHistory(): DescribeHistoryEntry[] {
+    return [...this.history];
+  }
+
+  canGoBack(): boolean {
+    return this.historyIndex > 0;
+  }
+
+  canGoForward(): boolean {
+    return this.historyIndex < this.history.length - 1;
+  }
+
+  /** Show the previous entry of the history. */
+  back(): void {
+    this.goTo(this.historyIndex - 1);
+  }
+
+  /** Show the next entry of the history. */
+  forward(): void {
+    this.goTo(this.historyIndex + 1);
+  }
+
+  /** Show the first entry of the history: the original describe. */
+  backToStart(): void {
+    this.goTo(0);
+  }
+
+  private goTo(index: number): void {
+    if (index < 0 || index >= this.history.length || index === this.historyIndex) {
+      return;
+    }
+    this.historyIndex = index;
+    const { uri, direction } = this.history[index];
+    this.callbacks.onDescribe?.(uri, direction);
+  }
 
   /**
    * Show the modal in a loading state.
@@ -117,6 +196,7 @@ export class DescribeModal {
     closeButton.setAttribute('aria-label', 'Close modal');
     closeButton.addEventListener('click', () => this.close());
 
+    header.appendChild(this.createNavigation());
     header.appendChild(title);
     header.appendChild(closeButton);
 
@@ -136,6 +216,10 @@ export class DescribeModal {
     const footer = document.createElement('div');
     footer.className = 'table-modal-footer describe-modal-footer';
 
+    const hint = document.createElement('span');
+    hint.className = 'describe-modal-hint';
+    hint.textContent = 'Ctrl+click a URI to describe it, Ctrl+Shift+click for the triples where it is the object.';
+
     const copyButton = document.createElement('button');
     copyButton.className = 'table-modal-button';
     copyButton.textContent = 'Copy Raw';
@@ -150,8 +234,13 @@ export class DescribeModal {
     closeFooterButton.textContent = 'Close';
     closeFooterButton.addEventListener('click', () => this.close());
 
-    footer.appendChild(copyButton);
-    footer.appendChild(closeFooterButton);
+    const buttons = document.createElement('div');
+    buttons.className = 'describe-modal-footer-buttons';
+    buttons.appendChild(copyButton);
+    buttons.appendChild(closeFooterButton);
+
+    footer.appendChild(hint);
+    footer.appendChild(buttons);
 
     this.modal.appendChild(header);
     this.modal.appendChild(this.contentArea);
@@ -163,11 +252,40 @@ export class DescribeModal {
     this.escapeHandler = (e) => {
       if (e.key === 'Escape') {
         this.close();
+      } else if (e.altKey && e.key === 'ArrowLeft' && this.canGoBack()) {
+        e.preventDefault();
+        this.back();
+      } else if (e.altKey && e.key === 'ArrowRight' && this.canGoForward()) {
+        e.preventDefault();
+        this.forward();
       }
     };
     document.addEventListener('keydown', this.escapeHandler);
 
     closeButton.focus();
+  }
+
+  /** Back to start, back and forward buttons. */
+  private createNavigation(): HTMLElement {
+    const nav = document.createElement('div');
+    nav.className = 'describe-modal-nav';
+
+    const button = (className: string, text: string, label: string, enabled: boolean, onClick: () => void) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `describe-modal-nav-button ${className}`;
+      btn.textContent = text;
+      btn.title = label;
+      btn.setAttribute('aria-label', label);
+      btn.disabled = !enabled;
+      btn.addEventListener('click', onClick);
+      return btn;
+    };
+
+    nav.appendChild(button('describe-modal-start', '⏮', 'Back to start', this.canGoBack(), () => this.backToStart()));
+    nav.appendChild(button('describe-modal-back', '◀', 'Back (Alt+←)', this.canGoBack(), () => this.back()));
+    nav.appendChild(button('describe-modal-forward', '▶', 'Forward (Alt+→)', this.canGoForward(), () => this.forward()));
+    return nav;
   }
 
   private createLoadingView(): HTMLElement {
@@ -280,12 +398,13 @@ export class DescribeModal {
       const row = document.createElement('tr');
 
       const subjectIsBnode = triple.subject.startsWith('_:') || !/^[a-z][a-z0-9+.-]*:/i.test(triple.subject);
-      row.appendChild(this.createCell(
-        subjectIsBnode ? triple.subject : this.displayUri(triple.subject),
-        triple.subject
-      ));
-      row.appendChild(this.createCell(this.displayUri(triple.predicate), triple.predicate));
-      row.appendChild(this.createCell(this.displayObject(triple.object), this.fullObject(triple.object)));
+      row.appendChild(subjectIsBnode
+        ? this.createCell(triple.subject, triple.subject)
+        : this.createUriCell(triple.subject));
+      row.appendChild(this.createUriCell(triple.predicate));
+      row.appendChild(triple.object.type === 'uri'
+        ? this.createUriCell(triple.object.value)
+        : this.createCell(this.displayObject(triple.object), this.fullObject(triple.object)));
 
       tbody.appendChild(row);
     }
@@ -317,6 +436,31 @@ export class DescribeModal {
     const cell = document.createElement('td');
     cell.textContent = text;
     cell.title = title;
+    return cell;
+  }
+
+  /**
+   * Cell holding a URI link. A plain click opens the URI; Ctrl+click (Cmd+click
+   * on macOS) describes it as subject, Ctrl+Shift+click as object.
+   */
+  private createUriCell(uri: string): HTMLTableCellElement {
+    const cell = document.createElement('td');
+    cell.title = uri;
+
+    const link = document.createElement('a');
+    link.className = 'table-uri-link describe-modal-uri';
+    link.href = uri;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = this.displayUri(uri);
+    link.addEventListener('click', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        this.navigate(uri, e.shiftKey ? 'object' : 'subject');
+      }
+    });
+
+    cell.appendChild(link);
     return cell;
   }
 
