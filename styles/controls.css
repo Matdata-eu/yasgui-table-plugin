@@ -532,9 +532,41 @@
   max-width: 900px;
 }
 
+.describe-modal-header {
+  gap: 12px;
+}
+
 .describe-modal-header .table-modal-title {
+  flex: 1;
+  min-width: 0;
   font-family: inherit;
   font-size: 16px;
+}
+
+.describe-modal-nav {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.describe-modal-nav-button {
+  background: var(--table-background);
+  border: 1px solid var(--table-control-border);
+  border-radius: 4px;
+  color: var(--table-text);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 5px 7px;
+}
+
+.describe-modal-nav-button:hover:not(:disabled) {
+  background: var(--table-control-hover);
+}
+
+.describe-modal-nav-button:disabled {
+  cursor: default;
+  opacity: 0.35;
 }
 
 .describe-modal-content {
@@ -545,7 +577,19 @@
 }
 
 .describe-modal-footer {
+  align-items: center;
   justify-content: space-between;
+}
+
+.describe-modal-hint {
+  color: var(--table-text-muted);
+  font-size: 12px;
+}
+
+.describe-modal-footer-buttons {
+  display: flex;
+  flex-shrink: 0;
+  gap: 12px;
 }
 
 .describe-modal-loading {
