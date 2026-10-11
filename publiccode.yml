@@ -1,0 +1,51 @@
+publiccodeYmlVersion: '0'
+name: YASGUI Table Plugin
+url: https://github.com/Matdata-eu/yasgui-table-plugin
+landingURL: https://matdata-eu.github.io/yasgui-table-plugin/
+softwareVersion: 1.6.0
+releaseDate: '2026-10-07'
+platforms:
+- web
+categories:
+- data-analytics
+- data-visualization
+- knowledge-management
+developmentStatus: stable
+softwareType: addon
+organisation:
+  uri: https://matdata.eu
+  name: Matdata
+intendedAudience:
+  scope:
+  - government
+  - science-and-technology
+  - infrastructures
+  - transportation
+description:
+  en:
+    shortDescription: Fast results table for YASGUI and MatGUI with virtual scrolling, search and sortable
+      columns.
+    longDescription: |
+      The default results table of YASGUI slows down on large SPARQL result sets. This plugin replaces it with a table that uses virtual scrolling and stays responsive on tens of thousands of rows.
+
+      It adds real-time search, sortable and resizable columns, copying as Markdown, CSV or TSV, datatype-aware formatting and a quick way to explore the triples of any URI in the result. It works in YASGUI and in MatGUI, where it is included by default.
+    documentation: https://github.com/Matdata-eu/yasgui-table-plugin#readme
+    features:
+    - Virtual scrolling for 10,000+ rows
+    - Real-time search with highlighting
+    - Sortable and resizable columns
+    - Copy as Markdown, CSV or TSV
+    - Formatting by XSD datatype
+    - Light and dark theme
+legal:
+  license: Apache-2.0
+  mainCopyrightOwner: Matdata
+maintenance:
+  type: internal
+  contacts:
+  - name: Mathias Vanden Auweele
+    affiliation: Matdata
+localisation:
+  localisationReady: false
+  availableLanguages:
+  - en
