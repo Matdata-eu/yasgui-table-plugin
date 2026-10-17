@@ -18,9 +18,9 @@ High-performance YASGUI plugin for rendering SPARQL SELECT results in an interac
 - 🔔 **Notifications** - Visual feedback for copy operations
 - ♿ **Accessible** - WCAG AA compliant with keyboard navigation
 - 🎯 **SPARQL-Aware** - Proper rendering of URIs, literals, datatypes, and blank nodes with prefix support from YASR
-- 🧠 **Smart Formatters** - Auto-format cells by XSD datatype (e.g. `xsd:boolean` → ✔/✘) and variable name suffix conventions (e.g. `*stars`, `*percent`, `*image`, `*color`, `*description`)
-- **Decimal Places** - Configure a fixed number of fraction digits for `xsd:float`, `xsd:double`, and `xsd:decimal` literals via the Display dropdown or `displayConfig.decimalPlaces` (leave unset for raw values)
-- 🧭 **Explore a Resource** - Ctrl+click (Cmd+click on macOS) any URI to see all triples where it is the **subject**; Ctrl+Shift+click to see all triples where it is the **object**. The query runs in the background with the prefixes declared in your main query and the result opens in a modal. Right-click a URI for the same options, or to run them as a new main query that replaces the current results. URIs inside the modal can be Ctrl+clicked too, to hop from node to node; the modal's ◀ / ▶ buttons (or Alt+← / Alt+→) step back and forward through those hops and ⏮ returns to the original resource
+- 🧠 **Smart Formatters** - Auto-format cells by XSD datatype (e.g. `xsd:boolean` → check / cross icon) and variable name suffix conventions (e.g. `*stars`, `*percent`, `*image`, `*color`, `*description`)
+- **Decimal Places** - Configure a fixed number of fraction digits for `xsd:float`, `xsd:double`, and `xsd:decimal` literals via the Display dropdown (View settings in newer MatGUI) or `displayConfig.decimalPlaces` (leave unset for raw values)
+- 🧭 **Explore a Resource** - Ctrl+click (Cmd+click on macOS) any URI to see all triples where it is the **subject**; Ctrl+Shift+click to see all triples where it is the **object**. In newer MatGUI versions the resource opens in the shared describe panel, the same one the other result views use; with older versions the query runs in the background with the prefixes declared in your main query and the result opens in the plugin's own modal (see [Compatibility](#compatibility-with-old-and-new-matgui)). Right-click a URI for the same options, or to run them as a new main query that replaces the current results. URIs inside the panel or modal can be Ctrl+clicked too, to hop from node to node; its back / forward buttons (or Alt+← / Alt+→) step back and forward through those hops and the modal's back-to-start button returns to the original resource
 - 🔗 **URI Link Prefix** - Toolbar control to set a custom URL prefix for all URI links (e.g. point to a faceted browser); overrides `uriHrefAdapter` when set by the user
 - ❓ **Quick Reference** - Toolbar help icon opens an in-place quick reference card listing all features and keyboard shortcuts
 
@@ -84,6 +84,41 @@ const yasgui = new Yasgui(document.getElementById('yasgui'), {
 });
 ```
 
+## Compatibility with old and new MatGUI
+
+The plugin works with both today's published `@matdata/yasgui` and newer MatGUI
+versions that offer a *host API* on yasr. It detects the host API by feature,
+never by version number, and falls back to its own UI when a feature is missing:
+
+| Feature | Newer MatGUI (`yasr.hostApi`) | Older MatGUI / plain yasr |
+|---|---|---|
+| Explore a resource (Ctrl+click, Ctrl+Shift+click, context menu) | `yasr.describe(iri, { direction: 'outgoing' \| 'incoming', source: 'Table' })` opens the shared describe panel | the plugin runs the query with `yasr.executeQuery()` and shows its own modal |
+| Toolbar | the controls are rendered into the yasr plugin toolbar slot (`yasr.getPluginToolbar()`) with the shared `.yasr_toolbar*` classes; display options sit at the far right as **View settings** | the plugin draws its own toolbar above the table |
+
+Detection, in short:
+
+```js
+const host = yasr.hostApi;
+const useDescribePanel = !!host?.describe && typeof yasr.describe === 'function';
+const toolbarSlot = host?.toolbar && typeof yasr.getPluginToolbar === 'function' ? yasr.getPluginToolbar() : null;
+```
+
+All configuration options, events, persisted settings and CSS variables are the
+same on both paths. The plugin's own describe modal (`DescribeModal`) and its
+DESCRIBE response parser are deprecated: they are kept as the fallback for older
+yasr versions and will be removed in the next major version.
+
+In the toolbar slot the plugin uses these shared classes, styled by MatGUI:
+`.yasr_toolbarButton` (Fit, Copy, link prefix, help, View settings; `aria-pressed`
+on the link prefix button while a custom prefix is set), `.yasr_toolbarSearch`
+(the search input) inside a `.yasr_toolbarGroup`, and `.yasr_toolbarSpacer`.
+The plugin's own elements there carry `.table-host-toolbar-item`.
+
+Icons are inline [Lucide](https://lucide.dev) stroke SVGs drawn in `currentColor`.
+Plugin CSS uses `var(--yasgui-*, fallback)` throughout, including the newer
+MatGUI tokens such as `--yasgui-brand` and `--yasgui-surface-raised`, so it looks
+right with and without them.
+
 ## Event API
 
 The plugin emits events that can be used to integrate with your application:
@@ -117,8 +152,14 @@ tablePlugin.on('linkPrefixChange', (data) => {
 });
 
 // Listen for resource triple queries (Ctrl+click / Ctrl+Shift+click)
+// With the shared describe panel (newer MatGUI) the event has panel: 'host'
+// and no triple count, because yasr runs the query.
 tablePlugin.on('describeQuery', (data) => {
-  console.log(`${data.uri} (${data.direction}): ${data.success ? data.triples + ' triples' : 'failed'}`);
+  if (data.panel === 'host') {
+    console.log(`${data.uri} (${data.direction}) opened in the describe panel: ${data.success}`);
+  } else {
+    console.log(`${data.uri} (${data.direction}): ${data.success ? data.triples + ' triples' : 'failed'}`);
+  }
 });
 
 // Available events:
