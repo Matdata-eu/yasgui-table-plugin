@@ -4,6 +4,11 @@ export interface SearchControlConfig {
   placeholder?: string;
   debounceMs?: number;
   onSearch: (searchTerm: string) => void;
+  /**
+   * Render for the yasr plugin toolbar slot: a `type="search"` input with the
+   * shared `.yasr_toolbarSearch` class inside a `.yasr_toolbarGroup`.
+   */
+  hostToolbar?: boolean;
 }
 
 /**
@@ -22,6 +27,7 @@ export class SearchControl {
       placeholder: config.placeholder || 'Search in table...',
       debounceMs: config.debounceMs || 300,
       onSearch: config.onSearch,
+      hostToolbar: config.hostToolbar ?? false,
     };
 
     this.container = this.createContainer();
@@ -42,14 +48,21 @@ export class SearchControl {
 
   private createContainer(): HTMLElement {
     const container = document.createElement('div');
-    container.className = 'table-search-control';
+    container.className = this.config.hostToolbar
+      ? 'yasr_toolbarGroup table-search-control-host'
+      : 'table-search-control';
     return container;
   }
 
   private createSearchInput(): HTMLInputElement {
     const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'table-search-input';
+    if (this.config.hostToolbar) {
+      input.type = 'search';
+      input.className = 'yasr_toolbarSearch table-search-input-host';
+    } else {
+      input.type = 'text';
+      input.className = 'table-search-input';
+    }
     input.placeholder = this.config.placeholder;
     input.setAttribute('aria-label', 'Search table');
     return input;

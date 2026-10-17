@@ -59,6 +59,28 @@ export interface YasrResults {
   getBindings(): YasrBinding[];
 }
 
+/** Direction names used by the yasr shared describe panel. */
+export type HostDescribeDirection = 'outgoing' | 'incoming';
+
+/** Options accepted by `yasr.describe()` (yasr host API version 1). */
+export interface HostDescribeOptions {
+  direction?: HostDescribeDirection;
+  /** Label of the calling view, shown as "Opened from <source>". */
+  source?: string;
+  /** Start a fresh back/forward history (default true). */
+  newHistory?: boolean;
+}
+
+/**
+ * Capabilities of the yasr host API (MatGUI). Absent on older yasr versions;
+ * always feature-detect before using `describe` or `getPluginToolbar`.
+ */
+export interface YasrHostApi {
+  version: number;
+  describe?: boolean;
+  toolbar?: boolean;
+}
+
 /**
  * Minimal YASR instance interface consumed by the table plugin.
  */
@@ -68,6 +90,14 @@ export interface Yasr {
   config?: any;
   getPrefixes?(): Record<string, string>;
   executeQuery?(query: string, options?: PluginQueryOptions): Promise<any>;
+  /** Host API capabilities (newer MatGUI only). */
+  hostApi?: YasrHostApi;
+  /** Open the shared describe panel (newer MatGUI only). */
+  describe?(iri: string, options?: HostDescribeOptions): Promise<void> | void;
+  /** Close the shared describe panel (newer MatGUI only). */
+  closeDescribe?(): void;
+  /** The toolbar slot plugins render their controls into (newer MatGUI only). */
+  getPluginToolbar?(): HTMLDivElement;
 }
 
 export interface TabulatorPluginConfig {

@@ -7,6 +7,10 @@
  *
  * - `subject`: all triples where the resource is the subject  (<uri> ?p ?o)
  * - `object`:  all triples where the resource is the object   (?s ?p <uri>)
+ *
+ * With the yasr host API the shared describe panel builds its own query; the
+ * plugin then only uses `buildResourceQuery` for the "(new query)" context menu
+ * items, and the rest of this module for the deprecated DescribeModal fallback.
  */
 
 import { PrefixMap } from '../types/config';

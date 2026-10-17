@@ -5,6 +5,7 @@
  */
 
 import { closeAllDropdowns, registerDropdown } from '../utils/dropdown-manager.js';
+import { icon } from '../utils/icons.js';
 
 export interface DisplayControlsConfig {
   uriDisplayMode: 'full' | 'abbreviated';
@@ -17,6 +18,11 @@ export interface DisplayControlsConfig {
   onEllipsisModeChange: (enabled: boolean) => void;
   onSmartFormattersChange: (enabled: boolean) => void;
   onDecimalPlacesChange: (places: number | undefined) => void;
+  /**
+   * Render as the "View settings" button of the yasr plugin toolbar slot (`.yasr_toolbarButton`)
+   * instead of the plugin's own toolbar.
+   */
+  hostToolbar?: boolean;
 }
 
 export class DisplayControls {
@@ -59,11 +65,15 @@ export class DisplayControls {
 
   private createTriggerButton(): HTMLButtonElement {
     const button = document.createElement('button');
-    button.className = 'table-toggle-button table-dropdown-trigger';
+    button.className = this.config.hostToolbar
+      ? 'yasr_toolbarButton table-dropdown-trigger'
+      : 'table-toggle-button table-dropdown-trigger';
     button.setAttribute('aria-haspopup', 'true');
     button.setAttribute('aria-expanded', 'false');
-    button.setAttribute('title', 'Display options');
-    button.innerHTML = 'Display <svg class="table-dropdown-caret" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>';
+    button.setAttribute('title', this.config.hostToolbar ? 'View settings' : 'Display options');
+    button.innerHTML = this.config.hostToolbar
+      ? `${icon('sliders-horizontal')}<span>View settings</span>`
+      : `Display ${icon('chevron-down', 12, 'table-dropdown-caret')}`;
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggle();
@@ -73,7 +83,10 @@ export class DisplayControls {
 
   private createPanel(): HTMLElement {
     const panel = document.createElement('div');
-    panel.className = 'table-dropdown-panel';
+    // View settings sit at the far right of the host toolbar: open towards the left
+    panel.className = this.config.hostToolbar
+      ? 'table-dropdown-panel table-dropdown-panel-end'
+      : 'table-dropdown-panel';
     panel.setAttribute('role', 'menu');
     panel.appendChild(this.uriToggle);
     panel.appendChild(this.datatypeToggle);
@@ -112,7 +125,7 @@ export class DisplayControls {
 
     const label = document.createElement('span');
     label.className = 'table-decimal-places-label';
-    label.textContent = 'Decimals:';
+    label.textContent = 'Decimals';
 
     row.appendChild(label);
     row.appendChild(this.decimalPlacesInput);
@@ -195,22 +208,22 @@ export class DisplayControls {
   }
 
   private updateUriToggleText(button: HTMLButtonElement, mode: 'full' | 'abbreviated'): void {
-    button.textContent = mode === 'full' ? 'URI: Full' : 'URI: Short';
+    button.textContent = mode === 'full' ? 'URI: full' : 'URI: short';
     button.classList.toggle('active', mode === 'abbreviated');
   }
 
   private updateDatatypeToggleText(button: HTMLButtonElement, show: boolean): void {
-    button.textContent = show ? 'Types: On' : 'Types: Off';
+    button.textContent = show ? 'Types: on' : 'Types: off';
     button.classList.toggle('active', !show);
   }
 
   private updateEllipsisToggleText(button: HTMLButtonElement, enabled: boolean): void {
-    button.textContent = enabled ? 'Ellipsis: On' : 'Ellipsis: Off';
+    button.textContent = enabled ? 'Ellipsis: on' : 'Ellipsis: off';
     button.classList.toggle('active', enabled);
   }
 
   private updateSmartFormattersToggleText(button: HTMLButtonElement, enabled: boolean): void {
-    button.textContent = enabled ? 'Smart: On' : 'Smart: Off';
+    button.textContent = enabled ? 'Smart formatters: on' : 'Smart formatters: off';
     if (enabled) {
       button.classList.add('active');
     } else {

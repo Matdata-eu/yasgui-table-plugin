@@ -5,11 +5,17 @@
  */
 
 import { closeAllDropdowns, registerDropdown } from '../utils/dropdown-manager.js';
+import { icon } from '../utils/icons.js';
 
 export interface ExportControlsConfig {
   onMarkdownCopy?: () => void;
   onCsvCopy?: () => void;
   onTsvCopy?: () => void;
+  /**
+   * Style the trigger for the yasr plugin toolbar slot (`.yasr_toolbarButton`)
+   * instead of the plugin's own toolbar.
+   */
+  hostToolbar?: boolean;
 }
 
 export class ExportControls {
@@ -36,11 +42,13 @@ export class ExportControls {
 
   private createTriggerButton(): HTMLButtonElement {
     const button = document.createElement('button');
-    button.className = 'table-toggle-button table-dropdown-trigger';
+    button.className = this.config.hostToolbar
+      ? 'yasr_toolbarButton table-dropdown-trigger'
+      : 'table-toggle-button table-dropdown-trigger';
     button.setAttribute('aria-haspopup', 'true');
     button.setAttribute('aria-expanded', 'false');
     button.setAttribute('title', 'Copy table to clipboard');
-    button.innerHTML = 'Copy <svg class="table-dropdown-caret" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>';
+    button.innerHTML = `Copy ${icon('chevron-down', 12, 'table-dropdown-caret')}`;
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggle();

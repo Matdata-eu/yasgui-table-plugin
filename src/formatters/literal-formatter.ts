@@ -5,6 +5,7 @@
 
 import { SparqlBinding } from '../types/sparql';
 import { CellComponent } from '../types/tabulator';
+import { icon } from '../utils/icons';
 
 /** XSD datatypes that support fraction-digit formatting */
 const DECIMAL_DATATYPES = new Set([
@@ -29,8 +30,10 @@ export class LiteralFormatter {
     const isTrue = value === 'true' || value === '1';
     const span = document.createElement('span');
     span.className = isTrue ? 'table-tick-cross table-tick' : 'table-tick-cross table-cross';
-    span.textContent = isTrue ? '✔' : '✘';
+    span.innerHTML = icon(isTrue ? 'check' : 'x');
     span.title = value;
+    span.setAttribute('role', 'img');
+    span.setAttribute('aria-label', isTrue ? 'true' : 'false');
     return span;
   }
 
