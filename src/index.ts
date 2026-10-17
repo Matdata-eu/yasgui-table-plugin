@@ -18,6 +18,9 @@ export type {
   UriDisplayMode,
   Yasr,
   PluginQueryOptions,
+  YasrHostApi,
+  HostDescribeOptions,
+  HostDescribeDirection,
 } from './types/config';
 
 export type { SparqlResults, SparqlBinding, ResultRow } from './types/sparql';

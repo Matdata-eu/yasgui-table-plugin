@@ -9,6 +9,11 @@ export interface LinkPrefixControlConfig {
   prefix: string;
   /** Called whenever the user applies or clears the prefix. */
   onPrefixChange: (prefix: string) => void;
+  /**
+   * Style the toggle for the yasr plugin toolbar slot (`.yasr_toolbarButton`,
+   * `aria-pressed` while a custom prefix is set).
+   */
+  hostToolbar?: boolean;
 }
 
 /**
@@ -51,7 +56,7 @@ export class LinkPrefixControl {
 
   private createToggleButton(): HTMLButtonElement {
     const btn = document.createElement('button');
-    btn.className = 'table-toggle-button';
+    btn.className = this.config.hostToolbar ? 'yasr_toolbarButton' : 'table-toggle-button';
     btn.setAttribute('aria-label', 'Configure URI link prefix');
     btn.addEventListener('click', () => this.togglePanel());
     return btn;
@@ -100,7 +105,7 @@ export class LinkPrefixControl {
 
     const label = document.createElement('span');
     label.className = 'table-link-prefix-panel-label';
-    label.textContent = 'Link prefix:';
+    label.textContent = 'Link prefix';
 
     panel.appendChild(label);
     panel.appendChild(this.inputEl);
@@ -144,12 +149,15 @@ export class LinkPrefixControl {
 
   private updateToggleLabel(): void {
     this.toggleButton.textContent = this.config.prefix
-      ? 'Link: Custom'
-      : 'Link: Default';
+      ? 'Link: custom'
+      : 'Link: default';
     if (this.config.prefix) {
       this.toggleButton.classList.add('active');
     } else {
       this.toggleButton.classList.remove('active');
+    }
+    if (this.config.hostToolbar) {
+      this.toggleButton.setAttribute('aria-pressed', this.config.prefix ? 'true' : 'false');
     }
     this.toggleButton.title = this.config.prefix
       ? `URI prefix: ${this.config.prefix}`

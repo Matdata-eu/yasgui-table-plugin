@@ -24,6 +24,8 @@ import { validateConfig } from './utils/validators.js';
 import { getCurrentTheme, watchThemeChanges } from './utils/theme.js';
 import { parseDescribeResponse } from './parsers/describe-parser.js';
 import { buildResourceQuery, sanitizePrefixes, ResourceDirection } from './parsers/resource-query.js';
+import { getHostToolbar, hasHostDescribe, toHostDirection } from './utils/host-api.js';
+import { icon } from './utils/icons.js';
 
 type EventHandler = (...args: unknown[]) => void;
 
@@ -42,7 +44,7 @@ class TablePlugin {
   public helpReference?: string;
   private yasr: Yasr;
   
-  private iconSvg: string = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v4h4V5H5zm6 0v4h4V5h-4zm6 0v4h4V5h-4zM5 11v4h4v-4H5zm6 0v4h4v-4h-4zm6 0v4h4v-4h-4zM5 17v2h4v-2H5zm6 0v2h4v-2h-4zm6 0v2h4v-2h-4z"/></svg>';
+  private iconSvg: string = icon('table');
 
   private config: TabulatorPluginConfig;
   private table: Tabulator | null = null;
@@ -52,6 +54,7 @@ class TablePlugin {
   private displayControls: DisplayControls | null = null;
   private fitControls: FitControls | null = null;
   private contentModal: ContentModal | null = null;
+  /** @deprecated Fallback for yasr without the host describe panel. */
   private describeModal: DescribeModal | null = null;
   private exportControls: ExportControls | null = null;
   private describeAbortController: AbortController | null = null;
@@ -62,6 +65,8 @@ class TablePlugin {
   private clipboardManager: ClipboardManager | null = null;
   private eventHandlers: Map<string, EventHandler[]> = new Map();
   private themeObserverCleanup: (() => void) | null = null;
+  /** Elements this plugin put into the yasr plugin toolbar slot (host API). */
+  private hostToolbarItems: HTMLElement[] = [];
 
   constructor(yasr: Yasr) {
     this.yasr = yasr;
@@ -114,7 +119,7 @@ class TablePlugin {
         } else {
           content = String(value || '');
         }
-        this.contentModal?.show(content, 'Cell Content');
+        this.contentModal?.show(content, 'Cell content');
         this.emit('cellDoubleClick', { content });
       },
       {
@@ -186,6 +191,14 @@ class TablePlugin {
    * Renders the table visualization
    */
   async draw(_persistentConfig?: PersistentConfig): Promise<void> {
+    // yasr empties its toolbar slot before it calls draw(), but the plugin also
+    // redraws itself (e.g. after a display setting changed): drop our own items.
+    this.removeHostToolbarItems();
+    if (this.themeObserverCleanup) {
+      this.themeObserverCleanup();
+      this.themeObserverCleanup = null;
+    }
+
     // Create container
     const container = document.createElement('div');
     container.className = 'yasgui-table-plugin';
@@ -198,6 +211,7 @@ class TablePlugin {
 
     // Watch for theme changes
     this.themeObserverCleanup = watchThemeChanges(container, (newTheme) => {
+      this.hostToolbarItems.forEach((item) => item.setAttribute('data-theme', newTheme));
       this.emit('themeChange', { theme: newTheme });
     });
 
@@ -264,15 +278,21 @@ class TablePlugin {
       if (rowCount > 100000) {
         const warning = document.createElement('div');
         warning.className = 'table-performance-warning';
-        warning.innerHTML = `<strong>⚠️ Performance Notice:</strong> This table contains ${rowCount.toLocaleString()} rows. Rendering may be slow. Consider filtering your query.`;
+        warning.innerHTML = `${icon('triangle-alert')} <span><strong>Performance notice:</strong> this table contains ${rowCount.toLocaleString()} rows. Rendering may be slow. Consider filtering your query.</span>`;
         container.appendChild(warning);
       }
+
+      // Newer yasr versions (host API) offer a toolbar slot for plugin
+      // controls; older ones don't, and the plugin draws its own toolbar.
+      const hostToolbar = getHostToolbar(this.yasr);
+      const useHostToolbar = !!hostToolbar;
 
       // Create search control
       this.searchControl = new SearchControl({
         placeholder: 'Search in table...',
         debounceMs: 300,
         onSearch: (searchTerm: string) => this.handleSearch(searchTerm),
+        hostToolbar: useHostToolbar,
       });
 
       // Create display controls
@@ -288,18 +308,20 @@ class TablePlugin {
         onEllipsisModeChange: (enabled) => this.handleEllipsisModeChange(enabled),
         onSmartFormattersChange: (enabled) => this.handleSmartFormattersChange(enabled),
         onDecimalPlacesChange: (places) => this.handleDecimalPlacesChange(places),
+        hostToolbar: useHostToolbar,
       });
 
       // Create fit controls
       this.fitControls = new FitControls({
         onFitToData: () => this.handleFitToData(),
         onFitToWindow: () => this.handleFitToWindow(),
+        hostToolbar: useHostToolbar,
       });
 
       // Create content modal
       this.contentModal = new ContentModal();
 
-      // Create DESCRIBE results modal
+      // Create DESCRIBE results modal (fallback when yasr has no describe panel)
       this.describeModal = new DescribeModal({
         onDescribe: (uri, direction) => this.runResourceQuery(uri, direction, false),
       });
@@ -309,6 +331,7 @@ class TablePlugin {
         onMarkdownCopy: () => this.handleMarkdownExport(),
         onCsvCopy: () => this.handleCsvExport(),
         onTsvCopy: () => this.handleTsvExport(),
+        hostToolbar: useHostToolbar,
       });
 
       // Create link prefix control
@@ -316,21 +339,27 @@ class TablePlugin {
       this.linkPrefixControl = new LinkPrefixControl({
         prefix: currentPrefix,
         onPrefixChange: (prefix) => this.handleLinkPrefixChange(prefix),
+        hostToolbar: useHostToolbar,
       });
 
       // Create help reference control
-      this.helpReferenceControl = new HelpReferenceControl();
+      this.helpReferenceControl = new HelpReferenceControl({ hostToolbar: useHostToolbar });
 
-      // Add controls toolbar to container
-      const toolbar = document.createElement('div');
-      toolbar.className = 'table-controls-toolbar';
-      toolbar.appendChild(this.searchControl.getElement());
-      toolbar.appendChild(this.displayControls.getElement());
-      toolbar.appendChild(this.fitControls.getElement());
-      toolbar.appendChild(this.exportControls.getElement());
-      toolbar.appendChild(this.linkPrefixControl.getElement());
-      toolbar.appendChild(this.helpReferenceControl.getElement());
-      container.appendChild(toolbar);
+      if (hostToolbar) {
+        this.renderHostToolbar(hostToolbar, theme);
+      } else {
+        // Add controls toolbar to container
+        // @deprecated own toolbar: fallback for yasr without getPluginToolbar()
+        const toolbar = document.createElement('div');
+        toolbar.className = 'table-controls-toolbar';
+        toolbar.appendChild(this.searchControl.getElement());
+        toolbar.appendChild(this.displayControls.getElement());
+        toolbar.appendChild(this.fitControls.getElement());
+        toolbar.appendChild(this.exportControls.getElement());
+        toolbar.appendChild(this.linkPrefixControl.getElement());
+        toolbar.appendChild(this.helpReferenceControl.getElement());
+        container.appendChild(toolbar);
+      }
 
       // Create table container (separate from search control)
       const tableContainer = document.createElement('div');
@@ -392,6 +421,41 @@ class TablePlugin {
       resultsEl.innerHTML = '';
       resultsEl.appendChild(container);
     }
+  }
+
+  /**
+   * Put the plugin controls into the yasr plugin toolbar slot (host API):
+   * search, Fit, Copy, link prefix and help on the left, view settings at the
+   * far right.
+   */
+  private renderHostToolbar(bar: HTMLElement, theme: string): void {
+    const add = (el: HTMLElement) => {
+      el.classList.add('table-host-toolbar-item');
+      el.setAttribute('data-theme', theme);
+      bar.appendChild(el);
+      this.hostToolbarItems.push(el);
+    };
+
+    if (this.searchControl) add(this.searchControl.getElement());
+    if (this.fitControls) add(this.fitControls.getElement());
+    if (this.exportControls) add(this.exportControls.getElement());
+    if (this.linkPrefixControl) add(this.linkPrefixControl.getElement());
+
+    const spacer = document.createElement('span');
+    spacer.className = 'yasr_toolbarSpacer';
+    add(spacer);
+
+    if (this.helpReferenceControl) add(this.helpReferenceControl.getElement());
+    // View settings always sit at the far right
+    if (this.displayControls) add(this.displayControls.getElement());
+  }
+
+  /**
+   * Remove the elements this plugin put into the yasr plugin toolbar slot.
+   */
+  private removeHostToolbarItems(): void {
+    this.hostToolbarItems.forEach((item) => item.remove());
+    this.hostToolbarItems = [];
   }
 
   /**
@@ -476,6 +540,7 @@ class TablePlugin {
       this.describeAbortController.abort();
       this.describeAbortController = null;
     }
+    this.removeHostToolbarItems();
     this.removeUriContextMenu();
     this.eventHandlers.clear();
     this.container = null;
@@ -852,16 +917,16 @@ class TablePlugin {
 
     this.clipboardManager.copyToClipboard(markdown).then((success) => {
       if (success) {
-        this.showNotification('✓ Copied as Markdown', 'success');
+        this.showNotification('Copied as Markdown', 'success');
         this.emit('copy', { format: 'markdown', success: true });
       } else {
         console.error('Failed to copy markdown to clipboard');
-        this.showNotification('✗ Failed to copy to clipboard', 'error');
+        this.showNotification('Failed to copy to clipboard', 'error');
         this.emit('copy', { format: 'markdown', success: false, error: 'Failed to copy to clipboard' });
       }
     }).catch((error) => {
       console.error('Error copying markdown to clipboard:', error);
-      this.showNotification('✗ Failed to copy to clipboard', 'error');
+      this.showNotification('Failed to copy to clipboard', 'error');
       this.emit('copy', { format: 'markdown', success: false, error: error.message });
     });
   }
@@ -881,16 +946,16 @@ class TablePlugin {
 
     this.clipboardManager.copyToClipboard(csv).then((success) => {
       if (success) {
-        this.showNotification('✓ Copied as CSV', 'success');
+        this.showNotification('Copied as CSV', 'success');
         this.emit('copy', { format: 'csv', success: true });
       } else {
         console.error('Failed to copy CSV to clipboard');
-        this.showNotification('✗ Failed to copy to clipboard', 'error');
+        this.showNotification('Failed to copy to clipboard', 'error');
         this.emit('copy', { format: 'csv', success: false, error: 'Failed to copy to clipboard' });
       }
     }).catch((error) => {
       console.error('Error copying CSV to clipboard:', error);
-      this.showNotification('✗ Failed to copy to clipboard', 'error');
+      this.showNotification('Failed to copy to clipboard', 'error');
       this.emit('copy', { format: 'csv', success: false, error: error.message });
     });
   }
@@ -910,16 +975,16 @@ class TablePlugin {
 
     this.clipboardManager.copyToClipboard(tsv).then((success) => {
       if (success) {
-        this.showNotification('✓ Copied as TSV', 'success');
+        this.showNotification('Copied as TSV', 'success');
         this.emit('copy', { format: 'tsv', success: true });
       } else {
         console.error('Failed to copy TSV to clipboard');
-        this.showNotification('✗ Failed to copy to clipboard', 'error');
+        this.showNotification('Failed to copy to clipboard', 'error');
         this.emit('copy', { format: 'tsv', success: false, error: 'Failed to copy to clipboard' });
       }
     }).catch((error) => {
       console.error('Error copying TSV to clipboard:', error);
-      this.showNotification('✗ Failed to copy to clipboard', 'error');
+      this.showNotification('Failed to copy to clipboard', 'error');
       this.emit('copy', { format: 'tsv', success: false, error: error.message });
     });
   }
@@ -1040,9 +1105,9 @@ class TablePlugin {
   }
 
   /**
-   * Handle Ctrl+click (or Cmd+click) on a URI link: run a background query for
-   * the triples where the URI is the subject (or, with Shift held, the object)
-   * and show the result in a modal.
+   * Handle Ctrl+click (or Cmd+click) on a URI link: show the triples where the
+   * URI is the subject (or, with Shift held, the object) in the yasr describe
+   * panel, or in the plugin's own modal on older yasr versions.
    */
   private handleUriCtrlClick(uri: string, direction: ResourceDirection = 'subject'): void {
     this.runResourceQuery(uri, direction);
@@ -1249,12 +1314,20 @@ class TablePlugin {
   }
 
   /**
-   * Run a background query for the triples where `uri` is the subject or the
-   * object and display the result in the resource modal. `newHistory` is false
-   * when the modal itself asks for the describe (a Ctrl+click inside it, or
-   * back/forward navigation), so its history is kept.
+   * Show the triples where `uri` is the subject or the object.
+   *
+   * With the yasr host API this opens the shared describe panel
+   * (`yasr.describe()`), which runs the query itself. Otherwise it runs a
+   * background query and displays the result in the plugin's own (deprecated)
+   * resource modal. `newHistory` is false when the modal itself asks for the
+   * describe (a Ctrl+click inside it, or back/forward navigation), so its
+   * history is kept.
    */
   private async runResourceQuery(uri: string, direction: ResourceDirection, newHistory = true): Promise<void> {
+    if (hasHostDescribe(this.yasr)) {
+      return this.describeWithHost(uri, direction, newHistory);
+    }
+
     if (!this.yasr.executeQuery) {
       this.showNotification('Background query execution is not available', 'error');
       return;
@@ -1317,6 +1390,35 @@ class TablePlugin {
       }
     }
   }
+
+  /**
+   * Open `uri` in the yasr shared describe panel (host API).
+   */
+  private async describeWithHost(uri: string, direction: ResourceDirection, newHistory: boolean): Promise<void> {
+    // A fallback query may still be running from before the host API appeared
+    if (this.describeAbortController) {
+      this.describeAbortController.abort();
+      this.describeAbortController = null;
+    }
+    try {
+      await this.yasr.describe!(uri, {
+        direction: toHostDirection(direction),
+        source: 'Table',
+        newHistory,
+      });
+      this.emit('describeQuery', { uri, direction, success: true, panel: 'host' });
+    } catch (error: any) {
+      console.error('yasgui-table-plugin: describe panel failed', uri, direction, error);
+      this.showNotification('Could not show the resource triples', 'error');
+      this.emit('describeQuery', {
+        uri,
+        direction,
+        success: false,
+        error: error?.message || String(error),
+        panel: 'host',
+      });
+    }
+  }
 }
 
-export default TablePlugin;
+export default TablePlugin;

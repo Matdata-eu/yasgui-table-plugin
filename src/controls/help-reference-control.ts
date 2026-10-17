@@ -3,6 +3,8 @@
  * Toolbar button that opens a quick reference card modal explaining table plugin features
  */
 
+import { icon } from '../utils/icons.js';
+
 interface HelpSection {
   title: string;
   description: string;
@@ -20,14 +22,14 @@ const HELP_SECTIONS: HelpSection[] = [
       'Type in the search bar to filter table rows. Only rows containing the search term in any column will be shown. The row count updates as you type.',
   },
   {
-    title: 'URI Display',
+    title: 'URI display',
     description:
-      'Use the "Full URI / Prefix / Local" toggle to switch how URIs are displayed: as full IRIs, using namespace prefixes, or as local names only.',
+      'Use "URI: full / short" under Display (View settings in newer MatGUI versions) to show URIs as full IRIs or abbreviated with namespace prefixes.',
   },
   {
     title: 'Datatypes',
     description:
-      'Toggle the "Datatypes" button to show or hide the RDF datatype annotation on literal values (e.g. "42"^^xsd:integer).',
+      'Toggle "Types" to show or hide the RDF datatype annotation on literal values (e.g. "42"^^xsd:integer).',
   },
   {
     title: 'Ellipsis mode',
@@ -37,17 +39,17 @@ const HELP_SECTIONS: HelpSection[] = [
   {
     title: 'Fit columns',
     description:
-      '"Fit: Data" resizes each column to fit its content. "Fit: Window" stretches the columns to fill the available window width.',
+      '"Fit to data" resizes each column to fit its content. "Fit to window" stretches the columns to fill the available window width.',
   },
   {
     title: 'Export',
     description:
-      'Copy the table data to the clipboard as CSV, TSV, or Markdown by clicking the corresponding button in the Export section.',
+      'Copy the table data to the clipboard as CSV, TSV, or Markdown from the Copy menu. Only the rows that match the search are copied.',
   },
   {
     title: 'Explore a resource',
     description:
-      'Ctrl+click (Cmd+click on macOS) a URI to show all triples where it is the subject. Ctrl+Shift+click shows all triples where it is the object. The query runs in the background and opens in a popup, using the prefixes from your main query. Right-click a URI for the same options, or to run them as a new main query that replaces the current results.',
+      'Ctrl+click (Cmd+click on macOS) a URI to show all triples where it is the subject. Ctrl+Shift+click shows all triples where it is the object. The result opens in the describe panel of newer MatGUI versions, or in a popup that runs the query in the background with the prefixes from your main query. Right-click a URI for the same options, or to run them as a new main query that replaces the current results.',
   },
   {
     title: 'Link prefix',
@@ -56,16 +58,23 @@ const HELP_SECTIONS: HelpSection[] = [
   },
 ];
 
+export interface HelpReferenceControlConfig {
+  /** Style the button for the yasr plugin toolbar slot (`.yasr_toolbarButton`). */
+  hostToolbar?: boolean;
+}
+
 /**
- * Toolbar control that shows a help (❓) icon button.
+ * Toolbar control that shows a help (circle-help) icon button.
  * Clicking it opens a quick reference card modal.
  */
 export class HelpReferenceControl {
   private container: HTMLElement;
   private modal: HTMLElement | null = null;
   private backdrop: HTMLElement | null = null;
+  private config: HelpReferenceControlConfig;
 
-  constructor() {
+  constructor(config: HelpReferenceControlConfig = {}) {
+    this.config = config;
     this.container = this.createContainer();
     this.container.appendChild(this.createHelpButton());
   }
@@ -80,11 +89,12 @@ export class HelpReferenceControl {
 
   private createHelpButton(): HTMLButtonElement {
     const btn = document.createElement('button');
-    btn.className = 'table-toggle-button table-help-button';
+    btn.className = this.config.hostToolbar
+      ? 'yasr_toolbarButton table-help-button'
+      : 'table-toggle-button table-help-button';
     btn.setAttribute('aria-label', 'Open quick reference card');
     btn.setAttribute('title', 'Quick reference');
-    btn.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>';
+    btn.innerHTML = icon('circle-help');
     btn.addEventListener('click', () => this.openModal());
     return btn;
   }
@@ -113,11 +123,11 @@ export class HelpReferenceControl {
     const title = document.createElement('h3');
     title.id = 'table-help-modal-title';
     title.className = 'table-modal-title';
-    title.textContent = 'Quick Reference';
+    title.textContent = 'Quick reference';
 
     const closeBtn = document.createElement('button');
     closeBtn.className = 'table-modal-close';
-    closeBtn.innerHTML = '&times;';
+    closeBtn.innerHTML = icon('x');
     closeBtn.setAttribute('aria-label', 'Close quick reference');
     closeBtn.addEventListener('click', () => this.closeModal());
 

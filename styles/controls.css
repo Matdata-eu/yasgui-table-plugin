@@ -177,10 +177,10 @@
   position: relative;
 }
 
-/* Chevron-down icon (Font Awesome free) inside trigger buttons */
+/* Chevron-down icon (Lucide) inside trigger buttons */
 .table-dropdown-caret {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   margin-left: 5px;
   vertical-align: middle;
   display: inline-block;
@@ -206,6 +206,12 @@
 
 .table-dropdown-panel.open {
   display: flex;
+}
+
+/* Panel opening towards the left (trigger at the right edge, e.g. View settings) */
+.table-dropdown-panel-end {
+  left: auto;
+  right: 0;
 }
 
 /* Items inside the dropdown panel */
@@ -550,6 +556,9 @@
 }
 
 .describe-modal-nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--table-background);
   border: 1px solid var(--table-control-border);
   border-radius: 4px;
@@ -558,6 +567,11 @@
   font-size: 12px;
   line-height: 1;
   padding: 5px 7px;
+}
+
+.describe-modal-nav-button svg {
+  width: 14px;
+  height: 14px;
 }
 
 .describe-modal-nav-button:hover:not(:disabled) {
@@ -732,7 +746,6 @@
 .table-help-button svg {
   width: 16px;
   height: 16px;
-  fill: currentColor;
 }
 
 /* Help modal content overrides */
@@ -843,4 +856,73 @@
 .table-link-prefix-button-clear:hover {
   background: var(--table-control-hover);
   border-color: var(--table-primary);
+}
+
+/* ── Lucide icons ──────────────────────────────────────────────────────── */
+
+.table-icon {
+  fill: none;
+  stroke: currentColor;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.table-modal-close .table-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* ── Controls inside the yasr plugin toolbar slot (yasr host API) ─────────
+   yasr styles .yasr_toolbarButton / .yasr_toolbarSearch / .yasr_toolbarGroup;
+   these rules only lay out the plugin's own parts (row count, dropdowns). */
+
+.table-host-toolbar-item.table-dropdown-group,
+.table-host-toolbar-item.table-display-controls,
+.table-host-toolbar-item.table-fit-controls,
+.table-host-toolbar-item.table-export-controls {
+  padding: 0;
+}
+
+.table-host-toolbar-item .table-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-host-toolbar-item .table-dropdown-caret {
+  margin-left: 0;
+}
+
+.table-host-toolbar-item .table-dropdown-panel {
+  border-radius: var(--yasgui-radius-md, 4px);
+  border-color: var(--yasgui-line, var(--table-control-border));
+  background: var(--yasgui-surface-raised, var(--table-background));
+  box-shadow: var(--yasgui-shadow-raised, 0 4px 12px rgba(0, 0, 0, 0.12));
+}
+
+.table-host-toolbar-item .table-dropdown-item.active {
+  color: var(--yasgui-brand, var(--table-primary)) !important;
+}
+
+.table-search-control-host {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 360px;
+  min-width: 0;
+}
+
+.table-search-control-host .yasr_toolbarSearch {
+  flex: 1 1 auto;
+  min-width: 120px;
+}
+
+.table-search-control-host .table-row-count {
+  color: var(--yasgui-ink-muted, var(--table-text-secondary));
+}
+
+.table-host-toolbar-item.table-link-prefix-control,
+.table-host-toolbar-item.table-help-reference-control {
+  padding: 0;
+  border-left: none;
 }

@@ -19,20 +19,20 @@ describe('LinkPrefixControl', () => {
       expect(btn).not.toBeNull();
     });
 
-    it('should show "Link: Default" when no prefix is set', () => {
+    it('should show "Link: default" when no prefix is set', () => {
       const ctrl = new LinkPrefixControl({ prefix: '', onPrefixChange });
       const btn = ctrl.getElement().querySelector('button')!;
-      expect(btn.textContent).toBe('Link: Default');
+      expect(btn.textContent).toBe('Link: default');
       expect(btn.classList.contains('active')).toBe(false);
     });
 
-    it('should show "Link: Custom" and active class when a prefix is set', () => {
+    it('should show "Link: custom" and active class when a prefix is set', () => {
       const ctrl = new LinkPrefixControl({
         prefix: 'https://faceted.example.org/?uri=',
         onPrefixChange,
       });
       const btn = ctrl.getElement().querySelector('button')!;
-      expect(btn.textContent).toBe('Link: Custom');
+      expect(btn.textContent).toBe('Link: custom');
       expect(btn.classList.contains('active')).toBe(true);
     });
 
@@ -118,7 +118,7 @@ describe('LinkPrefixControl', () => {
       input.value = 'https://faceted.example.org/?uri=';
       (el.querySelector('.table-link-prefix-button-apply') as HTMLButtonElement).click();
 
-      expect(toggleBtn.textContent).toBe('Link: Custom');
+      expect(toggleBtn.textContent).toBe('Link: custom');
       expect(toggleBtn.classList.contains('active')).toBe(true);
     });
 
@@ -162,7 +162,7 @@ describe('LinkPrefixControl', () => {
       expect(onPrefixChange).toHaveBeenCalledWith('');
     });
 
-    it('should revert toggle label to "Link: Default" after clearing', () => {
+    it('should revert toggle label to "Link: default" after clearing', () => {
       const ctrl = new LinkPrefixControl({
         prefix: 'https://faceted.example.org/?uri=',
         onPrefixChange,
@@ -173,7 +173,7 @@ describe('LinkPrefixControl', () => {
       toggleBtn.click();
       (el.querySelector('.table-link-prefix-button-clear') as HTMLButtonElement).click();
 
-      expect(toggleBtn.textContent).toBe('Link: Default');
+      expect(toggleBtn.textContent).toBe('Link: default');
       expect(toggleBtn.classList.contains('active')).toBe(false);
     });
   });
@@ -188,7 +188,7 @@ describe('LinkPrefixControl', () => {
       const input = el.querySelector('.table-link-prefix-input') as HTMLInputElement;
 
       expect(input.value).toBe('https://new.example.org/?uri=');
-      expect(toggleBtn.textContent).toBe('Link: Custom');
+      expect(toggleBtn.textContent).toBe('Link: custom');
       expect(onPrefixChange).not.toHaveBeenCalled();
     });
   });

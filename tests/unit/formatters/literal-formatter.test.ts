@@ -41,7 +41,7 @@ describe('LiteralFormatter', () => {
         value: 'true',
         datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
       });
-      expect((formatter.format(boolCell) as HTMLElement).textContent).toBe('✔');
+      expect((formatter.format(boolCell) as HTMLElement).querySelector('svg.table-icon-check')).not.toBeNull();
     });
   });
 
@@ -142,7 +142,8 @@ describe('LiteralFormatter', () => {
         datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
       });
       const result = formatter.format(cell) as HTMLElement;
-      expect(result.textContent).toBe('✔');
+      expect(result.querySelector('svg.table-icon-check')).not.toBeNull();
+      expect(result.getAttribute('aria-label')).toBe('true');
       expect(result.classList.contains('table-tick')).toBe(true);
       expect(result.classList.contains('table-tick-cross')).toBe(true);
     });
@@ -155,7 +156,8 @@ describe('LiteralFormatter', () => {
         datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
       });
       const result = formatter.format(cell) as HTMLElement;
-      expect(result.textContent).toBe('✘');
+      expect(result.querySelector('svg.table-icon-x')).not.toBeNull();
+      expect(result.getAttribute('aria-label')).toBe('false');
       expect(result.classList.contains('table-cross')).toBe(true);
     });
 
@@ -167,7 +169,8 @@ describe('LiteralFormatter', () => {
         datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
       });
       const result = formatter.format(cell) as HTMLElement;
-      expect(result.textContent).toBe('✔');
+      expect(result.querySelector('svg.table-icon-check')).not.toBeNull();
+      expect(result.getAttribute('aria-label')).toBe('true');
     });
 
     it('should include the raw value as a tooltip', () => {

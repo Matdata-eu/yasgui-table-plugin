@@ -43,6 +43,9 @@
 
 /* Performance Warning */
 .table-performance-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   padding: 12px 16px;
   background: #fff3cd;
   color: #856404;
@@ -181,8 +184,9 @@ mark {
 
 /* Smart formatter: tick/cross (xsd:boolean) */
 .table-tick-cross {
-  font-size: 1.1em;
-  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
 }
 
 .table-tick {
@@ -190,7 +194,7 @@ mark {
 }
 
 .table-cross {
-  color: #f44336;
+  color: var(--yasgui-danger, #f44336);
 }
 
 /* Smart formatter: star rating */

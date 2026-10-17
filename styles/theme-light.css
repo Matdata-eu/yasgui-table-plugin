@@ -4,7 +4,8 @@
  */
 
 :root,
-.yasgui-table-plugin[data-theme='light'] {
+.yasgui-table-plugin[data-theme='light'],
+.table-host-toolbar-item[data-theme='light'] {
   /* Background colors */
   --table-background: var(--yasgui-bg-primary, #ffffff);
   --table-header-background: var(--yasgui-bg-secondary, #f5f5f5);

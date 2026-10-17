@@ -3,6 +3,8 @@
  * Displays full cell content in an overlay modal
  */
 
+import { icon } from '../utils/icons.js';
+
 export class ContentModal {
   private modal: HTMLElement | null = null;
   private backdrop: HTMLElement | null = null;
@@ -29,11 +31,11 @@ export class ContentModal {
 
     const titleElement = document.createElement('h3');
     titleElement.className = 'table-modal-title';
-    titleElement.textContent = title || 'Cell Content';
+    titleElement.textContent = title || 'Cell content';
 
     const closeButton = document.createElement('button');
     closeButton.className = 'table-modal-close';
-    closeButton.innerHTML = '&times;';
+    closeButton.innerHTML = icon('x');
     closeButton.setAttribute('aria-label', 'Close modal');
     closeButton.addEventListener('click', () => this.close());
 
@@ -51,7 +53,7 @@ export class ContentModal {
 
     const copyButton = document.createElement('button');
     copyButton.className = 'table-modal-button';
-    copyButton.textContent = 'Copy to Clipboard';
+    copyButton.textContent = 'Copy to clipboard';
     copyButton.addEventListener('click', () => this.copyToClipboard(content));
 
     const closeFooterButton = document.createElement('button');

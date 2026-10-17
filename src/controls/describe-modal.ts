@@ -10,11 +10,17 @@
  * URIs in the triples table can be Ctrl+clicked to describe them in turn. The
  * modal keeps those hops in a history that its back, forward and back-to-start
  * buttons (and Alt+←/→) walk through, like a browser.
+ *
+ * @deprecated Newer MatGUI versions offer a shared describe panel
+ * (`yasr.describe()`, yasr host API), which the table plugin uses whenever it
+ * is available. This modal is only the fallback for older yasr versions and
+ * will be removed in the next major version of the plugin.
  */
 
 import { DescribeParseResult, DescribeTriple, formatDescribeObject } from '../parsers/describe-parser';
 import { PrefixMap } from '../types/config';
 import { ResourceDirection, directionLabel, toPrefixedName } from '../parsers/resource-query';
+import { icon } from '../utils/icons';
 
 /** How the modal should present the query it is showing. */
 export interface DescribeModalView {
@@ -41,6 +47,12 @@ export interface DescribeModalCallbacks {
   onDescribe?: (uri: string, direction: ResourceDirection) => void;
 }
 
+/**
+ * Popup showing the triples of a resource, with its own navigation history.
+ *
+ * @deprecated Fallback for yasr versions without the host API: the plugin uses
+ * `yasr.describe()` when available. Will be removed in the next major version.
+ */
 export class DescribeModal {
   private backdrop: HTMLElement | null = null;
   private modal: HTMLElement | null = null;
@@ -192,7 +204,7 @@ export class DescribeModal {
 
     const closeButton = document.createElement('button');
     closeButton.className = 'table-modal-close';
-    closeButton.innerHTML = '&times;';
+    closeButton.innerHTML = icon('x');
     closeButton.setAttribute('aria-label', 'Close modal');
     closeButton.addEventListener('click', () => this.close());
 
@@ -222,7 +234,7 @@ export class DescribeModal {
 
     const copyButton = document.createElement('button');
     copyButton.className = 'table-modal-button';
-    copyButton.textContent = 'Copy Raw';
+    copyButton.textContent = 'Copy raw';
     copyButton.addEventListener('click', () => {
       const rawText = payload.state === 'results' ? payload.result.raw : payload.state === 'error' ? payload.raw : '';
       this.copyToClipboard(rawText);
@@ -270,11 +282,11 @@ export class DescribeModal {
     const nav = document.createElement('div');
     nav.className = 'describe-modal-nav';
 
-    const button = (className: string, text: string, label: string, enabled: boolean, onClick: () => void) => {
+    const button = (className: string, iconSvg: string, label: string, enabled: boolean, onClick: () => void) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = `describe-modal-nav-button ${className}`;
-      btn.textContent = text;
+      btn.innerHTML = iconSvg;
       btn.title = label;
       btn.setAttribute('aria-label', label);
       btn.disabled = !enabled;
@@ -282,9 +294,9 @@ export class DescribeModal {
       return btn;
     };
 
-    nav.appendChild(button('describe-modal-start', '⏮', 'Back to start', this.canGoBack(), () => this.backToStart()));
-    nav.appendChild(button('describe-modal-back', '◀', 'Back (Alt+←)', this.canGoBack(), () => this.back()));
-    nav.appendChild(button('describe-modal-forward', '▶', 'Forward (Alt+→)', this.canGoForward(), () => this.forward()));
+    nav.appendChild(button('describe-modal-start', icon('chevrons-left'), 'Back to start', this.canGoBack(), () => this.backToStart()));
+    nav.appendChild(button('describe-modal-back', icon('chevron-left'), 'Back (Alt+←)', this.canGoBack(), () => this.back()));
+    nav.appendChild(button('describe-modal-forward', icon('chevron-right'), 'Forward (Alt+→)', this.canGoForward(), () => this.forward()));
     return nav;
   }
 

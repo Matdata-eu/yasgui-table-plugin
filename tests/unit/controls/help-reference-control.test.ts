@@ -56,12 +56,12 @@ describe('HelpReferenceControl', () => {
       expect(document.querySelector('.table-modal')).not.toBeNull();
     });
 
-    it('should show the modal with title "Quick Reference"', () => {
+    it('should show the modal with title "Quick reference"', () => {
       const btn = ctrl.getElement().querySelector('button') as HTMLButtonElement;
       btn.click();
 
       const title = document.querySelector('.table-modal-title');
-      expect(title?.textContent).toBe('Quick Reference');
+      expect(title?.textContent).toBe('Quick reference');
     });
 
     it('should render help sections inside the modal', () => {

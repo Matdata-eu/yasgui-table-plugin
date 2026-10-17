@@ -5,6 +5,10 @@
  * representation that can be rendered in a modal table. Falls back to the raw
  * response text when the response cannot be parsed as SPARQL JSON triples or
  * N-Triples.
+ *
+ * @deprecated Only used by the plugin's own DescribeModal, the fallback for
+ * yasr versions without the shared describe panel (yasr host API). Will be
+ * removed in the next major version.
  */
 
 import { YasrBinding } from '../types/config';
@@ -60,6 +64,9 @@ async function extractRawText(response: unknown): Promise<string> {
  * 2. Turtle/N-Triples via N3 (handles @prefix, multi-line statements, numbers,
  *    booleans, lists, etc.).
  * 3. Fall back to returning the raw text with no parsed triples.
+ *
+ * @deprecated Fallback path only (see the module comment); removal planned
+ * for the next major version.
  */
 export async function parseDescribeResponse(response: unknown): Promise<DescribeParseResult> {
   const raw = await extractRawText(response);
@@ -171,6 +178,9 @@ function parseWithN3(raw: string): DescribeTriple[] {
 
 /**
  * Format a triple object for display.
+ *
+ * @deprecated Fallback path only (see the module comment); removal planned
+ * for the next major version.
  */
 export function formatDescribeObject(object: DescribeTriple['object']): string {
   if (object.type === 'uri') {

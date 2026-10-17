@@ -3,7 +3,8 @@
  * Uses YASGUI CSS custom properties with fallback colors
  */
 
-.yasgui-table-plugin[data-theme='dark'] {
+.yasgui-table-plugin[data-theme='dark'],
+.table-host-toolbar-item[data-theme='dark'] {
   /* Background colors */
   --table-background: var(--yasgui-bg-primary, #1e1e1e);
   --table-header-background: var(--yasgui-bg-secondary, #2a2a2a);
