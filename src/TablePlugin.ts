@@ -381,15 +381,21 @@ class TablePlugin {
         // Add keyboard handler for Ctrl+C / Cmd+C
         this.attachKeyboardHandlers();
 
-        // Restore last search term if available
-        const lastSearch = this.config.displayConfig?.lastSearch;
-        if (lastSearch) {
-          this.searchControl.setSearchTerm(lastSearch, true);
-        } else {
-          // Update initial row count
-          const totalRows = this.renderer.getTotalRowCount();
-          this.searchControl.updateRowCount(totalRows, totalRows);
-        }
+        // Tabulator builds the table asynchronously: before 'tableBuilt' it
+        // has no data yet, so the row count would read "0 rows".
+        const table = this.table;
+        table.on('tableBuilt', () => {
+          if (this.table !== table || !this.renderer || !this.searchControl) return;
+          // Restore last search term if available
+          const lastSearch = this.config.displayConfig?.lastSearch;
+          if (lastSearch) {
+            this.searchControl.setSearchTerm(lastSearch, true);
+          } else {
+            // Update initial row count
+            const totalRows = this.renderer.getTotalRowCount();
+            this.searchControl.updateRowCount(totalRows, totalRows);
+          }
+        });
 
         // Save config on changes
         if (

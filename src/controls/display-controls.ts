@@ -73,7 +73,7 @@ export class DisplayControls {
     button.setAttribute('title', this.config.hostToolbar ? 'View settings' : 'Display options');
     button.innerHTML = this.config.hostToolbar
       ? `${icon('sliders-horizontal')}<span>View settings</span>`
-      : `Display ${icon('chevron-down', 12, 'table-dropdown-caret')}`;
+      : `<span>Display</span>${icon('chevron-down', 12, 'table-dropdown-caret')}`;
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggle();

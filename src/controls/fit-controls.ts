@@ -49,7 +49,7 @@ export class FitControls {
     button.setAttribute('aria-haspopup', 'true');
     button.setAttribute('aria-expanded', 'false');
     button.setAttribute('title', 'Fit column options');
-    button.innerHTML = `Fit ${icon('chevron-down', 12, 'table-dropdown-caret')}`;
+    button.innerHTML = `<span>Fit</span>${icon('chevron-down', 12, 'table-dropdown-caret')}`;
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggle();

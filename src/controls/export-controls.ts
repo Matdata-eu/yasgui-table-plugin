@@ -48,7 +48,7 @@ export class ExportControls {
     button.setAttribute('aria-haspopup', 'true');
     button.setAttribute('aria-expanded', 'false');
     button.setAttribute('title', 'Copy table to clipboard');
-    button.innerHTML = `Copy ${icon('chevron-down', 12, 'table-dropdown-caret')}`;
+    button.innerHTML = `<span>Copy</span>${icon('chevron-down', 12, 'table-dropdown-caret')}`;
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggle();

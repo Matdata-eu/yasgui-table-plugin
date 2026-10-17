@@ -88,10 +88,11 @@ export class SearchControl {
    * @param totalCount Total number of rows
    */
   updateRowCount(filteredCount: number, totalCount: number): void {
+    const unit = totalCount === 1 ? 'row' : 'rows';
     if (this.input.value === '') {
-      this.rowCountDisplay.textContent = `${totalCount} rows`;
+      this.rowCountDisplay.textContent = `${totalCount} ${unit}`;
     } else {
-      this.rowCountDisplay.textContent = `${filteredCount} of ${totalCount} rows`;
+      this.rowCountDisplay.textContent = `${filteredCount} of ${totalCount} ${unit}`;
     }
   }
 
