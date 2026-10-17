@@ -263,3 +263,84 @@ mark {
   word-break: break-word;
   display: block;
 }
+
+/* MatData look: fonts, spacing and lines that match MatGUI. The colours come
+   from the --table-* variables, which follow MatGUI's tokens. */
+.yasgui-table-plugin .tabulator {
+  font-family: var(--yasgui-font-family, inherit);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.yasgui-table-plugin .tabulator-header {
+  border-bottom: 1px solid var(--table-border);
+  font-weight: 600;
+}
+
+.yasgui-table-plugin .tabulator .tabulator-header .tabulator-col {
+  border-right: none;
+}
+
+.yasgui-table-plugin .tabulator .tabulator-header .tabulator-col .tabulator-col-content {
+  padding: 8px 12px;
+}
+
+.yasgui-table-plugin .tabulator .tabulator-header .tabulator-col .tabulator-col-sorter .tabulator-arrow {
+  border-bottom-color: var(--table-text-muted);
+  opacity: 0.6;
+}
+
+.yasgui-table-plugin .tabulator .tabulator-header .tabulator-col[aria-sort='ascending'] .tabulator-col-sorter .tabulator-arrow,
+.yasgui-table-plugin .tabulator .tabulator-header .tabulator-col[aria-sort='descending'] .tabulator-col-sorter .tabulator-arrow {
+  border-bottom-color: var(--table-primary);
+  border-top-color: var(--table-primary);
+  opacity: 1;
+}
+
+.yasgui-table-plugin .tabulator-row {
+  border-bottom: 1px solid var(--table-border-light);
+}
+
+.yasgui-table-plugin .tabulator-row .tabulator-cell {
+  padding: 6px 12px;
+  border-right: none;
+}
+
+/* Frozen row number column: no heavy divider, muted numbers */
+.yasgui-table-plugin .tabulator .tabulator-header .tabulator-frozen.tabulator-frozen-left,
+.yasgui-table-plugin .tabulator-row .tabulator-frozen.tabulator-frozen-left {
+  border-right: 1px solid var(--table-border-light);
+}
+
+.yasgui-table-plugin .tabulator-row .tabulator-cell[tabulator-field='_rowNum'] {
+  color: var(--table-rownumber-text);
+}
+
+.yasgui-table-plugin .tabulator-col[tabulator-field='_rowNum'] {
+  color: var(--table-rownumber-text) !important;
+}
+
+/* IRIs and technical values in the mono font */
+.yasgui-table-plugin .table-uri-link {
+  font-family: var(--yasgui-font-mono, monospace);
+  font-size: 13px;
+}
+
+.yasgui-table-plugin .table-literal-lang {
+  font-size: 13px;
+  font-style: normal;
+}
+
+.yasgui-table-plugin .table-literal-datatype,
+.yasgui-table-plugin .table-bnode,
+.yasgui-table-plugin .table-color-label {
+  font-family: var(--yasgui-font-mono, monospace);
+}
+
+.yasgui-table-plugin .table-tick {
+  color: var(--yasgui-success, #2e7d32);
+}
+
+.yasgui-table-plugin mark {
+  border-radius: 3px;
+}
