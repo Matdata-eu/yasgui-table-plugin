@@ -13,7 +13,7 @@ const CHOICES = [
   { key: 'smartFormatters', label: 'Smart formatters', hint: 'Stars, percentages, images, colours, multi-line text and booleans are shown by column name and value.' },
   { key: 'ontology', label: 'Ontology types', hint: 'IRIs shown full, abbreviated with prefixes, or as labels.' },
   { key: 'unicode', label: 'Unicode and special characters', hint: 'Scripts, emoji and characters that need escaping.' },
-  { key: 'large', label: 'Large result (1000 rows)', hint: 'Scrolling and filtering on 1000 rows.' },
+  { key: 'large', label: 'Large result', hint: 'Scrolling and filtering on 1000 rows.' },
 ].filter((choice) => mockData[choice.key]);
 
 /** Load the plugin from source while developing, from the build when deployed */
